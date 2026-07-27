@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<script>
+// تشخیصِ زودهنگام (قبل از رندرِ استایل) که داخلِ اپِ اندرویدیم یا مرورگرِ معمولی؛ کاتلین این
+// رشته رو به User-Agent اضافه می‌کنه. فقط داخلِ اپ، کلاسِ in-kiosk-app رو به html اضافه می‌کنیم
+// تا افکتِ بلورِ پس‌زمینه سبک‌تر/سریع‌تر بشه؛ تو مرورگر هیچ فرقی نمی‌کنه.
+try {
+  if (navigator.userAgent.indexOf("DehaatKioskApp") !== -1) {
+    document.documentElement.classList.add("in-kiosk-app");
+  }
+} catch (e) {}
+</script>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>دهات</title>
+<link rel="icon" type="image/png" href="favicon-dark.png" media="(prefers-color-scheme: light)" />
+<link rel="icon" type="image/png" href="favicon-light.png" media="(prefers-color-scheme: dark)" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<noscript><link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;700&display=swap" rel="stylesheet"></noscript>
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js?onload=onTurnstileReady&render=explicit" async defer></script>
+<style>
+  :root {
+    --primary: #1A0A31;
+    --surface: #241243;
+    --card: #2D1856;
+    --accent: #8B5CF6;
+    --accent-hover: #A78BFA;
+    --text: #FFFFFF;
+    --subtext: #C9C4D8;
+    --border: #3D2A64;
+    --success: #22C55E;
+    --error: #EF4444;
+    --radius: 16px;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; }
+  body {
+    font-family: 'Vazirmatn', Tahoma, sans-serif;
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+    background: var(--primary);
+  }
+  /* پس‌زمینه‌ی متحرک — سبک: به‌جای انیمیت کردن background-position روی یه گرادیانت بلورشده‌ی بزرگ
+     (که هر فریم کل صفحه رو مجبور به رسم دوباره می‌کرد و لگ می‌داد)، چند تا «حباب» جدا داریم که فقط
+     transform‌شون انیمیت می‌شه؛ این روی GPU اجرا می‌شه و تقریباً هیچ فشاری به CPU نمی‌ده */
+  .bg-anim { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; background: var(--primary); contain: strict; }
+  .bg-blob { position: absolute; border-radius: 50%; filter: blur(50px); opacity: 0.5; will-change: transform; transform: translateZ(0); backface-visibility: hidden; }
+  .bg-blob:nth-child(1) { width: 50vw; height: 50vw; max-width: 480px; max-height: 480px; background: var(--accent); top: -12%; left: -12%; animation: blob1 22s ease-in-out infinite; }
+  .bg-blob:nth-child(2) { width: 45vw; height: 45vw; max-width: 420px; max-height: 420px; background: var(--card); bottom: -14%; right: -10%; animation: blob2 26s ease-in-out infinite; }
+  .bg-blob:nth-child(3) { width: 38vw; height: 38vw; max-width: 360px; max-height: 360px; background: var(--accent-hover); top: 25%; right: 5%; animation: blob3 19s ease-in-out infinite; }
+  @keyframes blob1 { 0%, 100% { transform: translate3d(0, 0, 0); } 50% { transform: translate3d(12vw, 10vh, 0); } }
+  @keyframes blob2 { 0%, 100% { transform: translate3d(0, 0, 0); } 50% { transform: translate3d(-10vw, -8vh, 0); } }
+  @keyframes blob3 { 0%, 100% { transform: translate3d(0, 0, 0); } 50% { transform: translate3d(-8vw, 10vh, 0); } }
+  /* موقع تایپ (فوکوس روی هر اینپوت)، انیمیشن پس‌زمینه موقتاً متوقف می‌شه تا کیبورد و رندر صفحه رقیب هم نشن و لک از بین بره */
+  .bg-anim.is-paused .bg-blob { animation-play-state: paused; }
+  /* فقط داخلِ اپِ اندروید (کلاسِ in-kiosk-app که با اسکریپتِ ابتدای head اضافه می‌شه): بلور رو نصف
+     می‌کنیم (سبک‌ترشدنِ رندر رو WebView) و سرعتِ چرخش رو تقریباً دوبرابر می‌کنیم تا با وجودِ بلورِ
+     کمتر، حرکت هم‌چنان روون و قابل‌دیدن بمونه؛ تو مرورگرِ معمولی هیچ تغییری نمی‌کنه. */
+  html.in-kiosk-app .bg-blob { filter: blur(25px); }
+  html.in-kiosk-app .bg-blob:nth-child(1) { animation-duration: 11s; }
+  html.in-kiosk-app .bg-blob:nth-child(2) { animation-duration: 13s; }
+  html.in-kiosk-app .bg-blob:nth-child(3) { animation-duration: 9.5s; }
+  @media (prefers-reduced-motion: reduce) {
+    .bg-blob { animation: none !important; }
+  }
+  .box { width: 100%; max-width: 380px; position: relative; z-index: 1; }
+
+  @keyframes fadeInUp { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes popIn { 0% { opacity: 0; transform: scale(0.85); } 100% { opacity: 1; transform: scale(1); } }
+  @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+  @keyframes shake { 10%, 90% { transform: translateX(-1px); } 20%, 80% { transform: translateX(2px); } 30%, 50%, 70% { transform: translateX(-4px); } 40%, 60% { transform: translateX(4px); } }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @keyframes pulseDot { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; } }
+
+  .brand { text-align: center; margin-bottom: 24px; animation: fadeInUp 0.6s ease both; }
+  /* به‌جای عکسِ ثابتِ قبلی، همون نشانِ متحرکِ ترکیب‌های «: » و «D» که تو اسپلش‌اسکرینِ اصلیِ اپ هم هست */
+  .app-splash-emoji.brand-emoji {
+    direction: ltr; font-size: 46px; font-weight: 800; letter-spacing: 1px; color: var(--text);
+    font-variant-numeric: tabular-nums;
+    min-height: 60px; width: 80px; margin-inline: auto;
+    display: flex; align-items: center; justify-content: center; margin-bottom: 6px;
+    animation: popIn 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) both, float 4s ease-in-out 0.6s infinite;
+  }
+  .app-splash-emoji.brand-emoji .splash-caret {
+    display: inline-block; width: 3px; height: 36px; background: var(--accent-hover);
+    margin-inline-start: 3px; animation: caretBlink 0.9s step-end infinite;
+  }
+  .brand h1 { font-size: 26px; font-weight: 700; margin: 0 0 4px; letter-spacing: -0.02em; }
+  .brand p { font-size: 13px; color: var(--subtext); margin: 0; }
+  #subtitleWord { color: var(--accent-hover); font-weight: 500; }
+  .subtitle-caret {
+    display: inline-block; width: 1px; height: 12px; background: var(--accent-hover);
+    margin-inline-start: 2px; vertical-align: -1px; animation: caretBlink 0.9s step-end infinite;
+  }
+  @keyframes caretBlink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+  @media (prefers-reduced-motion: reduce) {
+    .subtitle-caret { animation: none; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .brand, .app-splash-emoji, .card, .turnstile-wrap { animation: none !important; }
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 22px;
+    animation: fadeInUp 0.6s ease 0.1s both;
+    transition: box-shadow 0.3s ease;
+  }
+
+  .tabs { display: flex; gap: 4px; background: var(--primary); border-radius: 10px; padding: 4px; margin-bottom: 18px; }
+  .tabs button {
+    flex: 1; padding: 9px; border: none; border-radius: 8px; background: transparent;
+    font-family: inherit; font-size: 14px; color: var(--subtext); cursor: pointer;
+    transition: background 0.25s ease, color 0.25s ease, transform 0.15s ease;
+  }
+  .tabs button.active { background: var(--card); color: var(--text); font-weight: 500; animation: popIn 0.3s ease both; }
+  .tabs button:active { transform: scale(0.95); }
+
+  input {
+    width: 100%; font-family: inherit; font-size: 15px; color: var(--text);
+    background: var(--card); border: 1px solid var(--border); border-radius: 10px;
+    padding: 11px 14px; margin-bottom: 10px;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease;
+  }
+  input::placeholder { color: var(--subtext); }
+  input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.25); transform: translateY(-1px); }
+
+  #loginForm, #registerForm { animation: fadeIn 0.35s ease both; }
+
+  button.primary {
+    width: 100%; padding: 11px; border: none; border-radius: 10px;
+    background: var(--accent); color: #fff; font-family: inherit; font-size: 15px; font-weight: 500;
+    cursor: pointer; transition: background 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
+    position: relative;
+  }
+  button.primary:hover:not(:disabled) { background: var(--accent-hover); box-shadow: 0 6px 18px rgba(139, 92, 246, 0.35); transform: translateY(-1px); }
+  button.primary:active:not(:disabled) { transform: translateY(0) scale(0.98); }
+  button.primary:disabled { opacity: 0.7; cursor: default; }
+  button.primary.loading { color: transparent; }
+  button.primary.loading::after {
+    content: ""; position: absolute; top: 50%; left: 50%; width: 16px; height: 16px;
+    margin: -8px 0 0 -8px; border: 2px solid rgba(255,255,255,0.35); border-top-color: #fff;
+    border-radius: 50%; animation: spin 0.7s linear infinite;
+  }
+
+  .error { color: var(--error); font-size: 13px; margin-top: 8px; min-height: 16px; }
+  .error.shake { animation: shake 0.4s ease; }
+  .hint { color: var(--success); font-size: 13px; margin-top: 8px; min-height: 16px; }
+  .hint:not(:empty) { animation: fadeInUp 0.3s ease both; }
+  .hidden { display: none !important; }
+
+  .turnstile-wrap { display: flex; justify-content: center; margin-bottom: 10px; animation: fadeIn 0.6s ease 0.2s both; }
+
+  .sound-toggle {
+    position: fixed; top: 16px; left: 16px; width: 38px; height: 38px; border-radius: 50%;
+    background: var(--surface); border: 1px solid var(--border); color: var(--subtext);
+    display: flex; align-items: center; justify-content: center; cursor: pointer;
+    z-index: 2; transition: transform 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+    animation: popIn 0.5s ease 0.3s both;
+  }
+  .sound-toggle:hover { transform: scale(1.08) rotate(-6deg); color: var(--accent-hover); border-color: var(--accent); }
+  .sound-toggle:active { transform: scale(0.94); }
+  .sound-toggle svg { width: 17px; height: 17px; transition: transform 0.2s ease; }
+  .sound-toggle .icon-muted { display: none; }
+  .sound-toggle.muted .icon-on { display: none; }
+  .sound-toggle.muted .icon-muted { display: block; }
+  /* --- اسپلش ویدیویی قبل از ورود --- */
+  .splash-overlay {
+    position: fixed; top: 0; right: 0; bottom: 0; left: 0; z-index: 9999;
+    width: 100%; height: 100%;
+    background: #000;
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden;
+    transition: opacity 0.6s ease;
+  }
+  .splash-overlay.fade-out { opacity: 0; pointer-events: none; }
+  .splash-overlay video {
+    max-width: 100%; max-height: 100%;
+    width: 100%; height: 100%;
+    min-width: 0; min-height: 0;
+    object-fit: contain; object-position: center;
+    display: block;
+    /* تا وقتی اولین فریمِ واقعی ویدیو آماده نشده، مخفیه (به‌جای کاورِ خاکستریِ پیش‌فرضی که خودِ
+       المانِ ویدیو قبل از لودشدن نشون می‌ده)؛ پس‌زمینه‌ی مشکیِ خودِ splash-overlay به‌جاش دیده می‌شه. */
+    opacity: 0;
+    transition: opacity 0.2s ease;
+  }
+  .splash-overlay video.video-ready { opacity: 1; }
+  body.splash-active { overflow: hidden; }
+
+  /* --- صفحه‌ی «در ورودی» قبل از اسپلش: با کلیک روی این، هم درِ SVG باز می‌شه هم
+     چون همون لحظه یه user-gesture واقعیه، ویدیوی اسپلش می‌تونه با صدا پلی بشه --- */
+  .door-gate {
+    position: fixed; top: 0; right: 0; bottom: 0; left: 0; z-index: 10000;
+    background: #000;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 26px;
+    cursor: pointer; text-align: center; padding: 20px;
+    transition: none;
+  }
+  .door-gate.hide { opacity: 0; pointer-events: none; }
+  .door-gate-text {
+    color: #fff; font-size: 16px; font-weight: 500; margin: 0;
+    animation: fadeInUp 0.6s ease both;
+    transition: opacity 0.3s ease;
+  }
+  .door-gate.opening .door-gate-text { opacity: 0; }
+  .door-wrap {
+    position: relative; width: min(46vw, 170px);
+  }
+  .door-gate.opening .door-wrap { animation: none; }
+  @keyframes doorFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+  .door-svg {
+    width: 100%; height: auto; overflow: visible; display: block;
+    filter: drop-shadow(0 0 14px rgba(255, 255, 255, 0.25));
+  }
+  #doorLeaf {
+    transition: transform 0.75s cubic-bezier(0.65, 0, 0.35, 1);
+    transform-box: fill-box; transform-origin: left center;
+  }
+  .door-gate.opening #doorLeaf { transform: perspective(420px) rotateY(-100deg); }
+</style>
+</head>
+<body class="splash-active">
+
+<div class="door-gate" id="doorGate" role="button" tabindex="0" aria-label="برای ورود به دهات کلیک کنید">
+  <p class="door-gate-text">برای ورود به دهات کلیک کنید</p>
+  <div class="door-wrap">
+    <svg class="door-svg" viewBox="0 0 200 320" xmlns="http://www.w3.org/2000/svg">
+      <rect x="14" y="20" width="172" height="286" rx="10" fill="none" stroke="#fff" stroke-width="3" opacity="0.5"/>
+      <g id="doorLeaf">
+        <rect x="20" y="26" width="160" height="274" fill="#fff"/>
+        <rect x="34" y="42" width="132" height="102" fill="none" stroke="#000" stroke-width="1.5" opacity="0.15"/>
+        <rect x="34" y="150" width="132" height="138" fill="none" stroke="#000" stroke-width="1.5" opacity="0.15"/>
+        <circle cx="168" cy="163" r="5" fill="#000" opacity="0.55"/>
+      </g>
+    </svg>
+  </div>
+</div>
+
+<div class="splash-overlay" id="splashOverlay">
+  <video id="splashVideo" preload="auto" playsinline webkit-playsinline></video>
+</div>
+<script>
+// این اسکریپت عمداً بلافاصله بعد از خودِ در و اُوِرلی اومده، نه پایین فایل کنار بقیه‌ی اسکریپت‌ها،
+// چون باید همون لحظه که این المان‌ها تو DOM ساخته می‌شن گوش‌سپاری‌شون شروع بشه؛ صفحه‌ی اصلی
+// (فرم لاگین و بقیه‌ی المان‌ها) زیر این لایه‌ها در حال لود شدنه و کاربر چیزی جز در/ویدیو نمی‌بینه.
+(function () {
+  var gate = document.getElementById("doorGate");
+  var overlay = document.getElementById("splashOverlay");
+  var video = document.getElementById("splashVideo");
+  if (!gate || !overlay || !video) return;
+  var done = false;
+
+  // ---------- انتخابِ تصادفیِ یکی از ویدیوهای پوشه‌ی login از گیت‌هاب ----------
+  // به‌جای یه فایلِ ثابت، هر بار یکی از فایل‌های داخلِ پوشه‌ی login (تو ریپوی oldvasl/vasl) تصادفی
+  // انتخاب می‌شه. لیستِ فایل‌ها رو زنده از API گیت‌هاب می‌گیریم (نه هاردکد) تا اگه بعداً ویدیو
+  // اضافه/کم بشه نیازی به تغییرِ کد نباشه؛ خودِ فایل هم از jsDelivr کشیده می‌شه، نه مستقیم از گیت‌هاب.
+  // اگه این مرحله به هر دلیلی شکست بخوره (قطعیِ نت، محدودیتِ نرخِ API و...)، کاربر رو پشتِ صفحه‌ی
+  // سیاه نگه نمی‌داریم؛ مستقیم می‌ریم سراغِ فرمِ لاگین.
+  var videoReadyPromise = fetch("https://api.github.com/repos/oldvasl/vasl/contents/login")
+    .then(function (res) {
+      if (!res.ok) throw new Error("github api error");
+      return res.json();
+    })
+    .then(function (files) {
+      var videos = (files || []).filter(function (f) {
+        return f.type === "file" && /\.(mp4|webm|mov)$/i.test(f.name);
+      });
+      if (!videos.length) throw new Error("no videos found in login folder");
+      var pick = videos[Math.floor(Math.random() * videos.length)];
+      video.src = "https://cdn.jsdelivr.net/gh/oldvasl/vasl@main/login/" + encodeURIComponent(pick.name);
+      video.load();
+      return true;
+    })
+    .catch(function () {
+      return false;
+    });
+
+  function finishSplash() {
+    if (done) return;
+    done = true;
+    overlay.classList.add("fade-out");
+    document.body.classList.remove("splash-active");
+    setTimeout(function () {
+      overlay.remove();
+      // آهنگ لاگین عمداً همینجا و نه زودتر استارت می‌خوره، تا دقیقاً بعد از محو کامل شدن
+      // اسپلش پخش بشه؛ تابع tryAutoplay پایین همین فایل (کنار المان bgMusic) تعریف شده و
+      // چون یه function declaration معمولیه، تا این لحظه (که خیلی بعد از پارس کل صفحه‌ست) در دسترسه.
+      if (typeof tryAutoplay === "function") tryAutoplay();
+    }, 650);
+  }
+  video.addEventListener("ended", finishSplash);
+  // فقط وقتی اولین فریمِ واقعیِ ویدیو آماده شد (نه زودتر) نمایشش بده؛ قبلِ اون، پس‌زمینه‌ی مشکیِ
+  // splash-overlay دیده می‌شه، نه کاورِ خاکستریِ پیش‌فرضِ خودِ ویدیو.
+  video.addEventListener("loadeddata", function () {
+    video.classList.add("video-ready");
+  });
+  video.addEventListener("error", function () {
+    // اگه ویدیو لود نشه (مثلاً مسیرش اشتباهه یا فایل رو ریپو نیست)، خطاش رو رو همون
+    // نوار قرمز debugBanner (که پایین‌تر تو فایل تعریف شده) نشون بده تا رو موبایل هم دیده بشه
+    var banner = document.getElementById("debugBanner");
+    if (banner) {
+      var code = video.error ? video.error.code : "?";
+      banner.style.display = "block";
+      banner.textContent = "خطای بارگذاری ویدیوی اسپلش (کد " + code + ") — مسیر: " + video.currentSrc;
+    }
+    finishSplash();
+  });
+
+  function playSplashVideo() {
+    // اول باید مطمئن بشیم انتخابِ تصادفیِ ویدیو (بالای همین فایل) تموم شده و src ست شده؛
+    // اگه اون مرحله شکست خورده باشه (ready=false)، دیگه صبر نمی‌کنیم و رد می‌شیم سراغِ لاگین.
+    videoReadyPromise.then(function (ready) {
+      if (!ready) {
+        finishSplash();
+        return;
+      }
+      // نکته‌ی کلیدی: این تابع در نهایت از دلِ همون کلیک/تاچِ کاربر روی در صدا زده می‌شه (با یه
+      // فاصله‌ی کوتاه)، پس هنوز تو بازه‌ی user-gesture معتبریم و مرورگر اجازه‌ی پخش صدادار می‌ده.
+      video.muted = false;
+      var p = video.play();
+      if (p && p.catch) {
+        p.catch(function () {
+          // اگه به هر دلیلی بازم بلاک شد، حداقل بی‌صدا پلی بشه تا اسپلش گیر نکنه
+          video.muted = true;
+          video.play().catch(finishSplash);
+        });
+      }
+      // شبکه‌ی ایمنی: اگه ایونت‌ها به هر دلیلی شلیک نشن، حداکثر بعد از طول ویدیو + کمی حاشیه رد شو
+      setTimeout(finishSplash, 12000);
+    });
+  }
+
+  function openDoor() {
+    gate.removeEventListener("click", openDoor);
+    gate.removeEventListener("keydown", onGateKeydown);
+    gate.classList.add("opening");
+
+    // همین‌جا، تو دلِ کلیک واقعی کاربر، آهنگ login.mp3 رو یه بار پلی و بلافاصله پاز می‌کنیم.
+    // این کار مرورگر رو مجاب می‌کنه این المان صوتی رو «تاییدشده با ژست کاربر» علامت بزنه، پس
+    // هر وقت بعداً (حتی بدون ژست جدید) دوباره play() صداش کنیم، بدون بلاک شدن با صدا پخش می‌شه.
+    var bg = document.getElementById("bgMusic");
+    if (bg) {
+      bg.muted = false;
+      bg.play().then(function () { bg.pause(); bg.currentTime = 0; }).catch(function () {});
+    }
+
+    setTimeout(function () {
+      gate.classList.add("hide");
+      setTimeout(function () {
+        gate.remove();
+        // یک ثانیه بعد از محو کامل شدن در، ویدیو پلی می‌شه
+        setTimeout(playSplashVideo, 1000);
+      }, 550);
+    }, 700);
+  }
+  function onGateKeydown(e) {
+    if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openDoor(); }
+  }
+  gate.addEventListener("click", openDoor);
+  gate.addEventListener("keydown", onGateKeydown);
+})();
+</script>
+
+<div class="bg-anim"><div class="bg-blob"></div><div class="bg-blob"></div><div class="bg-blob"></div></div>
+<div id="debugBanner" style="display:none; position:fixed; top:0; left:0; right:0; z-index:99; background:#EF4444; color:#fff; font-family:monospace; font-size:12px; padding:8px 10px; direction:ltr; text-align:left; word-break:break-all; max-height:40vh; overflow:auto;"></div>
+<audio id="bgMusic" src="https://cdn.jsdelivr.net/gh/oldvasl/vasl@main/login.mp3" loop></audio>
+<button class="sound-toggle" id="soundToggle" onclick="toggleSound()" aria-label="قطع/وصل صدا">
+  <svg class="icon-on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18 6a9 9 0 0 1 0 12"/></svg>
+  <svg class="icon-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M17 9l6 6M23 9l-6 6"/></svg>
+</button>
+
+<div class="box">
+  <div class="brand">
+    <div class="app-splash-emoji brand-emoji" id="brandEmoji"><span class="emoji-text"></span><span class="splash-caret"></span></div>
+    <h1>دهات</h1>
+    <p>کاردستی چرت عاقی</p>
+  </div>
+
+  <div class="card">
+    <div class="tabs">
+      <button id="tabLogin" class="active" onclick="showLogin()">ورود</button>
+      <button id="tabRegister" onclick="showRegister()">ثبت‌نام</button>
+    </div>
+
+    <div id="loginForm">
+      <input id="loginUsername" placeholder="نام کاربری" autocomplete="username" maxlength="20" />
+      <input id="loginPassword" type="password" placeholder="رمز عبور" autocomplete="current-password" maxlength="100" />
+      <div class="turnstile-wrap">
+        <div id="turnstileBox"></div>
+      </div>
+      <button class="primary" id="loginBtn" onclick="login()">ورود</button>
+      <div class="error" id="loginError"></div>
+    </div>
+
+    <div id="registerForm" class="hidden">
+      <input id="regUsername" placeholder="نام کاربری (حداقل ۳ کاراکتر)" autocomplete="username" maxlength="20" />
+      <input id="regPassword" type="password" placeholder="رمز عبور (حداقل ۸ کاراکتر، شامل حرف و عدد)" autocomplete="new-password" maxlength="100" />
+      <input id="regReferralCode" placeholder="کد ملی متقاضی" autocomplete="off" maxlength="16" style="text-transform: uppercase;" />
+      <div class="turnstile-wrap">
+        <div id="turnstileBoxReg"></div>
+      </div>
+      <button class="primary" id="registerBtn" onclick="register()">ساخت حساب</button>
+      <div class="error" id="registerError"></div>
+      <div class="hint" id="registerHint"></div>
+    </div>
+  </div>
+</div>
+
+<script src="subtitle-words.html"></script>
+<script>
+const WORKER_URL = "https://dehaat.aghey.workers.dev";
+
+// خطاهای شبکه‌ای (قطعی/invalid response) خیلی وقتا لحظه‌ای و گذرا هستن؛ به‌جای این‌که فوراً
+// خطا به کاربر نشون بدیم، یکی-دو بار خودکار (با یه مکثِ کوتاه) دوباره امتحان می‌کنیم.
+// فقط وقتی fetch خودش قطع/ارور بشه ریترای می‌کنیم؛ جواب‌های معتبر با کدِ خطا (مثلاً رمزِ غلط) ریترای نمی‌شن.
+async function fetchWithRetry(url, options, retries = 2, delayMs = 700) {
+  for (let attempt = 0; ; attempt++) {
+    try {
+      return await fetch(url, options);
+    } catch (e) {
+      if (attempt >= retries) throw e;
+      await new Promise((resolve) => setTimeout(resolve, delayMs));
+    }
+  }
+}
+
+// ================= شبکه: تلاش خودکار مجدد در صورت خطای اتصال =================
+// بعضی از اینترنت‌ها (با یا بدون فیلترشکن) گاهی همون درخواست اولِ TCP/TLS رو با
+// خطای شبکه (مثل "invalid response") قطع می‌کنن، در حالی که یه اتصال تازه معمولاً
+// جواب می‌گیره. این wrapper به‌جای مجبور کردن کاربر به رفرش دستی یا خاموش‌روشن کردن
+// فیلترشکن، خودش به‌صورت خودکار و بی‌صدا با یه اتصال تازه چند بار دیگه تلاش می‌کنه.
+// نکته‌ی مهم: این کار فقط رو خطاهای واقعیِ اتصال (وقتی fetch اصلاً جوابی نگرفته)
+// انجام می‌شه، نه رو جواب‌های معتبر سرور (مثل خطای 401/403/500)؛ یعنی هیچ منطق
+// موجودِ if(!res.ok) توی بقیه‌ی کد دست نمی‌خوره و رفتارش عوض نمی‌شه.
+(function () {
+  const nativeFetch = window.fetch.bind(window);
+  const MAX_RETRIES = 2;
+  const RETRY_DELAY_MS = 700;
+  const PER_ATTEMPT_TIMEOUT_MS = 15000;
+
+  function delay(ms) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+  }
+
+  window.fetch = async function (input, init) {
+    let lastErr;
+    const externalSignal = init && init.signal;
+    for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), PER_ATTEMPT_TIMEOUT_MS);
+      if (externalSignal) {
+        if (externalSignal.aborted) controller.abort();
+        else externalSignal.addEventListener("abort", () => controller.abort(), { once: true });
+      }
+      try {
+        const mergedInit = init ? { ...init, signal: controller.signal } : { signal: controller.signal };
+        const res = await nativeFetch(input, mergedInit);
+        clearTimeout(timeoutId);
+        return res; // هر جوابی از سرور برگرده (حتی خطای 4xx/5xx) یعنی اتصال برقرار شده؛ دیگه retry لازم نیست
+      } catch (err) {
+        clearTimeout(timeoutId);
+        lastErr = err;
+        // اگه خودِ کد صداکننده درخواست رو کنسل کرده بود (نه ما با تایم‌اوت)، دیگه تلاش نکن
+        if (externalSignal && externalSignal.aborted) throw err;
+        if (attempt < MAX_RETRIES) {
+          await delay(RETRY_DELAY_MS * (attempt + 1));
+          continue;
+        }
+      }
+    }
+    throw lastErr;
+  };
+})();
+const TURNSTILE_SITEKEY = "0x4AAAAAADzYo0FCb7d3eKh0";
+
+// ---------- رندر صریح Turnstile ----------
+// چرا صریح؟ توی رندر خودکار (implicit / class="cf-turnstile")، تابع getResponse باید شناسه‌ی
+// داخلیِ ویجت رو بگیره نه آیدیِ دیو container رو؛ اون شناسه‌ی داخلی جایی در دسترس کد ما نبود،
+// برای همین حتی بعد از تیک خوردن و "Success"، getResponse همیشه خالی برمی‌گشت.
+// با رندر صریح، خودمون widgetId واقعی رو از خروجی render() نگه می‌داریم و همون رو به getResponse/reset می‌دیم.
+const turnstileWidgets = { login: null, register: null };
+function onTurnstileReady() {
+  turnstileWidgets.login = turnstile.render("#turnstileBox", { sitekey: TURNSTILE_SITEKEY, theme: "dark" });
+  turnstileWidgets.register = turnstile.render("#turnstileBoxReg", { sitekey: TURNSTILE_SITEKEY, theme: "dark" });
+}
+
+// ---------- نمایش هر خطای جاوااسکریپت روی صفحه (چون رو موبایل به کنسول دسترسی نیست) ----------
+window.addEventListener("error", function (e) {
+  const banner = document.getElementById("debugBanner");
+  banner.style.display = "block";
+  banner.textContent = "خطا: " + (e.message || "") + " — فایل: " + (e.filename || "") + " — خط: " + (e.lineno || "");
+});
+window.addEventListener("unhandledrejection", function (e) {
+  const banner = document.getElementById("debugBanner");
+  banner.style.display = "block";
+  banner.textContent = "خطای Promise: " + (e.reason && e.reason.message ? e.reason.message : String(e.reason));
+});
+
+// ---------- نشانِ متحرکِ ترکیب‌های «:» و «D» (لوگوی صفحه‌ی لاگین): همون افکتِ تایپِ اسپلش‌اسکرینِ اصلیِ اپ ----------
+(function initBrandEmoji() {
+  // کاراکتر دوم همیشه از این لیست انتخاب می‌شه؛ چون "3" چندبار تکرار شده، شانس بیشتری برای اومدن داره
+  const SECOND_CHARS = ["D", "O", ")", "(", "#", "3", "3"];
+  const host = document.querySelector("#brandEmoji .emoji-text");
+  if (!host) return;
+
+  function pickCombo() {
+    const second = SECOND_CHARS[Math.floor(Math.random() * SECOND_CHARS.length)];
+    return ":" + second; // همیشه دقیقاً ۲ کاراکتر؛ اولی همیشه ":" است
+  }
+
+  let combo = pickCombo();
+  let charIndex = 0;
+  let phase = "typing";
+
+  function tick() {
+    if (document.hidden) { setTimeout(tick, 400); return; }
+
+    if (phase === "typing") {
+      charIndex++;
+      host.textContent = combo.slice(0, charIndex);
+      if (charIndex >= combo.length) {
+        phase = "pausing";
+        setTimeout(tick, 1100);
+      } else {
+        setTimeout(tick, 110 + Math.random() * 70);
+      }
+      return;
+    }
+    if (phase === "pausing") {
+      phase = "deleting";
+      setTimeout(tick, 20);
+      return;
+    }
+    charIndex--;
+    host.textContent = combo.slice(0, charIndex);
+    if (charIndex <= 0) {
+      combo = pickCombo();
+      phase = "typing";
+      setTimeout(tick, 250);
+    } else {
+      setTimeout(tick, 45);
+    }
+  }
+  tick();
+})();
+
+// ---------- زیرنویس متحرک: کلمه با افکت تایپ نوشته می‌شه، مکث می‌کنه، با افکت پاک‌شدن حذف می‌شه و کلمه‌ی بعدی از subtitle-words.html میاد ----------
+(function initSubtitleTyping() {
+  const words = (window.SUBTITLE_WORDS && window.SUBTITLE_WORDS.length) ? window.SUBTITLE_WORDS : ["شومبلکی"];
+  const el = document.getElementById("subtitleWord");
+  if (!el) return;
+
+  let wordIndex = 0;
+  let charIndex = 0;
+  let phase = "typing"; // typing -> pausing -> deleting -> (کلمه بعدی) typing
+
+  function tick() {
+    // وقتی تب مخفیه اجرا نشه، فقط بعداً دوباره چک کن (صرفه‌جویی در باتری/CPU)
+    if (document.hidden) {
+      setTimeout(tick, 400);
+      return;
+    }
+
+    const word = words[wordIndex];
+
+    if (phase === "typing") {
+      charIndex++;
+      el.textContent = word.slice(0, charIndex);
+      if (charIndex >= word.length) {
+        phase = "pausing";
+        setTimeout(tick, 1500);
+      } else {
+        setTimeout(tick, 85 + Math.random() * 70);
+      }
+      return;
+    }
+
+    if (phase === "pausing") {
+      phase = "deleting";
+      setTimeout(tick, 20);
+      return;
+    }
+
+    // phase === "deleting"
+    charIndex--;
+    el.textContent = word.slice(0, charIndex);
+    if (charIndex <= 0) {
+      wordIndex = (wordIndex + 1) % words.length;
+      phase = "typing";
+      setTimeout(tick, 350);
+    } else {
+      setTimeout(tick, 35 + Math.random() * 30);
+    }
+  }
+
+  tick();
+})();
+
+if (localStorage.getItem("token")) {
+  window.location.href = "index.html";
+}
+
+// ---------- رفع لک هنگام تایپ: تا وقتی کاربر روی یه اینپوت فوکوسه، انیمیشن پس‌زمینه رو متوقف می‌کنیم
+// چون رندر مداوم بلور‌های پس‌زمینه هم‌زمان با باز شدن کیبورد/کرسر چشمک‌زن می‌تونه باعث لک بشه ----------
+const bgAnimEl = document.querySelector(".bg-anim");
+document.addEventListener("focusin", (e) => {
+  if (e.target.tagName === "INPUT") bgAnimEl.classList.add("is-paused");
+});
+document.addEventListener("focusout", (e) => {
+  if (e.target.tagName === "INPUT") bgAnimEl.classList.remove("is-paused");
+});
+// وقتی تب مرورگر مخفیه هم انیمیشن رو نگه می‌داریم؛ فایده‌ای نداره و فقط باتری/CPU مصرف می‌کنه
+document.addEventListener("visibilitychange", () => {
+  bgAnimEl.classList.toggle("is-paused", document.hidden);
+});
+
+// نمایش خطا همراه با یه لرزش کوتاه، تا کاربر متوجه بشه پیام تغییر کرده
+function setError(el, msg) {
+  el.textContent = msg;
+  el.classList.remove("shake");
+  if (msg) {
+    // برای اینکه انیمیشن دوباره از اول اجرا بشه حتی اگه پشت‌سرهم صدا زده بشه
+    void el.offsetWidth;
+    el.classList.add("shake");
+  }
+}
+
+// هر بار فرم دیده می‌شه، انیمیشن ورودش رو دوباره از اول اجرا می‌کنیم
+function replayFormAnim(el) {
+  el.style.animation = "none";
+  void el.offsetWidth;
+  el.style.animation = "";
+}
+
+function showLogin() {
+  document.getElementById("tabLogin").classList.add("active");
+  document.getElementById("tabRegister").classList.remove("active");
+  document.getElementById("loginForm").classList.remove("hidden");
+  document.getElementById("registerForm").classList.add("hidden");
+  replayFormAnim(document.getElementById("loginForm"));
+}
+function showRegister() {
+  document.getElementById("tabRegister").classList.add("active");
+  document.getElementById("tabLogin").classList.remove("active");
+  document.getElementById("registerForm").classList.remove("hidden");
+  document.getElementById("loginForm").classList.add("hidden");
+  replayFormAnim(document.getElementById("registerForm"));
+}
+
+async function register() {
+  const username = document.getElementById("regUsername").value.trim();
+  const password = document.getElementById("regPassword").value;
+  const referralCode = document.getElementById("regReferralCode").value.trim().toUpperCase();
+  const errEl = document.getElementById("registerError");
+  const hintEl = document.getElementById("registerHint");
+  const btn = document.getElementById("registerBtn");
+  setError(errEl, "");
+  hintEl.textContent = "";
+
+  if (!referralCode) {
+    setError(errEl, "کد ملی متقاضی را وارد کنید");
+    return;
+  }
+
+  if (!/^(?=.*[A-Za-z])(?=.*\d).{8,}$/.test(password)) {
+    setError(errEl, "رمز عبور باید حداقل ۸ کاراکتر باشه و شامل حداقل یه حرف و یه عدد باشه");
+    return;
+  }
+
+  const turnstileToken = (() => {
+    try {
+      return window.turnstile ? turnstile.getResponse(turnstileWidgets.register) : "";
+    } catch (e) {
+      return "";
+    }
+  })();
+  if (window.turnstile && !turnstileToken) {
+    setError(errEl, "لطفاً تیک تایید امنیتی رو بزن");
+    return;
+  }
+
+  btn.disabled = true;
+  btn.classList.add("loading");
+  btn.textContent = "در حال ساخت حساب...";
+  try {
+    const res = await fetchWithRetry(`${WORKER_URL}/api/register`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username, password, turnstileToken, referralCode }),
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      setError(errEl, data.error);
+      if (window.turnstile) turnstile.reset(turnstileWidgets.register);
+      return;
+    }
+    hintEl.textContent = "حساب ساخته شد — حالا وارد شو";
+    setTimeout(() => {
+      showLogin();
+      document.getElementById("loginUsername").value = username;
+    }, 900);
+  } catch (e) {
+    setError(errEl, "اتصال به سرور برقرار نشد. اینترنتت رو چک کن.");
+    if (window.turnstile) turnstile.reset(turnstileWidgets.register);
+  } finally {
+    btn.disabled = false;
+    btn.classList.remove("loading");
+    btn.textContent = "ساخت حساب";
+  }
+}
+
+async function login() {
+  const username = document.getElementById("loginUsername").value.trim();
+  const password = document.getElementById("loginPassword").value;
+  const errEl = document.getElementById("loginError");
+  const btn = document.getElementById("loginBtn");
+  setError(errEl, "");
+
+  const turnstileToken = (() => {
+    try {
+      return window.turnstile ? turnstile.getResponse(turnstileWidgets.login) : "";
+    } catch (e) {
+      return "";
+    }
+  })();
+  if (window.turnstile && !turnstileToken) {
+    setError(errEl, "لطفاً تیک تایید امنیتی رو بزن");
+    return;
+  }
+
+  btn.disabled = true;
+  btn.classList.add("loading");
+  btn.textContent = "در حال ورود...";
+  try {
+    const res = await fetchWithRetry(`${WORKER_URL}/api/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username, password, turnstileToken }),
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      setError(errEl, data.error);
+      if (window.turnstile) turnstile.reset(turnstileWidgets.login);
+      return;
+    }
+    localStorage.setItem("token", data.token);
+    localStorage.setItem("username", data.username);
+    window.location.href = "index.html";
+  } catch (e) {
+    setError(errEl, "اتصال به سرور برقرار نشد. اینترنتت رو چک کن.");
+    if (window.turnstile) turnstile.reset(turnstileWidgets.login);
+  } finally {
+    btn.disabled = false;
+    btn.classList.remove("loading");
+    btn.textContent = "ورود";
+  }
+}
+
+// ---------- صدای پس‌زمینه ----------
+const bgMusic = document.getElementById("bgMusic");
+bgMusic.volume = 0.5;
+
+// چون bgMusic از قبل، تو دلِ کلیکِ کاربر روی درِ ورودی (بالای فایل)، یه بار play()+pause()
+// شده، مرورگر این المان رو «مجاز به پخش صدادار» علامت زده؛ پس دیگه لازم نیست با ترفند
+// mute-then-unmute کار کنیم — این ترفند قبلی گاهی باعث می‌شد آهنگ بعد از چند ثانیه قطع بشه،
+// چون درخواستِ باز کردنِ صدا در وسط پخش، خودِ پخش رو هم بی‌اعتبار می‌کرد.
+function tryAutoplay() {
+  bgMusic.muted = false;
+  bgMusic.play().catch(() => {
+    armGestureFallback();
+  });
+}
+function armGestureFallback() {
+  document.addEventListener("click", startOnUserGesture, { once: true });
+  document.addEventListener("touchstart", startOnUserGesture, { once: true });
+}
+function startOnUserGesture() {
+  if (document.getElementById("soundToggle").classList.contains("muted")) return;
+  bgMusic.muted = false;
+  bgMusic.play().catch(() => {});
+}
+// توجه: tryAutoplay() دیگه اینجا مستقیم صدا زده نمی‌شه — فراخوانیش به تابع finishSplash
+// (بالای فایل، کنار المان اسپلش) منتقل شده تا آهنگ دقیقاً بعد از محو شدن ویدیوی اسپلش شروع بشه.
+
+function toggleSound() {
+  const btn = document.getElementById("soundToggle");
+  if (bgMusic.paused || bgMusic.muted) {
+    bgMusic.muted = false;
+    bgMusic.play().catch(() => {});
+    btn.classList.remove("muted");
+  } else {
+    bgMusic.pause();
+    btn.classList.add("muted");
+  }
+}
+</script>
+</body>
+</html>
