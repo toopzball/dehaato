@@ -17,7 +17,10 @@ export default {
       return new Response("MAIN_WORKER_URL تنظیم نشده", { status: 500 });
     }
 
-    const targetUrl = env.MAIN_WORKER_URL + url.pathname + url.search;
+    // اسلش اضافه‌ی احتمالی انتهای MAIN_WORKER_URL رو حذف می‌کنیم تا اسلش دوتایی تو مسیر
+    // نهایی ایجاد نشه (که باعث می‌شد مسیرهایی مثل /api/login دقیقاً مچ نشن)
+    const baseUrl = env.MAIN_WORKER_URL.replace(/\/+$/, "");
+    const targetUrl = baseUrl + url.pathname + url.search;
 
     const forwardHeaders = new Headers(request.headers);
     forwardHeaders.set("X-Internal-Key", env.INTERNAL_KEY);
@@ -43,4 +46,3 @@ export default {
     });
   },
 };
- 
