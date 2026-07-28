@@ -1,30 +1,38 @@
 export default {
   async fetch(request, env, ctx) {
-    const incomingUrl = new URL(request.url);
+    const url = new URL(request.url);
 
-    // ورکر اصلی از طریق Service Binding صدا زده می‌شه (env.MAIN_WORKER) — نه یه دامنه‌ی عمومی.
-    // یعنی ورکر اصلی اصلاً route/دامنه‌ی عمومی نداره و فقط از همین‌جا در دسترسه.
-    if (!env.MAIN_WORKER) {
-      return new Response("MAIN_WORKER binding تنظیم نشده", { status: 500 });
+    // فقط مسیرهای API (که همه‌شون با /api/ شروع می‌شن) پروکسی می‌شن؛ بقیه‌ی درخواست‌ها
+    // (index.html, login.html, عکس‌ها، مانیفست، سرویس‌ورکر، و...) مستقیم از فایل‌های
+    // استاتیکِ همین پروژه‌ی Pages سرو می‌شن.
+    if (!url.pathname.startsWith("/api/")) {
+      return env.ASSETS.fetch(request);
     }
 
-    // آی‌پی واقعیِ کاربر رو همینجا نگه می‌داریم؛ چون داخل Binding هم Cloudflare هدر
-    // CF-Connecting-IP رو با آی‌پیِ خودِ زیرساخت عوض نمی‌کنه (Service Binding سرور به سرور نیست،
-    // در واقع Cloudflare خودش context درخواست اصلی رو منتقل می‌کنه)، ولی برای اطمینان و لاگ‌گیری
-    // صریح، همچنان این هدر رو ست می‌کنیم.
+    // آدرس ورکر اصلی (حالا خودش یه پروژه‌ی Pages با آدرس رایگان xxx.pages.dev) به‌صورت
+    // Secret تو Environment Variables همین پروژه ذخیره شده — نه تو کد. چون این فراخوانی
+    // سرور-به-سرور و داخل خودِ شبکه‌ی Cloudflareست، فیلترینگ ایران روش اثر نداره؛ پس
+    // ورکر اصلی اصلاً نیازی به دامنه‌ی شخصی/CNAME نداره.
+    if (!env.MAIN_WORKER_URL) {
+      return new Response("MAIN_WORKER_URL تنظیم نشده", { status: 500 });
+    }
+
+    const targetUrl = env.MAIN_WORKER_URL + url.pathname + url.search;
+
     const forwardHeaders = new Headers(request.headers);
     forwardHeaders.set("X-Internal-Key", env.INTERNAL_KEY);
     forwardHeaders.set("X-Real-Client-IP", request.headers.get("CF-Connecting-IP") || "unknown");
+    // هدر Host رو حذف می‌کنیم؛ fetch خودش Host درستِ (مالِ ورکر اصلی) رو ست می‌کنه
+    forwardHeaders.delete("Host");
 
-    const proxiedRequest = new Request(request.url, {
+    const proxiedRequest = new Request(targetUrl, {
       method: request.method,
       headers: forwardHeaders,
       body: ["GET", "HEAD"].includes(request.method) ? undefined : request.body,
       redirect: "manual",
     });
 
-    // فراخوانی مستقیم Worker اصلی از طریق Binding — بدون شبکه، بدون DNS، بدون TLS handshake اضافه
-    const response = await env.MAIN_WORKER.fetch(proxiedRequest);
+    const response = await fetch(proxiedRequest);
 
     // جواب رو عیناً برمی‌گردونیم (بدنه، استاتوس و همه‌ی هدرها دست‌نخورده)؛ همینه که Range/۲۰۶
     // برای سیک‌کردنِ پخش صدا و ویدیو هم بدون هیچ تغییری درست کار می‌کنه
