@@ -137,7 +137,10 @@ try {
   input::placeholder { color: var(--subtext); }
   input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.25); transform: translateY(-1px); }
 
-  #loginForm, #registerForm { animation: fadeIn 0.35s ease both; }
+  #formStage { display: grid; }
+  #formStage > div { grid-area: 1 / 1; min-width: 0; }
+  #loginForm, #registerForm { animation: fadeIn 0.35s ease both; transition: opacity 0.2s ease; }
+  .form-hide { visibility: hidden; pointer-events: none; opacity: 0; }
 
   button.primary {
     width: 100%; padding: 11px; border: none; border-radius: 10px;
@@ -161,61 +164,84 @@ try {
   .hint:not(:empty) { animation: fadeInUp 0.3s ease both; }
   .hidden { display: none !important; }
 
-  /* ---------- ویجت کپچای اثبات‌کار (جایگزین Turnstile؛ کاملاً محلی، بدون تماس با سرور خارجی) ---------- */
+  /* ---------- ویجت کپچای اثبات‌کار (جایگزین Turnstile؛ کاملاً محلی) ---------- */
+  @keyframes captchaPop { 0% { transform: scale(1); } 35% { transform: scale(0.95); } 65% { transform: scale(1.02); } 100% { transform: scale(1); } }
+  @keyframes captchaRingPulse { 0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.45); } 100% { box-shadow: 0 0 0 12px rgba(34, 197, 94, 0); } }
+  @keyframes captchaSweep { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
+
   .captcha-wrap { margin-bottom: 10px; animation: fadeIn 0.6s ease 0.2s both; }
   .captcha-box {
+    position: relative; overflow: hidden;
     display: flex; align-items: center; gap: 12px;
     background: var(--card); border: 1px solid var(--border); border-radius: 10px;
     padding: 12px 14px; cursor: pointer; user-select: none;
-    transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease;
+    transition: border-color 0.25s ease, box-shadow 0.25s ease, transform 0.15s ease;
   }
   .captcha-box:hover { border-color: var(--accent); }
+  .captcha-box:hover .captcha-check { transform: scale(1.06); }
   .captcha-box:active { transform: scale(0.99); }
-  .captcha-box.verified { border-color: var(--success); box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.18); cursor: default; }
+  .captcha-box.solving { animation: captchaPop 0.4s ease; border-color: var(--accent); }
+  .captcha-box.verified { border-color: var(--success); box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.16); cursor: default; }
   .captcha-box.failed { border-color: var(--error); animation: shake 0.4s ease; }
+
+  /* یه نوارِ نوریِ ظریف که موقعِ محاسبه از چپ به راست رد می‌شه، حسِ «در حال کار کردن» رو تقویت می‌کنه */
+  .captcha-box::after {
+    content: ""; position: absolute; inset: 0; pointer-events: none;
+    background: linear-gradient(90deg, transparent, rgba(167, 139, 250, 0.14), transparent);
+    transform: translateX(-100%); opacity: 0;
+  }
+  .captcha-box.solving::after { opacity: 1; animation: captchaSweep 1.1s ease-in-out infinite; }
 
   .captcha-check {
     position: relative; flex: 0 0 24px; width: 24px; height: 24px; border-radius: 7px;
     border: 2px solid var(--border); background: var(--surface);
-    display: flex; align-items: center; justify-content: center;
-    transition: border-color 0.25s ease, background 0.25s ease;
+    transition: border-color 0.3s ease, background 0.3s ease, transform 0.2s ease;
   }
-  .captcha-box.verified .captcha-check { border-color: var(--success); background: var(--success); }
+  .captcha-box.solving .captcha-check { border-color: var(--accent); }
+  .captcha-box.verified .captcha-check { border-color: var(--success); background: var(--success); animation: captchaRingPulse 0.7s ease-out; }
   .captcha-box.failed .captcha-check { border-color: var(--error); }
 
-  /* اسپینرِ درحال‌حلِ چالش: یه حلقه‌ی نیمه‌شفاف که می‌چرخه */
+  /* اسپینر و تیکِ موفقیت هر دو دقیقاً وسطِ باکس، روی هم؛ فقط اُپاسیتی/اسکیل عوض می‌شه (کراس‌فیدِ نرم) */
   .captcha-spinner {
-    width: 14px; height: 14px; border-radius: 50%;
-    border: 2px solid rgba(139, 92, 246, 0.3); border-top-color: var(--accent);
-    animation: spin 0.6s linear infinite;
-    opacity: 0; transform: scale(0.6); transition: opacity 0.2s ease, transform 0.2s ease;
+    position: absolute; top: 50%; left: 50%; margin: -8px 0 0 -8px;
+    width: 16px; height: 16px; border-radius: 50%;
+    border: 2px solid rgba(139, 92, 246, 0.25); border-top-color: var(--accent); border-right-color: var(--accent-hover);
+    animation: spin 0.55s cubic-bezier(0.5, 0.1, 0.5, 0.9) infinite;
+    opacity: 0; transform: scale(0.5) rotate(0deg);
+    transition: opacity 0.2s ease, transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
   }
-  .captcha-box.solving .captcha-spinner { opacity: 1; transform: scale(1); }
+  .captcha-box.solving .captcha-spinner { opacity: 1; transform: scale(1) rotate(0deg); }
 
   /* تیکِ موفقیت: با یه افکتِ رسم‌شدنِ خط (stroke-dashoffset) ظاهر می‌شه، نه یهو */
   .captcha-check svg {
-    width: 14px; height: 14px; opacity: 0; transform: scale(0.5);
-    transition: opacity 0.2s ease, transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+    position: absolute; top: 50%; left: 50%; margin: -7px 0 0 -7px;
+    width: 14px; height: 14px; opacity: 0; transform: scale(0.4) rotate(-20deg);
+    transition: opacity 0.2s ease, transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
   }
   .captcha-check svg path {
     fill: none; stroke: #fff; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round;
     stroke-dasharray: 20; stroke-dashoffset: 20;
-    transition: stroke-dashoffset 0.35s ease 0.05s;
+    transition: stroke-dashoffset 0.4s ease 0.08s;
   }
-  .captcha-box.verified .captcha-check svg { opacity: 1; transform: scale(1); }
+  .captcha-box.verified .captcha-check svg { opacity: 1; transform: scale(1) rotate(0deg); }
   .captcha-box.verified .captcha-check svg path { stroke-dashoffset: 0; }
 
-  .captcha-label { font-size: 14px; color: var(--text); flex: 1; transition: color 0.2s ease; }
+  .captcha-label { font-size: 14px; color: var(--text); flex: 1; transition: color 0.25s ease, opacity 0.18s ease, transform 0.18s ease; }
   .captcha-box.verified .captcha-label { color: var(--success); }
   .captcha-box.failed .captcha-label { color: var(--error); }
-  .captcha-sublabel { font-size: 11px; color: var(--subtext); display: block; margin-top: 1px; }
+  .captcha-label.swapping { opacity: 0; transform: translateY(-3px); }
 
   /* لوگوی کوچیک سمت راست، برای اینکه شبیه یه سرویسِ واقعی به‌نظر بیاد نه فقط یه چک‌باکسِ خام */
   .captcha-badge {
     font-size: 10px; color: var(--subtext); opacity: 0.7; letter-spacing: 0.02em;
     display: flex; align-items: center; gap: 4px; flex-shrink: 0;
+    transition: opacity 0.25s ease;
   }
+  .captcha-box.solving .captcha-badge { opacity: 0.35; }
   .captcha-badge svg { width: 12px; height: 12px; opacity: 0.7; }
+  @media (prefers-reduced-motion: reduce) {
+    .captcha-spinner, .captcha-box.solving, .captcha-box.verified .captcha-check, .captcha-box.solving::after { animation: none !important; }
+  }
   @media (prefers-reduced-motion: reduce) {
     .captcha-spinner { animation: none; }
   }
@@ -452,6 +478,7 @@ try {
       <button id="tabRegister" onclick="showRegister()">ثبت‌نام</button>
     </div>
 
+    <div id="formStage">
     <div id="loginForm">
       <input id="loginUsername" placeholder="نام کاربری" autocomplete="username" maxlength="20" />
       <input id="loginPassword" type="password" placeholder="رمز عبور" autocomplete="current-password" maxlength="100" />
@@ -461,7 +488,7 @@ try {
             <div class="captcha-spinner"></div>
             <svg viewBox="0 0 24 24"><path d="M5 12l5 5L19 7"/></svg>
           </div>
-          <span class="captcha-label" id="captchaLabelLogin">تایید می‌کنم ربات نیستم<span class="captcha-sublabel">بدون اتصال به سرور خارجی</span></span>
+          <span class="captcha-label" id="captchaLabelLogin">تایید می‌کنم ربات نیستم</span>
           <span class="captcha-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>دهات</span>
         </div>
       </div>
@@ -469,7 +496,7 @@ try {
       <div class="error" id="loginError"></div>
     </div>
 
-    <div id="registerForm" class="hidden">
+    <div id="registerForm" class="form-hide">
       <input id="regUsername" placeholder="نام کاربری (حداقل ۳ کاراکتر)" autocomplete="username" maxlength="20" />
       <input id="regPassword" type="password" placeholder="رمز عبور (حداقل ۸ کاراکتر، شامل حرف و عدد)" autocomplete="new-password" maxlength="100" />
       <input id="regReferralCode" placeholder="کد ملی متقاضی" autocomplete="off" maxlength="16" style="text-transform: uppercase;" />
@@ -479,13 +506,14 @@ try {
             <div class="captcha-spinner"></div>
             <svg viewBox="0 0 24 24"><path d="M5 12l5 5L19 7"/></svg>
           </div>
-          <span class="captcha-label" id="captchaLabelRegister">تایید می‌کنم ربات نیستم<span class="captcha-sublabel">بدون اتصال به سرور خارجی</span></span>
+          <span class="captcha-label" id="captchaLabelRegister">تایید می‌کنم ربات نیستم</span>
           <span class="captcha-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>دهات</span>
         </div>
       </div>
       <button class="primary" id="registerBtn" onclick="register()">ساخت حساب</button>
       <div class="error" id="registerError"></div>
       <div class="hint" id="registerHint"></div>
+    </div>
     </div>
   </div>
 </div>
@@ -562,12 +590,18 @@ function createCaptchaController(boxId, labelId) {
   const box = document.getElementById(boxId);
   const label = document.getElementById(labelId);
   const defaultText = "تایید می‌کنم ربات نیستم";
-  const sub = '<span class="captcha-sublabel">بدون اتصال به سرور خارجی</span>';
   let solution = null; // { id, nonce } — بعد از حل موفق پر می‌شه
   let solving = false;
+  let labelSwapTimer = null;
 
+  // تغییرِ متنِ لیبل با یه کراس‌فیدِ نرم (محو -> عوضِ متن -> ظاهر) به‌جای پرش یهویی
   function setLabel(text) {
-    label.innerHTML = text + sub;
+    clearTimeout(labelSwapTimer);
+    label.classList.add("swapping");
+    labelSwapTimer = setTimeout(() => {
+      label.textContent = text;
+      label.classList.remove("swapping");
+    }, 130);
   }
 
   async function bufferToHex(buffer) {
@@ -797,15 +831,15 @@ function replayFormAnim(el) {
 function showLogin() {
   document.getElementById("tabLogin").classList.add("active");
   document.getElementById("tabRegister").classList.remove("active");
-  document.getElementById("loginForm").classList.remove("hidden");
-  document.getElementById("registerForm").classList.add("hidden");
+  document.getElementById("loginForm").classList.remove("form-hide");
+  document.getElementById("registerForm").classList.add("form-hide");
   replayFormAnim(document.getElementById("loginForm"));
 }
 function showRegister() {
   document.getElementById("tabRegister").classList.add("active");
   document.getElementById("tabLogin").classList.remove("active");
-  document.getElementById("registerForm").classList.remove("hidden");
-  document.getElementById("loginForm").classList.add("hidden");
+  document.getElementById("registerForm").classList.remove("form-hide");
+  document.getElementById("loginForm").classList.add("form-hide");
   replayFormAnim(document.getElementById("registerForm"));
 }
 
