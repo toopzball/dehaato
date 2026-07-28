@@ -20,7 +20,6 @@ try {
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
 <noscript><link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;700&display=swap" rel="stylesheet"></noscript>
-<script src="https://challenges.cloudflare.com/turnstile/v0/api.js?onload=onTurnstileReady&render=explicit" async defer></script>
 <style>
   :root {
     --primary: #1A0A31;
@@ -108,7 +107,7 @@ try {
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .brand, .app-splash-emoji, .card, .turnstile-wrap { animation: none !important; }
+    .brand, .app-splash-emoji, .card, .captcha-wrap { animation: none !important; }
   }
 
   .card {
@@ -162,7 +161,64 @@ try {
   .hint:not(:empty) { animation: fadeInUp 0.3s ease both; }
   .hidden { display: none !important; }
 
-  .turnstile-wrap { display: flex; justify-content: center; margin-bottom: 10px; animation: fadeIn 0.6s ease 0.2s both; }
+  /* ---------- ویجت کپچای اثبات‌کار (جایگزین Turnstile؛ کاملاً محلی، بدون تماس با سرور خارجی) ---------- */
+  .captcha-wrap { margin-bottom: 10px; animation: fadeIn 0.6s ease 0.2s both; }
+  .captcha-box {
+    display: flex; align-items: center; gap: 12px;
+    background: var(--card); border: 1px solid var(--border); border-radius: 10px;
+    padding: 12px 14px; cursor: pointer; user-select: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease;
+  }
+  .captcha-box:hover { border-color: var(--accent); }
+  .captcha-box:active { transform: scale(0.99); }
+  .captcha-box.verified { border-color: var(--success); box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.18); cursor: default; }
+  .captcha-box.failed { border-color: var(--error); animation: shake 0.4s ease; }
+
+  .captcha-check {
+    position: relative; flex: 0 0 24px; width: 24px; height: 24px; border-radius: 7px;
+    border: 2px solid var(--border); background: var(--surface);
+    display: flex; align-items: center; justify-content: center;
+    transition: border-color 0.25s ease, background 0.25s ease;
+  }
+  .captcha-box.verified .captcha-check { border-color: var(--success); background: var(--success); }
+  .captcha-box.failed .captcha-check { border-color: var(--error); }
+
+  /* اسپینرِ درحال‌حلِ چالش: یه حلقه‌ی نیمه‌شفاف که می‌چرخه */
+  .captcha-spinner {
+    width: 14px; height: 14px; border-radius: 50%;
+    border: 2px solid rgba(139, 92, 246, 0.3); border-top-color: var(--accent);
+    animation: spin 0.6s linear infinite;
+    opacity: 0; transform: scale(0.6); transition: opacity 0.2s ease, transform 0.2s ease;
+  }
+  .captcha-box.solving .captcha-spinner { opacity: 1; transform: scale(1); }
+
+  /* تیکِ موفقیت: با یه افکتِ رسم‌شدنِ خط (stroke-dashoffset) ظاهر می‌شه، نه یهو */
+  .captcha-check svg {
+    width: 14px; height: 14px; opacity: 0; transform: scale(0.5);
+    transition: opacity 0.2s ease, transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  .captcha-check svg path {
+    fill: none; stroke: #fff; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round;
+    stroke-dasharray: 20; stroke-dashoffset: 20;
+    transition: stroke-dashoffset 0.35s ease 0.05s;
+  }
+  .captcha-box.verified .captcha-check svg { opacity: 1; transform: scale(1); }
+  .captcha-box.verified .captcha-check svg path { stroke-dashoffset: 0; }
+
+  .captcha-label { font-size: 14px; color: var(--text); flex: 1; transition: color 0.2s ease; }
+  .captcha-box.verified .captcha-label { color: var(--success); }
+  .captcha-box.failed .captcha-label { color: var(--error); }
+  .captcha-sublabel { font-size: 11px; color: var(--subtext); display: block; margin-top: 1px; }
+
+  /* لوگوی کوچیک سمت راست، برای اینکه شبیه یه سرویسِ واقعی به‌نظر بیاد نه فقط یه چک‌باکسِ خام */
+  .captcha-badge {
+    font-size: 10px; color: var(--subtext); opacity: 0.7; letter-spacing: 0.02em;
+    display: flex; align-items: center; gap: 4px; flex-shrink: 0;
+  }
+  .captcha-badge svg { width: 12px; height: 12px; opacity: 0.7; }
+  @media (prefers-reduced-motion: reduce) {
+    .captcha-spinner { animation: none; }
+  }
 
   .sound-toggle {
     position: fixed; top: 16px; left: 16px; width: 38px; height: 38px; border-radius: 50%;
@@ -399,8 +455,15 @@ try {
     <div id="loginForm">
       <input id="loginUsername" placeholder="نام کاربری" autocomplete="username" maxlength="20" />
       <input id="loginPassword" type="password" placeholder="رمز عبور" autocomplete="current-password" maxlength="100" />
-      <div class="turnstile-wrap">
-        <div id="turnstileBox"></div>
+      <div class="captcha-wrap">
+        <div class="captcha-box" id="captchaBoxLogin" role="checkbox" aria-checked="false" tabindex="0">
+          <div class="captcha-check">
+            <div class="captcha-spinner"></div>
+            <svg viewBox="0 0 24 24"><path d="M5 12l5 5L19 7"/></svg>
+          </div>
+          <span class="captcha-label" id="captchaLabelLogin">تایید می‌کنم ربات نیستم<span class="captcha-sublabel">بدون اتصال به سرور خارجی</span></span>
+          <span class="captcha-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>دهات</span>
+        </div>
       </div>
       <button class="primary" id="loginBtn" onclick="login()">ورود</button>
       <div class="error" id="loginError"></div>
@@ -410,8 +473,15 @@ try {
       <input id="regUsername" placeholder="نام کاربری (حداقل ۳ کاراکتر)" autocomplete="username" maxlength="20" />
       <input id="regPassword" type="password" placeholder="رمز عبور (حداقل ۸ کاراکتر، شامل حرف و عدد)" autocomplete="new-password" maxlength="100" />
       <input id="regReferralCode" placeholder="کد ملی متقاضی" autocomplete="off" maxlength="16" style="text-transform: uppercase;" />
-      <div class="turnstile-wrap">
-        <div id="turnstileBoxReg"></div>
+      <div class="captcha-wrap">
+        <div class="captcha-box" id="captchaBoxRegister" role="checkbox" aria-checked="false" tabindex="0">
+          <div class="captcha-check">
+            <div class="captcha-spinner"></div>
+            <svg viewBox="0 0 24 24"><path d="M5 12l5 5L19 7"/></svg>
+          </div>
+          <span class="captcha-label" id="captchaLabelRegister">تایید می‌کنم ربات نیستم<span class="captcha-sublabel">بدون اتصال به سرور خارجی</span></span>
+          <span class="captcha-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>دهات</span>
+        </div>
       </div>
       <button class="primary" id="registerBtn" onclick="register()">ساخت حساب</button>
       <div class="error" id="registerError"></div>
@@ -485,18 +555,96 @@ async function fetchWithRetry(url, options, retries = 2, delayMs = 700) {
     throw lastErr;
   };
 })();
-const TURNSTILE_SITEKEY = "0x4AAAAAADzYo0FCb7d3eKh0";
+// ---------- کپچای اثبات‌کار خودمیزبان (جایگزین Turnstile) ----------
+// هیچ درخواستی به هیچ سرور خارجی نمی‌ره؛ چالش از همون WORKER_URL خودمون گرفته می‌شه و
+// حلش هم کاملاً تو مرورگر خودِ کاربر با SubtleCrypto (SHA-256) انجام می‌شه.
+function createCaptchaController(boxId, labelId) {
+  const box = document.getElementById(boxId);
+  const label = document.getElementById(labelId);
+  const defaultText = "تایید می‌کنم ربات نیستم";
+  const sub = '<span class="captcha-sublabel">بدون اتصال به سرور خارجی</span>';
+  let solution = null; // { id, nonce } — بعد از حل موفق پر می‌شه
+  let solving = false;
 
-// ---------- رندر صریح Turnstile ----------
-// چرا صریح؟ توی رندر خودکار (implicit / class="cf-turnstile")، تابع getResponse باید شناسه‌ی
-// داخلیِ ویجت رو بگیره نه آیدیِ دیو container رو؛ اون شناسه‌ی داخلی جایی در دسترس کد ما نبود،
-// برای همین حتی بعد از تیک خوردن و "Success"، getResponse همیشه خالی برمی‌گشت.
-// با رندر صریح، خودمون widgetId واقعی رو از خروجی render() نگه می‌داریم و همون رو به getResponse/reset می‌دیم.
-const turnstileWidgets = { login: null, register: null };
-function onTurnstileReady() {
-  turnstileWidgets.login = turnstile.render("#turnstileBox", { sitekey: TURNSTILE_SITEKEY, theme: "dark" });
-  turnstileWidgets.register = turnstile.render("#turnstileBoxReg", { sitekey: TURNSTILE_SITEKEY, theme: "dark" });
+  function setLabel(text) {
+    label.innerHTML = text + sub;
+  }
+
+  async function bufferToHex(buffer) {
+    return [...new Uint8Array(buffer)].map((b) => b.toString(16).padStart(2, "0")).join("");
+  }
+
+  function leadingZeroBits(hexHash) {
+    let bits = 0;
+    for (const ch of hexHash) {
+      const nibble = parseInt(ch, 16);
+      if (nibble === 0) { bits += 4; continue; }
+      bits += Math.clz32(nibble) - 28;
+      break;
+    }
+    return bits;
+  }
+
+  async function solve() {
+    if (solving || solution) return;
+    solving = true;
+    solution = null;
+    box.classList.remove("failed", "verified");
+    box.classList.add("solving");
+    setLabel("در حال بررسی...");
+    try {
+      const res = await fetchWithRetry(`${WORKER_URL}/api/captcha/challenge`, { method: "POST" });
+      if (!res.ok) throw new Error("challenge request failed");
+      const { id, salt, difficulty } = await res.json();
+
+      // جست‌وجوی nonce: تو یه حلقه‌ی غیربلوکه (هر چند صد تلاش یه setTimeout(0)) تا رابط کاربری فریز نشه
+      let nonce = 0;
+      const enc = new TextEncoder();
+      while (true) {
+        const hashBuf = await crypto.subtle.digest("SHA-256", enc.encode(`${salt}:${nonce}`));
+        const hex = await bufferToHex(hashBuf);
+        if (leadingZeroBits(hex) >= difficulty) break;
+        nonce++;
+        if (nonce % 400 === 0) await new Promise((r) => setTimeout(r, 0));
+      }
+
+      solution = { id, nonce };
+      box.classList.remove("solving");
+      box.classList.add("verified");
+      box.setAttribute("aria-checked", "true");
+      setLabel("تایید شد");
+    } catch (e) {
+      box.classList.remove("solving");
+      box.classList.add("failed");
+      box.setAttribute("aria-checked", "false");
+      setLabel(defaultText);
+      solution = null;
+      setTimeout(() => box.classList.remove("failed"), 500);
+    } finally {
+      solving = false;
+    }
+  }
+
+  function reset() {
+    solution = null;
+    solving = false;
+    box.classList.remove("solving", "verified", "failed");
+    box.setAttribute("aria-checked", "false");
+    setLabel(defaultText);
+  }
+
+  box.addEventListener("click", solve);
+  box.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" || e.key === " ") { e.preventDefault(); solve(); }
+  });
+
+  return { getSolution: () => solution, reset };
 }
+
+const captchaControllers = {
+  login: createCaptchaController("captchaBoxLogin", "captchaLabelLogin"),
+  register: createCaptchaController("captchaBoxRegister", "captchaLabelRegister"),
+};
 
 // ---------- نمایش هر خطای جاوااسکریپت روی صفحه (چون رو موبایل به کنسول دسترسی نیست) ----------
 window.addEventListener("error", function (e) {
@@ -681,14 +829,8 @@ async function register() {
     return;
   }
 
-  const turnstileToken = (() => {
-    try {
-      return window.turnstile ? turnstile.getResponse(turnstileWidgets.register) : "";
-    } catch (e) {
-      return "";
-    }
-  })();
-  if (window.turnstile && !turnstileToken) {
+  const captchaSolution = captchaControllers.register.getSolution();
+  if (!captchaSolution) {
     setError(errEl, "لطفاً تیک تایید امنیتی رو بزن");
     return;
   }
@@ -700,12 +842,12 @@ async function register() {
     const res = await fetchWithRetry(`${WORKER_URL}/api/register`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username, password, turnstileToken, referralCode }),
+      body: JSON.stringify({ username, password, captchaSolution, referralCode }),
     });
     const data = await res.json();
     if (!res.ok) {
       setError(errEl, data.error);
-      if (window.turnstile) turnstile.reset(turnstileWidgets.register);
+      captchaControllers.register.reset();
       return;
     }
     hintEl.textContent = "حساب ساخته شد — حالا وارد شو";
@@ -715,7 +857,7 @@ async function register() {
     }, 900);
   } catch (e) {
     setError(errEl, "اتصال به سرور برقرار نشد. اینترنتت رو چک کن.");
-    if (window.turnstile) turnstile.reset(turnstileWidgets.register);
+    captchaControllers.register.reset();
   } finally {
     btn.disabled = false;
     btn.classList.remove("loading");
@@ -730,14 +872,8 @@ async function login() {
   const btn = document.getElementById("loginBtn");
   setError(errEl, "");
 
-  const turnstileToken = (() => {
-    try {
-      return window.turnstile ? turnstile.getResponse(turnstileWidgets.login) : "";
-    } catch (e) {
-      return "";
-    }
-  })();
-  if (window.turnstile && !turnstileToken) {
+  const captchaSolution = captchaControllers.login.getSolution();
+  if (!captchaSolution) {
     setError(errEl, "لطفاً تیک تایید امنیتی رو بزن");
     return;
   }
@@ -749,12 +885,12 @@ async function login() {
     const res = await fetchWithRetry(`${WORKER_URL}/api/login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username, password, turnstileToken }),
+      body: JSON.stringify({ username, password, captchaSolution }),
     });
     const data = await res.json();
     if (!res.ok) {
       setError(errEl, data.error);
-      if (window.turnstile) turnstile.reset(turnstileWidgets.login);
+      captchaControllers.login.reset();
       return;
     }
     localStorage.setItem("token", data.token);
@@ -762,7 +898,7 @@ async function login() {
     window.location.href = "index.html";
   } catch (e) {
     setError(errEl, "اتصال به سرور برقرار نشد. اینترنتت رو چک کن.");
-    if (window.turnstile) turnstile.reset(turnstileWidgets.login);
+    captchaControllers.login.reset();
   } finally {
     btn.disabled = false;
     btn.classList.remove("loading");
