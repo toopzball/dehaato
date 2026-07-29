@@ -16,11 +16,31 @@ try {
 <title>دهات</title>
 <link rel="icon" type="image/png" href="favicon-dark.png" media="(prefers-color-scheme: light)" />
 <link rel="icon" type="image/png" href="favicon-light.png" media="(prefers-color-scheme: dark)" />
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
-<noscript><link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;700&display=swap" rel="stylesheet"></noscript>
 <style>
+  /* فونت وزیرمتن حالا از همون دامنه‌ی خودمون سرو می‌شه (نه fonts.googleapis.com/fonts.gstatic.com)؛
+     یعنی نه DNS/TLS جداگونه لازمه و نه وابسته به سرعتِ گوگل از داخلِ ایرانه.
+     فایل‌های woff2 باید تو مسیرِ /fonts/ همین پروژه (کنارِ index.html) قرار بگیرن. */
+  @font-face {
+    font-family: 'Vazirmatn';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url('/fonts/Vazirmatn-Regular.woff2') format('woff2');
+  }
+  @font-face {
+    font-family: 'Vazirmatn';
+    font-style: normal;
+    font-weight: 500;
+    font-display: swap;
+    src: url('/fonts/Vazirmatn-Medium.woff2') format('woff2');
+  }
+  @font-face {
+    font-family: 'Vazirmatn';
+    font-style: normal;
+    font-weight: 700;
+    font-display: swap;
+    src: url('/fonts/Vazirmatn-Bold.woff2') format('woff2');
+  }
   :root {
     --primary: #1A0A31;
     --surface: #241243;
@@ -201,30 +221,39 @@ try {
   .captcha-box.verified .captcha-check { border-color: var(--success); background: var(--success); animation: captchaRingPulse 0.7s ease-out; }
   .captcha-box.failed .captcha-check { border-color: var(--error); }
 
-  /* اسپینر و تیکِ موفقیت هر دو دقیقاً وسطِ باکس، روی هم؛ فقط اُپاسیتی/اسکیل عوض می‌شه (کراس‌فیدِ نرم) */
-  .captcha-spinner {
-    position: absolute; top: 50%; left: 50%; margin: -8px 0 0 -8px;
-    width: 16px; height: 16px; border-radius: 50%;
-    border: 2px solid rgba(139, 92, 246, 0.25); border-top-color: var(--accent); border-right-color: var(--accent-hover);
-    animation: spin 0.55s cubic-bezier(0.5, 0.1, 0.5, 0.9) infinite;
-    opacity: 0; transform: scale(0.5) rotate(0deg);
+  /* پازلِ تزئینی: کاملاً بی‌اثره، فقط برای اینکه اگه محاسبه‌ی کپچا یه‌کم طول کشید، کاربر متوجهِ
+     کندی نشه و حس کنه یه «کاری» داره انجام می‌شه — نه واقعاً به منطقِ تاییدِ کپچا وصله. چهارتا
+     تکه‌ی پازل به‌ترتیب سرِجاشون «جفت» می‌شن، یه لحظه می‌مونن، با هم محو می‌شن و دوباره از اول. */
+  .captcha-puzzle {
+    position: absolute; top: 50%; left: 50%; margin: -9px 0 0 -9px;
+    width: 18px; height: 18px;
+    opacity: 0; transform: scale(0.5);
     transition: opacity 0.2s ease, transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
   }
-  .captcha-box.solving .captcha-spinner { opacity: 1; transform: scale(1) rotate(0deg); }
+  .captcha-box.solving .captcha-puzzle { opacity: 1; transform: scale(1); }
+  .captcha-puzzle .pp {
+    fill: var(--accent); opacity: 0; transform-origin: center;
+    animation: captchaPuzzlePop 1.8s ease-in-out infinite;
+  }
+  .captcha-puzzle .pp1 { animation-delay: 0s; }
+  .captcha-puzzle .pp2 { animation-delay: 0.15s; }
+  .captcha-puzzle .pp3 { animation-delay: 0.3s; }
+  .captcha-puzzle .pp4 { animation-delay: 0.45s; }
+  @keyframes captchaPuzzlePop {
+    0% { opacity: 0; transform: scale(0.3); }
+    14% { opacity: 1; transform: scale(1); }
+    65% { opacity: 1; transform: scale(1); }
+    80% { opacity: 0; transform: scale(0.3); }
+    100% { opacity: 0; transform: scale(0.3); }
+  }
 
-  /* تیکِ موفقیت: با یه افکتِ رسم‌شدنِ خط (stroke-dashoffset) ظاهر می‌شه، نه یهو */
-  .captcha-check svg {
-    position: absolute; top: 50%; left: 50%; margin: -7px 0 0 -7px;
-    width: 14px; height: 14px; opacity: 0; transform: scale(0.4) rotate(-20deg);
-    transition: opacity 0.2s ease, transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  /* تیکِ موفقیت (عکسِ خودت، پس‌زمینه‌ی transparent) با یه پاپِ نرم ظاهر می‌شه */
+  .captcha-check-icon {
+    position: absolute; top: 50%; left: 50%; margin: -8px 0 0 -8px;
+    width: 16px; height: 16px; opacity: 0; transform: scale(0.4) rotate(-20deg);
+    transition: opacity 0.2s ease, transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
   }
-  .captcha-check svg path {
-    fill: none; stroke: #fff; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round;
-    stroke-dasharray: 20; stroke-dashoffset: 20;
-    transition: stroke-dashoffset 0.4s ease 0.08s;
-  }
-  .captcha-box.verified .captcha-check svg { opacity: 1; transform: scale(1) rotate(0deg); }
-  .captcha-box.verified .captcha-check svg path { stroke-dashoffset: 0; }
+  .captcha-box.verified .captcha-check-icon { opacity: 1; transform: scale(1) rotate(0deg); }
 
   .captcha-label { font-size: 14px; color: var(--text); flex: 1; transition: color 0.25s ease, opacity 0.18s ease, transform 0.18s ease; }
   .captcha-box.verified .captcha-label { color: var(--success); }
@@ -240,10 +269,7 @@ try {
   .captcha-box.solving .captcha-badge { opacity: 0.35; }
   .captcha-badge svg { width: 12px; height: 12px; opacity: 0.7; }
   @media (prefers-reduced-motion: reduce) {
-    .captcha-spinner, .captcha-box.solving, .captcha-box.verified .captcha-check, .captcha-box.solving::after { animation: none !important; }
-  }
-  @media (prefers-reduced-motion: reduce) {
-    .captcha-spinner { animation: none; }
+    .captcha-puzzle, .captcha-puzzle .pp, .captcha-box.solving, .captcha-box.verified .captcha-check, .captcha-box.solving::after { animation: none !important; }
   }
 
   .sound-toggle {
@@ -346,24 +372,31 @@ try {
   if (!gate || !overlay || !video) return;
   var done = false;
 
-  // ---------- انتخابِ تصادفیِ یکی از ویدیوهای پوشه‌ی login از گیت‌هاب ----------
-  // به‌جای یه فایلِ ثابت، هر بار یکی از فایل‌های داخلِ پوشه‌ی login (تو ریپوی oldvasl/vasl) تصادفی
-  // انتخاب می‌شه. لیستِ فایل‌ها رو زنده از API گیت‌هاب می‌گیریم (نه هاردکد) تا اگه بعداً ویدیو
-  // اضافه/کم بشه نیازی به تغییرِ کد نباشه؛ خودِ فایل هم از jsDelivr کشیده می‌شه، نه مستقیم از گیت‌هاب.
-  // اگه این مرحله به هر دلیلی شکست بخوره (قطعیِ نت، محدودیتِ نرخِ API و...)، کاربر رو پشتِ صفحه‌ی
-  // سیاه نگه نمی‌داریم؛ مستقیم می‌ریم سراغِ فرمِ لاگین.
-  var videoReadyPromise = fetch("https://api.github.com/repos/oldvasl/vasl/contents/login")
+  // ---------- انتخابِ تصادفیِ یکی از ویدیوهای mp4 و یکی از آهنگ‌های mp3 پوشه‌ی login ----------
+  // به‌جای فایل‌های ثابت، هر بار یه ویدیو و یه آهنگ رو به‌صورت تصادفی انتخاب می‌کنیم. برخلافِ قبل،
+  // مرورگر اینجا با هیچ دامنه‌ی خارجی‌ای (نه api.github.com نه jsDelivr/raw.githubusercontent.com)
+  // حرف نمی‌زنه؛ فقط با دامنه‌ی خودمون (/api/splash-media/...). خودِ ورکر (که سرور-به-سرور و از
+  // داخلِ شبکه‌ی کلادفلر، نه از ایران، به گیت‌هاب وصل می‌شه) لیست و فایل‌ها رو می‌گیره و کش می‌کنه.
+  // اگه این مرحله به هر دلیلی شکست بخوره (قطعیِ نت و...)، کاربر رو پشتِ صفحه‌ی سیاه نگه نمی‌داریم؛
+  // مستقیم می‌ریم سراغِ فرمِ لاگین (بدون آهنگ).
+  var mediaReadyPromise = fetch("/api/splash-media/list")
     .then(function (res) {
-      if (!res.ok) throw new Error("github api error");
+      if (!res.ok) throw new Error("splash media list error");
       return res.json();
     })
-    .then(function (files) {
-      var videos = (files || []).filter(function (f) {
-        return f.type === "file" && /\.(mp4|webm|mov)$/i.test(f.name);
-      });
-      if (!videos.length) throw new Error("no videos found in login folder");
-      var pick = videos[Math.floor(Math.random() * videos.length)];
-      video.src = "https://cdn.jsdelivr.net/gh/oldvasl/vasl@main/login/" + encodeURIComponent(pick.name);
+    .then(function (data) {
+      var videos = data && Array.isArray(data.videos) ? data.videos : [];
+      var audios = data && Array.isArray(data.audios) ? data.audios : [];
+
+      if (audios.length) {
+        var audioPick = audios[Math.floor(Math.random() * audios.length)];
+        var bg = document.getElementById("bgMusic");
+        if (bg) bg.src = "/api/splash-media/file/" + encodeURIComponent(audioPick);
+      }
+
+      if (!videos.length) throw new Error("no mp4 files found in login folder");
+      var videoPick = videos[Math.floor(Math.random() * videos.length)];
+      video.src = "/api/splash-media/file/" + encodeURIComponent(videoPick);
       video.load();
       return true;
     })
@@ -403,9 +436,9 @@ try {
   });
 
   function playSplashVideo() {
-    // اول باید مطمئن بشیم انتخابِ تصادفیِ ویدیو (بالای همین فایل) تموم شده و src ست شده؛
+    // اول باید مطمئن بشیم انتخابِ تصادفیِ ویدیو/آهنگ (بالای همین فایل) تموم شده و src ست شده؛
     // اگه اون مرحله شکست خورده باشه (ready=false)، دیگه صبر نمی‌کنیم و رد می‌شیم سراغِ لاگین.
-    videoReadyPromise.then(function (ready) {
+    mediaReadyPromise.then(function (ready) {
       if (!ready) {
         finishSplash();
         return;
@@ -431,11 +464,13 @@ try {
     gate.removeEventListener("keydown", onGateKeydown);
     gate.classList.add("opening");
 
-    // همین‌جا، تو دلِ کلیک واقعی کاربر، آهنگ login.mp3 رو یه بار پلی و بلافاصله پاز می‌کنیم.
-    // این کار مرورگر رو مجاب می‌کنه این المان صوتی رو «تاییدشده با ژست کاربر» علامت بزنه، پس
-    // هر وقت بعداً (حتی بدون ژست جدید) دوباره play() صداش کنیم، بدون بلاک شدن با صدا پخش می‌شه.
+    // همین‌جا، تو دلِ کلیک واقعی کاربر، آهنگِ پس‌زمینه رو (اگه تا این لحظه src گرفته باشه) یه بار
+    // پلی و بلافاصله پاز می‌کنیم. این کار مرورگر رو مجاب می‌کنه این المان صوتی رو «تاییدشده با
+    // ژست کاربر» علامت بزنه، پس هر وقت بعداً (حتی بدون ژست جدید) دوباره play() صداش کنیم، بدون
+    // بلاک شدن با صدا پخش می‌شه. اگه هنوز src ست نشده باشه (fetch کند بوده)، خودِ tryAutoplay
+    // بعداً با ژستِ بعدیِ کاربر (click/touchstart) دوباره تلاش می‌کنه، پس مشکلی پیش نمی‌آد.
     var bg = document.getElementById("bgMusic");
-    if (bg) {
+    if (bg && bg.src) {
       bg.muted = false;
       bg.play().then(function () { bg.pause(); bg.currentTime = 0; }).catch(function () {});
     }
@@ -459,7 +494,7 @@ try {
 
 <div class="bg-anim"><div class="bg-blob"></div><div class="bg-blob"></div><div class="bg-blob"></div></div>
 <div id="debugBanner" style="display:none; position:fixed; top:0; left:0; right:0; z-index:99; background:#EF4444; color:#fff; font-family:monospace; font-size:12px; padding:8px 10px; direction:ltr; text-align:left; word-break:break-all; max-height:40vh; overflow:auto;"></div>
-<audio id="bgMusic" src="https://cdn.jsdelivr.net/gh/oldvasl/vasl@main/login.mp3" loop></audio>
+<audio id="bgMusic" loop></audio>
 <button class="sound-toggle" id="soundToggle" onclick="toggleSound()" aria-label="قطع/وصل صدا">
   <svg class="icon-on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18 6a9 9 0 0 1 0 12"/></svg>
   <svg class="icon-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M17 9l6 6M23 9l-6 6"/></svg>
@@ -485,8 +520,8 @@ try {
       <div class="captcha-wrap">
         <div class="captcha-box" id="captchaBoxLogin" role="checkbox" aria-checked="false" tabindex="0">
           <div class="captcha-check">
-            <div class="captcha-spinner"></div>
-            <svg viewBox="0 0 24 24"><path d="M5 12l5 5L19 7"/></svg>
+            <svg class="captcha-puzzle" viewBox="0 0 18 18"><rect class="pp pp1" x="1" y="1" width="7" height="7" rx="1.6"/><rect class="pp pp2" x="10" y="1" width="7" height="7" rx="1.6"/><rect class="pp pp3" x="1" y="10" width="7" height="7" rx="1.6"/><rect class="pp pp4" x="10" y="10" width="7" height="7" rx="1.6"/></svg>
+            <img class="captcha-check-icon" src="data:image/png;base64,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" alt="" />
           </div>
           <span class="captcha-label" id="captchaLabelLogin">تایید می‌کنم ربات نیستم</span>
           <span class="captcha-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>دهات</span>
@@ -503,8 +538,8 @@ try {
       <div class="captcha-wrap">
         <div class="captcha-box" id="captchaBoxRegister" role="checkbox" aria-checked="false" tabindex="0">
           <div class="captcha-check">
-            <div class="captcha-spinner"></div>
-            <svg viewBox="0 0 24 24"><path d="M5 12l5 5L19 7"/></svg>
+            <svg class="captcha-puzzle" viewBox="0 0 18 18"><rect class="pp pp1" x="1" y="1" width="7" height="7" rx="1.6"/><rect class="pp pp2" x="10" y="1" width="7" height="7" rx="1.6"/><rect class="pp pp3" x="1" y="10" width="7" height="7" rx="1.6"/><rect class="pp pp4" x="10" y="10" width="7" height="7" rx="1.6"/></svg>
+            <img class="captcha-check-icon" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGAAAABgCAQAAABIkb+zAAAIlUlEQVR42u2ae2wU1xXGf3dm7PXC2mCvbbCNeYWHVR4pCYUgoFCgQUKIhqYOJUWtiNI8KlWikSKaphVq0qolpUpFRCJUWjVEpUikNA0JbRoCMdAUSJVCnIRnAIPB2Aa/1+t9zD39w+v1er27XhNHstv5RrLWM/eee75zzj3nztwLDhw4cODAgQMHDhw4cODAgQMHDv7noFADI8bodQ2Q6IiSsVIj/20yzM4hjNQjmSm5KwxAElxEn6q4Kz2Vu1QFiRmhE4IgbVZ4tl0cbiYIGKmEJb4ngIqIzKOUUeTixkJopZFW6qjFl0Si9Ot+JnmMIpdcvHjIIMgtblLPJQp5kEKO8nduJu+vkgzkIZ8ruFjIImYxnlF4sDAQgvhopYbrnOcsV6ihmQ7aCQImNnYaHrAYQR5jGM8kxlNIMV48DIs8D9NGPec4wL+YxjpC/JbXCKfnAYVgsJy5HCGL9SxgVNStqlcPHy200U4bLfiALBr5C28Q6jWOl1VMwcRGyKaIEnLJYURUaRB0NLy6iFTyJ/7NPazkHJs5k9SLPVDKc+zmG2zkelzch/HTToBwwlnRddWxNo6mAiZzFMHGxu7RWqPj+rfTRGtMq8Pcz928woHMMpUgYlSc9e9hE9W8ykoeYhgQopYznOcmLTTThiaDTPKYxBTGUUAWZq8ptoUnE9hqCc8zM+6eoOmgjVqquUEDTTRRj58MChnDROYxHmjmRXayLvufvr/pXnK7CSgl0xZ9tJl9vM0zLAcucYgjnOI6TQTihs4ilzyKKWIMYyihiHxcmIQ4xs852YuAQpjDD5iLB0WAJm5wjSouU8MtbtFKG4G4+ZNDGV9jFdOB3WykjkCqEFIG0+/j+4xiL0IN25lLRpolJQMvZcxjCbMYniLfufkCy1jKnRTh6qPudM24abxAPcJv8NBHCHXa6Umeo4LNHCQQUVwiFSOnByHBwIVBByHChAlGvZQ6kWYzCTNikDA6xupBQoTx0xKR1JXOs1jCoywrfKH2aWXHS7fiBshEs4MtnI0KEMBAGMuD5KJ7CHBj0UGQIMJVdtEWHTQ5hrOA/EgbGwNBsLAQBJMQPt6iske57GB/zrGWR0wvVu8k3TswLCAcERwlplBkj2w2oz0UoDwiytdZUU0CeCnlKO1JPKAQ8pjPNT7BQGMji1jMT2PbGJgF5vfan9WCdHtSodBARoL0nCSyVYzyKClxV8/kDjLwd7rZDGUE7I6QnyA2fhoIAlDONrayhY4EFBTCCH5GORvYDbgZQyk5ZJBFFi4yMDEst+0WN5qLVBgf6p56SLpLidggUIiBns2GggXD85qtRpswGo0mjG2Gs+0QvnaqOM9h3sHLfkpYwXsY6DipBprF/JlXeAqL+1jOBMZ6hheatabPwsTs0mQs42kNnr/ctiNve2OLxCqeVhmLp5LJt3M+/o7sl7OyQZQgSpCR8mUZIR7ZLM+LW9Rrxg95gonAjxEeS2gWAyjnJgsBLyvN1WqrFfiJHJeZghiRojZbT7ZX29fsGtkpCwLsoixpjKSpvpunZze+LG22aNFPaLShDY2+S7+pv6gN+w07FF6mOeEpi6xr7+Um65ISWMFpZqAwIXsKx+fJdfu0nqDRhlYarWSrbJC7pFpEi31BNsrYCuaqz6D+yJxfPxKqErFFwmLL41FbDZOpMkxM2Sla3tTFwu/GZaGAZZxgRsLlrwJK2MtiwFhk8ewoed0WOSUTuj0g46RAviK1IiIiWsIvSem7LNyU8o3ATPok21g7OXe6K1iSqVwiZHKed7BRQIhbhBjHY4xhsi7muPfq2+oGcDdN/DXJelTRQi5e/qP05YKpP9pSshrwUsHZaJNm2rmX+TRQx2n1R+Pw4Qu/90+tuEFDcgpW8upqfPDR9spZ1pY7l5QqF7lUYxGOVjWbQqpoQJljebTo1bmnPhTUaU4QSDLZBNhLUbnaY81ZuHRGu9qqwoRoiskZBsJhHsJHkLrw1QM8xUkKsVPVFtVXJMl4HuZLiYh6yAEMMijUNZVXXuRCmuFZXPhAwaQruh2dTC/B5sywff4a6TPzqNTao5RoNdvtN6Ce+uRtXbTj77MOdz43sbpeT8rZE9eknHIA1tiRUtaHTJXGdE7DfXIbOYK+NZP0JX32VnIb+g+UPAcOHDhwMADJfmiqbw4JCm6MZN9cjSFg/XweZ3QyT1iDXn2ThxFqh+biQgEr2U3x0JzICijidb6ZKtQH+xxYTxv7+v9BZbDYfwbvsjR1+AxmD1h8l0tUDM0yZgBz+YAlfRnZGFQh0/1bY7KGKt4fKunTAFbxQAyZSZxkfd8mNgaF7Q00ZWyilO69oFV0UDEUck2nCadzkF3kRglkc4hfDe7ypaL7YC7WcIp/MCmisAIWcZKvDk4CXUc7OpHJYl6mgb3cEVXXAJ7hSMQffeba21FBbjO3ELP3lcVo5nM/8/DxS3bQEJGr0HiYyREa08lAt0NAMNKgIDF/Y+94Gc1opjCHBRRwmV38gUpid8SEiRSxDRLs9AwIga8znW3cSjtBZjKCXEZTxDimMIHRFDCcao5ykPf4NIFXZ2BzJt1y3d/gMfgWM2ikEQjii7ORCzcmJq7IUY6R5DOSQnJwYWFgc4vT7OEEZ6img9jN3E5oYCaV1KRXwqx+Bg8I51jBL8jATPFCqtHY+AnQThvNXOQaV7nMp1RRH9nVpMdmbreJspnAIcLpBFD/Q0ghvMVa9lBJPjlkYvSgIYTwofHjw0cLPlpoobXXaYvOEwCJFRyJi4vpr/j6j/c5hp+d/aaueh4qS2qgEQS4lO4ayOh3BlL4eIl6PEkO/6kex/i6j/JJzMmg1EFaRB1Vn58HBKjosUpRfaTP/kr3ci3pTtsAfZXouXsy0MvdfOr689Zzu3b63JYa0z6Wxk8YwjAG/ZeGdPKVAwcOHDhw4MCBg/8H/BcibmBH1EIMlwAAAABJRU5ErkJggg==" alt="" />
           </div>
           <span class="captcha-label" id="captchaLabelRegister">تایید می‌کنم ربات نیستم</span>
           <span class="captcha-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>دهات</span>
