@@ -40,13 +40,38 @@
 <link rel="apple-touch-icon" href="apple-touch-icon.png" />
 <link rel="icon" type="image/png" href="favicon-dark.png" media="(prefers-color-scheme: light)" />
 <link rel="icon" type="image/png" href="favicon-light.png" media="(prefers-color-scheme: dark)" />
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<!-- استایل‌شیتِ فونتِ گوگل رنر-بلاکینگ نیست: با media="print" لود می‌شه (اولویتِ پایین، جلوی رندر رو نمی‌گیره)
-     و همین که لود شد، با onload به media="all" برمی‌گرده. <noscript> هم برای حالتی که جاوااسکریپت خاموشه. -->
-<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;700;800&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
-<noscript><link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;700;800&display=swap" rel="stylesheet"></noscript>
 <style>
+  /* فونت وزیرمتن حالا از همون دامنه‌ی خودمون سرو می‌شه (نه fonts.googleapis.com/fonts.gstatic.com)؛
+     یعنی نه DNS/TLS جداگونه لازمه و نه وابسته به سرعتِ گوگل از داخلِ ایرانه.
+     فایل‌های woff2 باید تو مسیرِ /fonts/ همین پروژه (کنارِ index.html) قرار بگیرن. */
+  @font-face {
+    font-family: 'Vazirmatn';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url('/fonts/Vazirmatn-Regular.woff2') format('woff2');
+  }
+  @font-face {
+    font-family: 'Vazirmatn';
+    font-style: normal;
+    font-weight: 500;
+    font-display: swap;
+    src: url('/fonts/Vazirmatn-Medium.woff2') format('woff2');
+  }
+  @font-face {
+    font-family: 'Vazirmatn';
+    font-style: normal;
+    font-weight: 700;
+    font-display: swap;
+    src: url('/fonts/Vazirmatn-Bold.woff2') format('woff2');
+  }
+  @font-face {
+    font-family: 'Vazirmatn';
+    font-style: normal;
+    font-weight: 800;
+    font-display: swap;
+    src: url('/fonts/Vazirmatn-ExtraBold.woff2') format('woff2');
+  }
   :root, :root[data-theme="purple-dark"] {
     --safe-top: env(safe-area-inset-top, 0px);
     --safe-bottom: env(safe-area-inset-bottom, 0px);
@@ -1111,6 +1136,7 @@
   }
   .comment-emoji-btn svg, .comment-send-btn svg { width: 19px; height: 19px; }
   .comment-send-btn:hover, .comment-emoji-btn:hover { color: var(--accent); }
+  .comment-send-btn.sending, .comment-send-btn:disabled { opacity: 0.45; cursor: not-allowed; }
   .comment-input-bar input {
     flex: 1; min-width: 0; font-family: inherit; font-size: 13.5px; color: var(--text);
     background: transparent; border: none; padding: 4px 0;
@@ -7082,7 +7108,12 @@ async function pollChatMessages(conversationId) {
     if (pinnedChanged) renderChatPinnedBar();
     updateChatConvSubtitle();
     if (data.messages && data.messages.length) {
-      chatState.messages.push(...data.messages);
+      // اگه بینِ فرستادنِ یه پیام (submitChatMessage) و رسیدنِ جوابش، همین پولینگ زودتر برسه، ممکنه
+      // همون پیام رو (با idِ واقعیِ سرور) اینجا هم ببینه؛ برای اینکه دوباره اضافه نشه و تکراری دیده
+      // نشه، فقط پیام‌هایی که واقعاً هنوز تو لیست نیستن رو push می‌کنیم.
+      const existingIds = new Set(chatState.messages.map((m) => m.id));
+      const freshMessages = data.messages.filter((m) => !existingIds.has(m.id));
+      if (freshMessages.length) chatState.messages.push(...freshMessages);
       chatState.newestLoadedAt = data.messages[data.messages.length - 1].createdAt;
       renderChatMessages();
       markChatRead(conversationId);
@@ -7328,8 +7359,17 @@ async function submitChatMessage(payload, localPreviewUrl) {
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || "ارسال پیام ناموفق بود");
     const idx = chatState.messages.findIndex((x) => x.id === tempId);
-    if (idx !== -1) chatState.messages[idx] = data.message;
-    else chatState.messages.push(data.message);
+    // اگه بینِ ارسالِ این پیام و رسیدنِ همین جواب، پولینگ زودتر همین پیامِ تاییدشده رو (با idِ
+    // واقعیِ سرور) به لیست اضافه کرده باشه، دیگه نباید دوباره اضافه‌اش کنیم؛ فقط نسخه‌ی موقتی
+    // (pending) رو حذف می‌کنیم تا یه پیامِ تکراری تو صفحه دیده نشه.
+    const alreadyArrivedIdx = chatState.messages.findIndex((x) => x.id === data.message.id);
+    if (alreadyArrivedIdx !== -1) {
+      if (idx !== -1) chatState.messages.splice(idx, 1);
+    } else if (idx !== -1) {
+      chatState.messages[idx] = data.message;
+    } else {
+      chatState.messages.push(data.message);
+    }
     chatState.newestLoadedAt = data.message.createdAt;
     renderChatMessages();
   } catch (e) {
@@ -13296,7 +13336,7 @@ function renderCommentItem(c, isReply, replyToUsername, postId, safeId, repliesC
         <div class="comment-reply-form" id="replyForm-${c.id}">
           <input type="text" id="replyInput-${c.id}" placeholder="پاسخ به ${escapeHtml(c.username)}..." onkeydown="if(event.key==='Enter') submitComment('${postId}','${safeId}','${c.id}')" />
           <button class="reply-emoji-btn" onclick="commentEmojiClicked('${postId}','${safeId}','${c.id}')" title="ایموجی" aria-label="ایموجی">${ICON_SMILE}</button>
-          <button onclick="submitComment('${postId}','${safeId}','${c.id}')">${ICON_SEND}</button>
+          <button class="comment-send-btn" onclick="submitComment('${postId}','${safeId}','${c.id}')">${ICON_SEND}</button>
         </div>
       </div>
     </div>`;
@@ -13487,10 +13527,24 @@ async function submitComment(postId, safeId, parentId) {
   const input = document.getElementById(inputId);
   const errEl = document.getElementById(`commentError-${safeId}`);
   if (!input) return;
+  // دکمه‌ی ارسال همیشه تو همون کادرِ اطرافِ اینپوت (comment-input-bar برای کامنتِ اصلی،
+  // comment-reply-form برای ریپلای) قرار داره؛ با closest+querySelector پیدا می‌شه تا مستقل
+  // از ترتیبِ سیبلینگ‌ها (دکمه‌ی ایموجی قبل یا بعدِ اینپوت) درست کار کنه.
+  const container = input.closest(".comment-input-bar, .comment-reply-form");
+  const sendBtn = container ? container.querySelector(".comment-send-btn") : null;
+
+  // اگه درخواستِ قبلی هنوز در حالِ ارساله (دکمه از قبل قفله)، کلیکِ دوباره رو کلاً نادیده بگیر؛
+  // این دقیقاً همون سناریوییه که باعثِ دوبار ثبت‌شدنِ یه کامنت می‌شد.
+  if (sendBtn && sendBtn.disabled) return;
+
   const text = input.value.trim();
   if (errEl) errEl.textContent = "";
   if (!text) return;
   input.disabled = true;
+  if (sendBtn) {
+    sendBtn.disabled = true;
+    sendBtn.classList.add("sending");
+  }
   try {
     const res = await fetchWithRetry(`${WORKER_URL}/api/comment`, {
       method: "POST",
@@ -13508,11 +13562,18 @@ async function submitComment(postId, safeId, parentId) {
       const replyForm = document.getElementById(`replyForm-${parentId}`);
       if (replyForm) replyForm.classList.remove("open");
     }
-    loadComments(postId, safeId);
+    // دکمه عمداً همچنان قفل می‌مونه تا کامنتِ تازه واقعاً رندر بشه (نه فقط تا جوابِ سرور برسه)؛
+    // چون خودِ loadComments یه fetch دیگه‌ست، اگه همینجا زودتر باز بشه بازم یه لحظه‌ی کوتاهِ
+    // قابل‌کلیک‌شدنِ دوباره پیش میاد.
+    await loadComments(postId, safeId);
   } catch (e) {
     if (errEl) errEl.textContent = "اتصال به سرور برقرار نشد"; else alert("اتصال به سرور برقرار نشد");
   } finally {
     input.disabled = false;
+    if (sendBtn) {
+      sendBtn.disabled = false;
+      sendBtn.classList.remove("sending");
+    }
   }
 }
 
