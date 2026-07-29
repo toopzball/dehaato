@@ -184,73 +184,121 @@ try {
   .hint:not(:empty) { animation: fadeInUp 0.3s ease both; }
   .hidden { display: none !important; }
 
-  /* ---------- پازلِ واقعیِ کپچا: نوشابه‌ی مشکی رو باید درست تو جای خالیش رو قفسه بذاری ----------
-     این پازل واقعاً باید درست حل بشه (ربطی به بات‌بودن/نبودن نداره، صرفاً یه تستِ واقعیه که
-     خودِ کاربر باید انجامش بده). تشخیصِ واقعیِ بات/غیربات به‌صورت نامرئی و مستقل تو پس‌زمینه
-     (همون اثبات‌کارِ SHA-256 قبلی) اجرا می‌شه؛ نتیجه‌ی نهایی فقط وقتی به فرم داده می‌شه که
-     هم پازل درست چیده شده باشه، هم اون محاسبه‌ی پس‌زمینه تموم شده باشه. */
+  /* ---------- کلیک روی تیکِ تایید یه پاپ‌آپِ ۳مرحله‌ای باز می‌کنه: چیدنِ پازل، چرخوندنِ نوشابه،
+     و یه سوالِ متنی. تشخیصِ واقعیِ بات/غیربات کاملاً جدا و نامرئی، از همون لحظه‌ی لودِ صفحه تو
+     پس‌زمینه اجرا می‌شه (همون اثبات‌کارِ SHA-256 قبلی)؛ این ۳ تست فقط یه چالشِ واقعیِ سمتِ کاربرن. */
   @keyframes captchaRingPulse { 0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.45); } 100% { box-shadow: 0 0 0 12px rgba(34, 197, 94, 0); } }
   @keyframes puzzlePieceShake { 0%, 100% { transform: translateX(0); } 20% { transform: translateX(-6px); } 40% { transform: translateX(5px); } 60% { transform: translateX(-4px); } 80% { transform: translateX(3px); } }
   @keyframes puzzleSettle { 0% { transform: scale(1.15) rotate(-4deg); } 55% { transform: scale(0.94) rotate(2deg); } 100% { transform: scale(1) rotate(0deg); } }
-  @keyframes puzzlePendingDot { 0%, 100% { opacity: 0.25; } 50% { opacity: 1; } }
+  @keyframes rotateSuccessPulse { 0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4); } 100% { box-shadow: 0 0 0 10px rgba(34, 197, 94, 0); } }
 
   .captcha-wrap { margin-bottom: 10px; animation: fadeIn 0.6s ease 0.2s both; }
-  .puzzle-card {
-    background: var(--card); border: 1px solid var(--border); border-radius: 10px;
-    padding: 10px 10px 8px; transition: border-color 0.3s ease, box-shadow 0.3s ease;
-  }
-  .puzzle-card.solved { border-color: var(--success); box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.16); animation: captchaRingPulse 0.7s ease-out; }
 
+  /* ---------- تیکِ تایید تو خودِ فرم (کلیک=بازکردنِ پاپ‌آپ) ---------- */
+  .captcha-trigger {
+    display: flex; align-items: center; gap: 12px;
+    background: var(--card); border: 1px solid var(--border); border-radius: 10px;
+    padding: 12px 14px; cursor: pointer; user-select: none;
+    transition: border-color 0.25s ease, box-shadow 0.25s ease;
+  }
+  .captcha-trigger:hover { border-color: var(--accent); }
+  .captcha-trigger.verified { border-color: var(--success); box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.16); cursor: default; animation: captchaRingPulse 0.7s ease-out; }
+  .captcha-trigger-check {
+    position: relative; flex: 0 0 24px; width: 24px; height: 24px; border-radius: 7px;
+    border: 2px solid var(--border); background: var(--surface);
+    transition: border-color 0.3s ease, background 0.3s ease;
+  }
+  .captcha-trigger.verified .captcha-trigger-check { border-color: var(--success); background: var(--success); }
+  .captcha-trigger-check-icon {
+    position: absolute; top: 50%; left: 50%; margin: -8px 0 0 -8px;
+    width: 16px; height: 16px; opacity: 0; transform: scale(0.4) rotate(-20deg);
+    transition: opacity 0.2s ease, transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  .captcha-trigger.verified .captcha-trigger-check-icon { opacity: 1; transform: scale(1) rotate(0deg); }
+  .captcha-trigger-label { font-size: 14px; color: var(--text); flex: 1; }
+  .captcha-trigger.verified .captcha-trigger-label { color: var(--success); }
+  .captcha-badge {
+    font-size: 10px; color: var(--subtext); opacity: 0.7; letter-spacing: 0.02em;
+    display: flex; align-items: center; gap: 4px; flex-shrink: 0;
+  }
+  .captcha-badge svg { width: 12px; height: 12px; opacity: 0.7; }
+
+  /* ---------- پاپ‌آپ (شیرد، مشترکِ فرمِ ورود/ثبت‌نام) ---------- */
+  .captcha-modal-overlay {
+    position: fixed; inset: 0; background: rgba(10, 6, 20, 0.65); backdrop-filter: blur(2px);
+    display: flex; align-items: center; justify-content: center; padding: 16px; z-index: 999;
+    opacity: 0; pointer-events: none; transition: opacity 0.25s ease;
+  }
+  .captcha-modal-overlay.open { opacity: 1; pointer-events: auto; }
+  .captcha-modal {
+    width: 100%; max-width: 320px; background: var(--card); border: 1px solid var(--border);
+    border-radius: 14px; padding: 16px; transform: scale(0.92) translateY(10px);
+    transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  .captcha-modal-overlay.open .captcha-modal { transform: scale(1) translateY(0); }
+  .captcha-modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+  .captcha-modal-step-label { font-size: 11.5px; color: var(--subtext); }
+  .captcha-modal-close {
+    background: none; border: none; color: var(--subtext); font-size: 20px; line-height: 1;
+    cursor: pointer; padding: 2px 6px; border-radius: 6px;
+  }
+  .captcha-modal-close:hover { color: var(--text); background: var(--surface); }
+  .captcha-modal-step { display: none; }
+  .captcha-modal-step.active { display: block; animation: fadeIn 0.25s ease; }
+
+  /* مرحله‌ی ۱: چیدنِ پازل (همون قفسه) */
   .puzzle-scene {
-    position: relative; height: 96px; border-radius: 8px; overflow: visible;
+    position: relative; height: 100px; border-radius: 8px; overflow: visible;
     background: linear-gradient(180deg, transparent 60%, rgba(139, 92, 246, 0.06) 60%);
     touch-action: none;
   }
-  .puzzle-shelf-line { position: absolute; left: 4%; right: 4%; bottom: 26px; height: 2px; background: var(--border); border-radius: 2px; }
-
+  .puzzle-shelf-line { position: absolute; left: 4%; right: 4%; bottom: 28px; height: 2px; background: var(--border); border-radius: 2px; }
   .puzzle-filler, .puzzle-target, .puzzle-piece {
-    position: absolute; bottom: 26px; width: 26px; height: 54px; margin-left: -13px;
+    position: absolute; bottom: 28px; width: 27px; height: 56px; margin-left: -13.5px;
   }
   .puzzle-filler, .puzzle-target { pointer-events: none; z-index: 1; }
   .puzzle-filler { opacity: 0.55; }
   .puzzle-filler svg, .puzzle-target svg { width: 100%; height: 100%; display: block; }
-
   .puzzle-piece {
     bottom: 4px; cursor: grab; user-select: none; touch-action: none; z-index: 2;
     transition: left 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), top 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.2s ease;
     filter: drop-shadow(0 2px 4px rgba(0,0,0,0.25));
   }
   .puzzle-piece svg { width: 100%; height: 100%; display: block; pointer-events: none; }
-  .puzzle-piece.dragging {
-    cursor: grabbing; transition: none; z-index: 5;
-    filter: drop-shadow(0 8px 10px rgba(0,0,0,0.3));
-  }
+  .puzzle-piece.dragging { cursor: grabbing; transition: none; z-index: 5; filter: drop-shadow(0 8px 10px rgba(0,0,0,0.3)); }
   .puzzle-piece.shake { animation: puzzlePieceShake 0.4s ease; }
-  .puzzle-piece.placed {
-    bottom: 26px; cursor: default; pointer-events: none;
-    animation: puzzleSettle 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-  }
+  .puzzle-piece.placed { bottom: 28px; cursor: default; pointer-events: none; animation: puzzleSettle 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); }
+  .captcha-modal-hint { font-size: 12.5px; color: var(--subtext); text-align: center; margin: 10px 0 0; }
 
-  .puzzle-status-row { display: flex; align-items: center; gap: 10px; margin-top: 6px; padding: 0 2px; }
-  .puzzle-hint { font-size: 12.5px; color: var(--subtext); flex: 1; transition: color 0.25s ease; }
-  .puzzle-card.solved .puzzle-hint { color: var(--success); }
-  .puzzle-check-icon {
-    width: 15px; height: 15px; opacity: 0; transform: scale(0.4) rotate(-20deg); margin-inline-end: 4px;
-    transition: opacity 0.2s ease, transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+  /* مرحله‌ی ۲: چرخوندنِ نوشابه تا سرش طرفِ فلش قرار بگیره */
+  .rotate-stage { position: relative; width: 150px; height: 150px; margin: 4px auto 0; touch-action: none; }
+  .rotate-dial { position: absolute; inset: 0; border-radius: 50%; border: 2px dashed var(--border); }
+  .rotate-dial.matched { border-color: var(--success); animation: rotateSuccessPulse 0.6s ease-out; }
+  .rotate-target-arrow {
+    position: absolute; top: 50%; left: 50%; width: 2px; height: 64px;
+    background: var(--accent); transform-origin: bottom center; margin-left: -1px; margin-top: -64px; opacity: 0.6;
   }
-  .puzzle-card.solved .puzzle-check-icon { opacity: 1; transform: scale(1) rotate(0deg); }
-  .puzzle-pending-dot {
-    width: 6px; height: 6px; border-radius: 50%; background: var(--accent);
-    display: inline-block; margin-inline-end: 6px; animation: puzzlePendingDot 1s ease-in-out infinite;
+  .rotate-target-arrow::after {
+    content: ""; position: absolute; top: -7px; left: 50%; transform: translateX(-50%);
+    border-left: 6px solid transparent; border-right: 6px solid transparent; border-bottom: 9px solid var(--accent);
   }
+  .rotate-bottle {
+    position: absolute; top: 50%; left: 50%; width: 32px; height: 66px; margin: -33px 0 0 -16px;
+    cursor: grab; touch-action: none; transform-origin: 50% 50%;
+  }
+  .rotate-bottle.dragging { cursor: grabbing; }
+  .rotate-bottle svg { width: 100%; height: 100%; display: block; pointer-events: none; }
 
-  .captcha-badge {
-    font-size: 10px; color: var(--subtext); opacity: 0.7; letter-spacing: 0.02em;
-    display: flex; align-items: center; gap: 4px; flex-shrink: 0;
-  }
-  .captcha-badge svg { width: 12px; height: 12px; opacity: 0.7; }
+  /* مرحله‌ی ۳: سوالِ متنی */
+  .question-stage { text-align: center; padding: 4px 0 0; }
+  .question-text { font-size: 14px; color: var(--text); margin: 0 0 10px; }
+  #captchaAnswerInput { width: 100%; box-sizing: border-box; text-align: center; }
+  #captchaAnswerSubmit { width: 100%; margin-top: 8px; }
+  .question-error { color: var(--error); font-size: 12.5px; min-height: 16px; margin-top: 6px; }
+  .question-error.shake { animation: shake 0.4s ease; }
+
   @media (prefers-reduced-motion: reduce) {
-    .puzzle-card.solved, .puzzle-piece.placed, .puzzle-piece.shake, .puzzle-pending-dot { animation: none !important; }
+    .captcha-trigger.verified, .puzzle-piece.placed, .puzzle-piece.shake, .rotate-dial.matched { animation: none !important; }
     .puzzle-piece { transition: none !important; }
   }
 
@@ -500,19 +548,12 @@ try {
       <input id="loginUsername" placeholder="نام کاربری" autocomplete="username" maxlength="20" />
       <input id="loginPassword" type="password" placeholder="رمز عبور" autocomplete="current-password" maxlength="100" />
       <div class="captcha-wrap">
-        <div class="puzzle-card" id="puzzleCardLogin">
-          <div class="puzzle-scene" id="puzzleSceneLogin">
-            <div class="puzzle-shelf-line"></div>
-            <div class="puzzle-filler" id="puzzleFillerLogin0"><svg viewBox="0 0 26 54"><rect x="2" y="16" width="22" height="36" rx="2" fill="none" stroke="var(--subtext)" stroke-width="1.6" opacity="0.55"/><line x1="2" y1="28" x2="24" y2="28" stroke="var(--subtext)" stroke-width="1.2" opacity="0.4"/><line x1="2" y1="40" x2="24" y2="40" stroke="var(--subtext)" stroke-width="1.2" opacity="0.4"/><line x1="13" y1="16" x2="13" y2="52" stroke="var(--subtext)" stroke-width="1.2" opacity="0.4"/></svg></div>
-          <div class="puzzle-filler" id="puzzleFillerLogin1"><svg viewBox="0 0 26 54"><rect x="2" y="16" width="22" height="36" rx="2" fill="none" stroke="var(--subtext)" stroke-width="1.6" opacity="0.55"/><line x1="2" y1="28" x2="24" y2="28" stroke="var(--subtext)" stroke-width="1.2" opacity="0.4"/><line x1="2" y1="40" x2="24" y2="40" stroke="var(--subtext)" stroke-width="1.2" opacity="0.4"/><line x1="13" y1="16" x2="13" y2="52" stroke="var(--subtext)" stroke-width="1.2" opacity="0.4"/></svg></div>
-          <div class="puzzle-filler" id="puzzleFillerLogin2"><svg viewBox="0 0 26 54"><rect x="2" y="16" width="22" height="36" rx="2" fill="none" stroke="var(--subtext)" stroke-width="1.6" opacity="0.55"/><line x1="2" y1="28" x2="24" y2="28" stroke="var(--subtext)" stroke-width="1.2" opacity="0.4"/><line x1="2" y1="40" x2="24" y2="40" stroke="var(--subtext)" stroke-width="1.2" opacity="0.4"/><line x1="13" y1="16" x2="13" y2="52" stroke="var(--subtext)" stroke-width="1.2" opacity="0.4"/></svg></div>
-            <div class="puzzle-target" id="puzzleTargetLogin"><svg viewBox="0 0 26 54"><rect x="9" y="0" width="8" height="9" rx="2" fill="none" stroke="var(--border)" stroke-width="1.6" stroke-dasharray="3 2"/><rect x="10.5" y="7" width="5" height="10" fill="none" stroke="var(--border)" stroke-width="1.6" stroke-dasharray="3 2"/><path d="M8 15 H18 L24 26 V48 A6 6 0 0 1 18 54 H8 A6 6 0 0 1 2 48 V26 Z" fill="none" stroke="var(--border)" stroke-width="1.6" stroke-dasharray="4 3"/></svg></div>
-            <div class="puzzle-piece" id="puzzlePieceLogin"><svg viewBox="0 0 26 54"><rect x="9" y="0" width="8" height="9" rx="2" fill="var(--accent)"/><rect x="10.5" y="7" width="5" height="10" fill="#161616"/><path d="M8 15 H18 L24 26 V48 A6 6 0 0 1 18 54 H8 A6 6 0 0 1 2 48 V26 Z" fill="#161616"/><rect x="4" y="30" width="18" height="9" fill="var(--accent)" opacity="0.85"/><rect x="5.5" y="20" width="3" height="26" rx="1.5" fill="rgba(255,255,255,0.14)"/></svg></div>
+        <div class="captcha-trigger" id="captchaTriggerLogin" role="button" tabindex="0">
+          <div class="captcha-trigger-check">
+            <img class="captcha-trigger-check-icon" src="data:image/png;base64,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" alt="" />
           </div>
-          <div class="puzzle-status-row">
-            <span class="puzzle-hint" id="puzzleHintLogin"><img class="puzzle-check-icon" id="puzzleCheckIconLogin" src="data:image/png;base64,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" alt="" />نوشابه‌ی مشکی رو بکش تو جای خالیش رو قفسه</span>
-            <span class="captcha-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>دهات</span>
-          </div>
+          <span class="captcha-trigger-label" id="captchaTriggerLabelLogin">تایید می‌کنم ربات نیستم</span>
+          <span class="captcha-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>دهات</span>
         </div>
       </div>
       <button class="primary" id="loginBtn" onclick="login()">ورود</button>
@@ -524,25 +565,60 @@ try {
       <input id="regPassword" type="password" placeholder="رمز عبور (حداقل ۸ کاراکتر، شامل حرف و عدد)" autocomplete="new-password" maxlength="100" />
       <input id="regReferralCode" placeholder="کد ملی متقاضی" autocomplete="off" maxlength="16" style="text-transform: uppercase;" />
       <div class="captcha-wrap">
-        <div class="puzzle-card" id="puzzleCardRegister">
-          <div class="puzzle-scene" id="puzzleSceneRegister">
-            <div class="puzzle-shelf-line"></div>
-            <div class="puzzle-filler" id="puzzleFillerRegister0"><svg viewBox="0 0 26 54"><rect x="2" y="16" width="22" height="36" rx="2" fill="none" stroke="var(--subtext)" stroke-width="1.6" opacity="0.55"/><line x1="2" y1="28" x2="24" y2="28" stroke="var(--subtext)" stroke-width="1.2" opacity="0.4"/><line x1="2" y1="40" x2="24" y2="40" stroke="var(--subtext)" stroke-width="1.2" opacity="0.4"/><line x1="13" y1="16" x2="13" y2="52" stroke="var(--subtext)" stroke-width="1.2" opacity="0.4"/></svg></div>
-          <div class="puzzle-filler" id="puzzleFillerRegister1"><svg viewBox="0 0 26 54"><rect x="2" y="16" width="22" height="36" rx="2" fill="none" stroke="var(--subtext)" stroke-width="1.6" opacity="0.55"/><line x1="2" y1="28" x2="24" y2="28" stroke="var(--subtext)" stroke-width="1.2" opacity="0.4"/><line x1="2" y1="40" x2="24" y2="40" stroke="var(--subtext)" stroke-width="1.2" opacity="0.4"/><line x1="13" y1="16" x2="13" y2="52" stroke="var(--subtext)" stroke-width="1.2" opacity="0.4"/></svg></div>
-          <div class="puzzle-filler" id="puzzleFillerRegister2"><svg viewBox="0 0 26 54"><rect x="2" y="16" width="22" height="36" rx="2" fill="none" stroke="var(--subtext)" stroke-width="1.6" opacity="0.55"/><line x1="2" y1="28" x2="24" y2="28" stroke="var(--subtext)" stroke-width="1.2" opacity="0.4"/><line x1="2" y1="40" x2="24" y2="40" stroke="var(--subtext)" stroke-width="1.2" opacity="0.4"/><line x1="13" y1="16" x2="13" y2="52" stroke="var(--subtext)" stroke-width="1.2" opacity="0.4"/></svg></div>
-            <div class="puzzle-target" id="puzzleTargetRegister"><svg viewBox="0 0 26 54"><rect x="9" y="0" width="8" height="9" rx="2" fill="none" stroke="var(--border)" stroke-width="1.6" stroke-dasharray="3 2"/><rect x="10.5" y="7" width="5" height="10" fill="none" stroke="var(--border)" stroke-width="1.6" stroke-dasharray="3 2"/><path d="M8 15 H18 L24 26 V48 A6 6 0 0 1 18 54 H8 A6 6 0 0 1 2 48 V26 Z" fill="none" stroke="var(--border)" stroke-width="1.6" stroke-dasharray="4 3"/></svg></div>
-            <div class="puzzle-piece" id="puzzlePieceRegister"><svg viewBox="0 0 26 54"><rect x="9" y="0" width="8" height="9" rx="2" fill="var(--accent)"/><rect x="10.5" y="7" width="5" height="10" fill="#161616"/><path d="M8 15 H18 L24 26 V48 A6 6 0 0 1 18 54 H8 A6 6 0 0 1 2 48 V26 Z" fill="#161616"/><rect x="4" y="30" width="18" height="9" fill="var(--accent)" opacity="0.85"/><rect x="5.5" y="20" width="3" height="26" rx="1.5" fill="rgba(255,255,255,0.14)"/></svg></div>
+        <div class="captcha-trigger" id="captchaTriggerRegister" role="button" tabindex="0">
+          <div class="captcha-trigger-check">
+            <img class="captcha-trigger-check-icon" src="data:image/png;base64,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" alt="" />
           </div>
-          <div class="puzzle-status-row">
-            <span class="puzzle-hint" id="puzzleHintRegister"><img class="puzzle-check-icon" id="puzzleCheckIconRegister" src="data:image/png;base64,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" alt="" />نوشابه‌ی مشکی رو بکش تو جای خالیش رو قفسه</span>
-            <span class="captcha-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>دهات</span>
-          </div>
+          <span class="captcha-trigger-label" id="captchaTriggerLabelRegister">تایید می‌کنم ربات نیستم</span>
+          <span class="captcha-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>دهات</span>
         </div>
       </div>
       <button class="primary" id="registerBtn" onclick="register()">ساخت حساب</button>
       <div class="error" id="registerError"></div>
       <div class="hint" id="registerHint"></div>
     </div>
+    </div>
+  </div>
+</div>
+
+<div class="captcha-modal-overlay" id="captchaModalOverlay">
+  <div class="captcha-modal">
+    <div class="captcha-modal-header">
+      <span class="captcha-modal-step-label" id="captchaModalStepLabel">۱ از ۳</span>
+      <button type="button" class="captcha-modal-close" id="captchaModalClose" aria-label="بستن">×</button>
+    </div>
+
+    <!-- مرحله‌ی ۱: چیدنِ نوشابه تو جای خالیش رو قفسه -->
+    <div class="captcha-modal-step active" id="captchaStepPuzzle">
+      <div class="puzzle-scene" id="modalPuzzleScene">
+        <div class="puzzle-shelf-line"></div>
+        <div class="puzzle-filler" id="modalPuzzleFiller0"><svg viewBox="0 0 26 54"><rect x="2" y="16" width="22" height="36" rx="2" fill="none" stroke="var(--subtext)" stroke-width="1.6" opacity="0.55"/><line x1="2" y1="28" x2="24" y2="28" stroke="var(--subtext)" stroke-width="1.2" opacity="0.4"/><line x1="2" y1="40" x2="24" y2="40" stroke="var(--subtext)" stroke-width="1.2" opacity="0.4"/><line x1="13" y1="16" x2="13" y2="52" stroke="var(--subtext)" stroke-width="1.2" opacity="0.4"/></svg></div>
+        <div class="puzzle-filler" id="modalPuzzleFiller1"><svg viewBox="0 0 26 54"><rect x="2" y="16" width="22" height="36" rx="2" fill="none" stroke="var(--subtext)" stroke-width="1.6" opacity="0.55"/><line x1="2" y1="28" x2="24" y2="28" stroke="var(--subtext)" stroke-width="1.2" opacity="0.4"/><line x1="2" y1="40" x2="24" y2="40" stroke="var(--subtext)" stroke-width="1.2" opacity="0.4"/><line x1="13" y1="16" x2="13" y2="52" stroke="var(--subtext)" stroke-width="1.2" opacity="0.4"/></svg></div>
+        <div class="puzzle-filler" id="modalPuzzleFiller2"><svg viewBox="0 0 26 54"><rect x="2" y="16" width="22" height="36" rx="2" fill="none" stroke="var(--subtext)" stroke-width="1.6" opacity="0.55"/><line x1="2" y1="28" x2="24" y2="28" stroke="var(--subtext)" stroke-width="1.2" opacity="0.4"/><line x1="2" y1="40" x2="24" y2="40" stroke="var(--subtext)" stroke-width="1.2" opacity="0.4"/><line x1="13" y1="16" x2="13" y2="52" stroke="var(--subtext)" stroke-width="1.2" opacity="0.4"/></svg></div>
+        <div class="puzzle-target" id="modalPuzzleTarget"><svg viewBox="0 0 26 54"><rect x="9" y="0" width="8" height="9" rx="2" fill="none" stroke="var(--border)" stroke-width="1.6" stroke-dasharray="3 2"/><rect x="10.5" y="7" width="5" height="10" fill="none" stroke="var(--border)" stroke-width="1.6" stroke-dasharray="3 2"/><path d="M8 15 H18 L24 26 V48 A6 6 0 0 1 18 54 H8 A6 6 0 0 1 2 48 V26 Z" fill="none" stroke="var(--border)" stroke-width="1.6" stroke-dasharray="4 3"/></svg></div>
+        <div class="puzzle-piece" id="modalPuzzlePiece"><svg viewBox="0 0 26 54"><rect x="9" y="0" width="8" height="9" rx="2" fill="#dc2626"/><rect x="10.5" y="7" width="5" height="10" fill="#161616"/><path d="M8 15 H18 L24 26 V48 A6 6 0 0 1 18 54 H8 A6 6 0 0 1 2 48 V26 Z" fill="#161616"/><rect x="4" y="30" width="18" height="9" fill="#dc2626"/><rect x="5.5" y="20" width="3" height="26" rx="1.5" fill="rgba(255,255,255,0.14)"/></svg></div>
+      </div>
+      <p class="captcha-modal-hint">نوشابه‌ی مشکی رو بکش تو جای خالیش رو قفسه</p>
+    </div>
+
+    <!-- مرحله‌ی ۲: چرخوندنِ نوشابه تا سرش طرفِ فلش قرار بگیره -->
+    <div class="captcha-modal-step" id="captchaStepRotate">
+      <div class="rotate-stage" id="rotateStage">
+        <div class="rotate-dial" id="rotateDial"></div>
+        <div class="rotate-target-arrow" id="rotateTargetArrow"></div>
+        <div class="rotate-bottle" id="rotateBottle"><svg viewBox="0 0 26 54"><rect x="9" y="0" width="8" height="9" rx="2" fill="#dc2626"/><rect x="10.5" y="7" width="5" height="10" fill="#161616"/><path d="M8 15 H18 L24 26 V48 A6 6 0 0 1 18 54 H8 A6 6 0 0 1 2 48 V26 Z" fill="#161616"/><rect x="4" y="30" width="18" height="9" fill="#dc2626"/><rect x="5.5" y="20" width="3" height="26" rx="1.5" fill="rgba(255,255,255,0.14)"/></svg></div>
+      </div>
+      <p class="captcha-modal-hint">نوشابه رو بچرخون تا سرش طرفِ فلش قرار بگیره</p>
+    </div>
+
+    <!-- مرحله‌ی ۳: سوالِ متنی -->
+    <div class="captcha-modal-step" id="captchaStepQuestion">
+      <div class="question-stage">
+        <p class="question-text">اسمِ مالکِ سایت چیه؟</p>
+        <input type="text" id="captchaAnswerInput" placeholder="جواب..." autocomplete="off" />
+        <button type="button" class="primary" id="captchaAnswerSubmit">تایید</button>
+        <div class="question-error" id="captchaAnswerError"></div>
+      </div>
     </div>
   </div>
 </div>
@@ -616,45 +692,242 @@ async function fetchWithRetry(url, options, retries = 2, delayMs = 700) {
 // هیچ درخواستی به هیچ سرور خارجی نمی‌ره؛ چالش از همون WORKER_URL خودمون گرفته می‌شه و
 // حلش هم کاملاً تو مرورگر خودِ کاربر با SubtleCrypto (SHA-256) انجام می‌شه.
 //
-// نکته‌ی مهم: خودِ پازل (کشیدنِ نوشابه تو جای خالیش) هیچ ربطی به تشخیصِ بات نداره — صرفاً یه
-// تستِ واقعیه که کاربر باید درست انجامش بده. تشخیصِ واقعیِ بات به‌صورت کاملاً نامرئی و مستقل،
-// همون لحظه‌ی لودِ صفحه، تو پس‌زمینه شروع می‌شه (بدون نیاز به هیچ کلیکی). نتیجه‌ی نهایی
-// (getSolution) فقط وقتی چیزی برمی‌گردونه که هم پازل درست چیده شده باشه، هم اون محاسبه‌ی
-// پس‌زمینه تموم شده باشه.
-const PUZZLE_SLOT_POSITIONS = [15, 38, 62, 85]; // درصدِ چپ برای ۴ جایگاهِ رو قفسه
-const PUZZLE_FLOOR_POSITIONS = [18, 34, 50, 66, 82]; // درصدِ چپ برای نقطه‌ی شروعِ تصادفیِ خودِ نوشابه
+// نکته‌ی مهم: خودِ پاپ‌آپ (هر ۳ تستش) هیچ ربطی به تشخیصِ بات نداره — صرفاً چالشی‌ست که خودِ کاربر
+// باید درست انجامش بده. تشخیصِ واقعیِ بات به‌صورت کاملاً نامرئی و مستقل، همون لحظه‌ی لودِ صفحه
+// (بدون نیاز به هیچ کلیکی)، تو پس‌زمینه شروع می‌شه. نتیجه‌ی نهایی (getSolution) فقط وقتی چیزی
+// برمی‌گردونه که هم هر ۳ تست با موفقیت انجام شده باشن، هم اون محاسبه‌ی پس‌زمینه تموم شده باشه.
+
+const PUZZLE_SLOT_POSITIONS = [15, 38, 62, 85];
+const PUZZLE_FLOOR_POSITIONS = [18, 34, 50, 66, 82];
 const PUZZLE_SNAP_TOLERANCE_PX = 30;
+const ROTATE_DIRECTIONS_DEG = [0, 45, 90, 135, 180, 225, 270, 315];
+const ROTATE_TOLERANCE_DEG = 22;
 
+function normalizeCaptchaAnswer(s) {
+  return (s || "").trim().toLowerCase().replace(/[\u200c\s]+/g, "");
+}
+const CAPTCHA_ACCEPTED_ANSWERS = ["عاقی", "آقی", "aghey", "زمزم", "zamzam"].map(normalizeCaptchaAnswer);
+
+async function bufferToHex(buffer) {
+  return [...new Uint8Array(buffer)].map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+function leadingZeroBits(hexHash) {
+  let bits = 0;
+  for (const ch of hexHash) {
+    const nibble = parseInt(ch, 16);
+    if (nibble === 0) { bits += 4; continue; }
+    bits += Math.clz32(nibble) - 28;
+    break;
+  }
+  return bits;
+}
+
+// ============ پاپ‌آپِ مشترک (بینِ فرمِ ورود و ثبت‌نام؛ یکی کافیه) ============
+const captchaModalOverlay = document.getElementById("captchaModalOverlay");
+const captchaModalStepLabel = document.getElementById("captchaModalStepLabel");
+const captchaModalClose = document.getElementById("captchaModalClose");
+const captchaStepPuzzleEl = document.getElementById("captchaStepPuzzle");
+const captchaStepRotateEl = document.getElementById("captchaStepRotate");
+const captchaStepQuestionEl = document.getElementById("captchaStepQuestion");
+
+let activeCaptchaController = null;
+
+function showCaptchaStep(n) {
+  captchaStepPuzzleEl.classList.toggle("active", n === 1);
+  captchaStepRotateEl.classList.toggle("active", n === 2);
+  captchaStepQuestionEl.classList.toggle("active", n === 3);
+  captchaModalStepLabel.textContent = `${["۱", "۲", "۳"][n - 1]} از ۳`;
+}
+
+function openCaptchaModal(controller) {
+  activeCaptchaController = controller;
+  captchaModalOverlay.classList.add("open");
+  showCaptchaStep(1);
+  layoutModalPuzzle();
+  document.body.style.overflow = "hidden";
+}
+function closeCaptchaModal() {
+  captchaModalOverlay.classList.remove("open");
+  activeCaptchaController = null;
+  document.body.style.overflow = "";
+}
+captchaModalClose.addEventListener("click", closeCaptchaModal);
+captchaModalOverlay.addEventListener("click", (e) => { if (e.target === captchaModalOverlay) closeCaptchaModal(); });
+
+// ---------- مرحله‌ی ۱: پازل — نوشابه رو بکش تو جای خالیش رو قفسه ----------
+const modalPuzzleScene = document.getElementById("modalPuzzleScene");
+const modalPuzzleTarget = document.getElementById("modalPuzzleTarget");
+const modalPuzzlePiece = document.getElementById("modalPuzzlePiece");
+const modalPuzzleFillers = [0, 1, 2].map((i) => document.getElementById(`modalPuzzleFiller${i}`));
+
+let puzzleDragging = false;
+let puzzleDragStartX = 0, puzzleDragStartY = 0, puzzlePieceOrigLeftPx = 0, puzzlePieceOrigTopPx = 0;
+
+function layoutModalPuzzle() {
+  const targetIdx = Math.floor(Math.random() * PUZZLE_SLOT_POSITIONS.length);
+  const fillerPositions = PUZZLE_SLOT_POSITIONS.filter((_, i) => i !== targetIdx);
+  modalPuzzleTarget.style.left = PUZZLE_SLOT_POSITIONS[targetIdx] + "%";
+  modalPuzzleFillers.forEach((el, i) => { el.style.left = fillerPositions[i] + "%"; });
+  const startPos = PUZZLE_FLOOR_POSITIONS[Math.floor(Math.random() * PUZZLE_FLOOR_POSITIONS.length)];
+  modalPuzzlePiece.style.left = startPos + "%";
+  modalPuzzlePiece.style.top = "";
+  modalPuzzlePiece.style.marginLeft = "";
+  modalPuzzlePiece.classList.remove("placed", "dragging", "shake");
+}
+
+function attemptModalPlacement() {
+  const pieceRect = modalPuzzlePiece.getBoundingClientRect();
+  const targetRect = modalPuzzleTarget.getBoundingClientRect();
+  const dist = Math.hypot(
+    pieceRect.left + pieceRect.width / 2 - (targetRect.left + targetRect.width / 2),
+    pieceRect.top + pieceRect.height / 2 - (targetRect.top + targetRect.height / 2)
+  );
+  if (dist <= PUZZLE_SNAP_TOLERANCE_PX) {
+    const sceneRect = modalPuzzleScene.getBoundingClientRect();
+    modalPuzzlePiece.style.left = (targetRect.left - sceneRect.left + targetRect.width / 2) + "px";
+    modalPuzzlePiece.style.top = (targetRect.top - sceneRect.top) + "px";
+    modalPuzzlePiece.style.marginLeft = "-13.5px";
+    modalPuzzlePiece.classList.add("placed");
+    setTimeout(() => { showCaptchaStep(2); layoutRotateStep(); }, 500);
+  } else {
+    modalPuzzlePiece.style.left = puzzlePieceOrigLeftPx + "px";
+    modalPuzzlePiece.style.top = puzzlePieceOrigTopPx + "px";
+    modalPuzzlePiece.classList.add("shake");
+    setTimeout(() => modalPuzzlePiece.classList.remove("shake"), 400);
+  }
+}
+
+modalPuzzlePiece.addEventListener("pointerdown", (e) => {
+  puzzleDragging = true;
+  try { modalPuzzlePiece.setPointerCapture(e.pointerId); } catch (err) {}
+  modalPuzzlePiece.classList.add("dragging");
+  const pieceRect = modalPuzzlePiece.getBoundingClientRect();
+  const sceneRect = modalPuzzleScene.getBoundingClientRect();
+  puzzlePieceOrigLeftPx = pieceRect.left - sceneRect.left;
+  puzzlePieceOrigTopPx = pieceRect.top - sceneRect.top;
+  modalPuzzlePiece.style.left = puzzlePieceOrigLeftPx + "px";
+  modalPuzzlePiece.style.top = puzzlePieceOrigTopPx + "px";
+  modalPuzzlePiece.style.marginLeft = "0px";
+  puzzleDragStartX = e.clientX;
+  puzzleDragStartY = e.clientY;
+  e.preventDefault();
+});
+modalPuzzlePiece.addEventListener("pointermove", (e) => {
+  if (!puzzleDragging) return;
+  const dx = e.clientX - puzzleDragStartX;
+  const dy = e.clientY - puzzleDragStartY;
+  modalPuzzlePiece.style.left = (puzzlePieceOrigLeftPx + dx) + "px";
+  modalPuzzlePiece.style.top = (puzzlePieceOrigTopPx + dy) + "px";
+});
+function endPuzzleDrag() {
+  if (!puzzleDragging) return;
+  puzzleDragging = false;
+  modalPuzzlePiece.classList.remove("dragging");
+  attemptModalPlacement();
+}
+modalPuzzlePiece.addEventListener("pointerup", endPuzzleDrag);
+modalPuzzlePiece.addEventListener("pointercancel", endPuzzleDrag);
+
+// ---------- مرحله‌ی ۲: چرخوندنِ نوشابه تا سرش طرفِ فلش قرار بگیره ----------
+const rotateDial = document.getElementById("rotateDial");
+const rotateTargetArrow = document.getElementById("rotateTargetArrow");
+const rotateBottle = document.getElementById("rotateBottle");
+const rotateStage = document.getElementById("rotateStage");
+
+let rotateTargetDeg = 0;
+let rotateDragging = false;
+
+function angleDiff(a, b) {
+  const d = Math.abs(a - b) % 360;
+  return d > 180 ? 360 - d : d;
+}
+
+function layoutRotateStep() {
+  rotateTargetDeg = ROTATE_DIRECTIONS_DEG[Math.floor(Math.random() * ROTATE_DIRECTIONS_DEG.length)];
+  rotateTargetArrow.style.transform = `rotate(${rotateTargetDeg}deg)`;
+  let startDeg;
+  do { startDeg = Math.floor(Math.random() * 360); } while (angleDiff(startDeg, rotateTargetDeg) < 50);
+  rotateBottle.style.transform = `rotate(${startDeg}deg)`;
+  rotateDial.classList.remove("matched");
+}
+
+function angleFromCenter(clientX, clientY) {
+  const rect = rotateStage.getBoundingClientRect();
+  const cx = rect.left + rect.width / 2;
+  const cy = rect.top + rect.height / 2;
+  const rad = Math.atan2(clientX - cx, -(clientY - cy)); // صفر درجه = بالا (شمال)، جهتِ عقربه‌ی ساعت مثبته
+  let deg = (rad * 180) / Math.PI;
+  if (deg < 0) deg += 360;
+  return deg;
+}
+
+function currentBottleDeg() {
+  const m = (rotateBottle.style.transform || "").match(/rotate\(([-\d.]+)deg\)/);
+  return m ? parseFloat(m[1]) : 0;
+}
+
+rotateStage.addEventListener("pointerdown", (e) => {
+  rotateDragging = true;
+  try { rotateStage.setPointerCapture(e.pointerId); } catch (err) {}
+  rotateBottle.classList.add("dragging");
+  rotateBottle.style.transform = `rotate(${angleFromCenter(e.clientX, e.clientY)}deg)`;
+  e.preventDefault();
+});
+rotateStage.addEventListener("pointermove", (e) => {
+  if (!rotateDragging) return;
+  rotateBottle.style.transform = `rotate(${angleFromCenter(e.clientX, e.clientY)}deg)`;
+});
+function endRotateDrag() {
+  if (!rotateDragging) return;
+  rotateDragging = false;
+  rotateBottle.classList.remove("dragging");
+  if (angleDiff(currentBottleDeg(), rotateTargetDeg) <= ROTATE_TOLERANCE_DEG) {
+    rotateDial.classList.add("matched");
+    setTimeout(() => { showCaptchaStep(3); layoutQuestionStep(); }, 500);
+  }
+}
+rotateStage.addEventListener("pointerup", endRotateDrag);
+rotateStage.addEventListener("pointercancel", endRotateDrag);
+
+// ---------- مرحله‌ی ۳: سوالِ متنی ----------
+const captchaAnswerInput = document.getElementById("captchaAnswerInput");
+const captchaAnswerSubmit = document.getElementById("captchaAnswerSubmit");
+const captchaAnswerError = document.getElementById("captchaAnswerError");
+
+function layoutQuestionStep() {
+  captchaAnswerInput.value = "";
+  captchaAnswerError.textContent = "";
+  captchaAnswerError.classList.remove("shake");
+  setTimeout(() => captchaAnswerInput.focus(), 50);
+}
+
+function submitCaptchaAnswer() {
+  const answer = normalizeCaptchaAnswer(captchaAnswerInput.value);
+  if (!answer) return;
+  if (CAPTCHA_ACCEPTED_ANSWERS.includes(answer)) {
+    if (activeCaptchaController) activeCaptchaController.markSolved();
+    closeCaptchaModal();
+  } else {
+    captchaAnswerError.textContent = "جواب درست نیست، دوباره امتحان کن";
+    captchaAnswerError.classList.remove("shake");
+    void captchaAnswerError.offsetWidth;
+    captchaAnswerError.classList.add("shake");
+    captchaAnswerInput.select();
+  }
+}
+captchaAnswerSubmit.addEventListener("click", submitCaptchaAnswer);
+captchaAnswerInput.addEventListener("keydown", (e) => { if (e.key === "Enter") submitCaptchaAnswer(); });
+
+// ============ کنترلرِ هر فرم (ورود/ثبت‌نام): تریگر باکس + تشخیصِ نامرئیِ پس‌زمینه ============
 function createCaptchaController(suffix) {
-  const card = document.getElementById(`puzzleCard${suffix}`);
-  const scene = document.getElementById(`puzzleScene${suffix}`);
-  const target = document.getElementById(`puzzleTarget${suffix}`);
-  const piece = document.getElementById(`puzzlePiece${suffix}`);
-  const fillers = [0, 1, 2].map((i) => document.getElementById(`puzzleFiller${suffix}${i}`));
-  const hint = document.getElementById(`puzzleHint${suffix}`);
-  const defaultHintText = hint.textContent;
+  const trigger = document.getElementById(`captchaTrigger${suffix}`);
+  const label = document.getElementById(`captchaTriggerLabel${suffix}`);
+  const defaultLabelText = label.textContent;
 
-  let backgroundSolution = null; // { id, nonce } — نتیجه‌ی نامرئیِ اثبات‌کار، مستقل از پازل
+  let backgroundSolution = null; // { id, nonce } — نتیجه‌ی نامرئیِ اثبات‌کار، مستقل از پاپ‌آپ
   let backgroundSolving = false;
-  let puzzleSolved = false;
-  let dragging = false;
-  let dragStartX = 0, dragStartY = 0, pieceOrigLeftPx = 0, pieceOrigTopPx = 0;
+  let solved = false;
 
-  async function bufferToHex(buffer) {
-    return [...new Uint8Array(buffer)].map((b) => b.toString(16).padStart(2, "0")).join("");
-  }
-  function leadingZeroBits(hexHash) {
-    let bits = 0;
-    for (const ch of hexHash) {
-      const nibble = parseInt(ch, 16);
-      if (nibble === 0) { bits += 4; continue; }
-      bits += Math.clz32(nibble) - 28;
-      break;
-    }
-    return bits;
-  }
-
-  // ---------- تشخیصِ نامرئیِ بات (پس‌زمینه، مستقل از پازل) ----------
   async function solveBackground() {
     if (backgroundSolving || backgroundSolution) return;
     backgroundSolving = true;
@@ -675,7 +948,6 @@ function createCaptchaController(suffix) {
       updateUi();
     } catch (e) {
       backgroundSolution = null;
-      // یه بار دیگه، بی‌سروصدا، بعدِ کمی مکث دوباره امتحان می‌کنیم (مثلاً نت لحظه‌ای قطع بوده)
       setTimeout(() => { backgroundSolving = false; solveBackground(); }, 2500);
       return;
     } finally {
@@ -684,99 +956,38 @@ function createCaptchaController(suffix) {
   }
 
   function updateUi() {
-    if (puzzleSolved && backgroundSolution) {
-      card.classList.add("solved");
-      if (hint.lastChild) hint.lastChild.textContent = "تایید شد";
+    if (solved && backgroundSolution) {
+      trigger.classList.add("verified");
+      label.textContent = "تایید شد";
     }
   }
 
-  // ---------- چیدمانِ پازل: یه جایگاهِ رندوم رو قفسه خالی می‌مونه، نوشابه از یه نقطه‌ی رندومِ دیگه شروع می‌شه ----------
-  function layoutPuzzle() {
-    const targetIdx = Math.floor(Math.random() * PUZZLE_SLOT_POSITIONS.length);
-    const fillerPositions = PUZZLE_SLOT_POSITIONS.filter((_, i) => i !== targetIdx);
-    target.style.left = PUZZLE_SLOT_POSITIONS[targetIdx] + "%";
-    fillers.forEach((el, i) => { el.style.left = fillerPositions[i] + "%"; });
-
-    const floorChoices = PUZZLE_FLOOR_POSITIONS;
-    const startPos = floorChoices[Math.floor(Math.random() * floorChoices.length)];
-    piece.style.left = startPos + "%";
-    piece.style.top = "";
-    piece.classList.remove("placed", "dragging", "shake");
+  function markSolved() {
+    solved = true;
+    updateUi();
   }
-
-  function attemptPlacement() {
-    const pieceRect = piece.getBoundingClientRect();
-    const targetRect = target.getBoundingClientRect();
-    const dist = Math.hypot(
-      pieceRect.left + pieceRect.width / 2 - (targetRect.left + targetRect.width / 2),
-      pieceRect.top + pieceRect.height / 2 - (targetRect.top + targetRect.height / 2)
-    );
-    if (dist <= PUZZLE_SNAP_TOLERANCE_PX) {
-      const sceneRect = scene.getBoundingClientRect();
-      piece.style.left = (targetRect.left - sceneRect.left + targetRect.width / 2) + "px";
-      piece.style.top = (targetRect.top - sceneRect.top) + "px";
-      piece.style.marginLeft = "-13px";
-      piece.classList.add("placed");
-      puzzleSolved = true;
-      updateUi();
-    } else {
-      piece.style.left = pieceOrigLeftPx + "px";
-      piece.style.top = pieceOrigTopPx + "px";
-      piece.classList.add("shake");
-      setTimeout(() => piece.classList.remove("shake"), 400);
-    }
-  }
-
-  function onPointerDown(e) {
-    if (puzzleSolved) return;
-    dragging = true;
-    try { piece.setPointerCapture(e.pointerId); } catch (err) {}
-    piece.classList.add("dragging");
-    const pieceRect = piece.getBoundingClientRect();
-    const sceneRect = scene.getBoundingClientRect();
-    pieceOrigLeftPx = pieceRect.left - sceneRect.left;
-    pieceOrigTopPx = pieceRect.top - sceneRect.top;
-    piece.style.left = pieceOrigLeftPx + "px";
-    piece.style.top = pieceOrigTopPx + "px";
-    piece.style.marginLeft = "0px";
-    dragStartX = e.clientX;
-    dragStartY = e.clientY;
-    e.preventDefault();
-  }
-  function onPointerMove(e) {
-    if (!dragging) return;
-    const dx = e.clientX - dragStartX;
-    const dy = e.clientY - dragStartY;
-    piece.style.left = (pieceOrigLeftPx + dx) + "px";
-    piece.style.top = (pieceOrigTopPx + dy) + "px";
-  }
-  function onPointerUp(e) {
-    if (!dragging) return;
-    dragging = false;
-    piece.classList.remove("dragging");
-    attemptPlacement();
-  }
-
-  piece.addEventListener("pointerdown", onPointerDown);
-  piece.addEventListener("pointermove", onPointerMove);
-  piece.addEventListener("pointerup", onPointerUp);
-  piece.addEventListener("pointercancel", onPointerUp);
 
   function reset() {
     backgroundSolution = null;
     backgroundSolving = false;
-    puzzleSolved = false;
-    card.classList.remove("solved");
-    if (hint.lastChild) hint.lastChild.textContent = defaultHintText.replace(/^\s*/, "");
-    layoutPuzzle();
+    solved = false;
+    trigger.classList.remove("verified");
+    label.textContent = defaultLabelText;
     solveBackground();
   }
 
-  layoutPuzzle();
+  trigger.addEventListener("click", () => {
+    if (solved) return;
+    openCaptchaModal({ markSolved });
+  });
+  trigger.addEventListener("keydown", (e) => {
+    if (!solved && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); openCaptchaModal({ markSolved }); }
+  });
+
   solveBackground(); // از همون لحظه‌ی لود، بدون نیاز به هیچ کلیکی، تو پس‌زمینه شروع می‌شه
 
   return {
-    getSolution: () => (puzzleSolved && backgroundSolution ? backgroundSolution : null),
+    getSolution: () => (solved && backgroundSolution ? backgroundSolution : null),
     reset,
   };
 }
@@ -971,7 +1182,7 @@ async function register() {
 
   const captchaSolution = captchaControllers.register.getSolution();
   if (!captchaSolution) {
-    setError(errEl, "لطفاً پازلِ بالا رو کامل کن");
+    setError(errEl, "لطفاً روی تیکِ بالا کلیک کن و تست رو کامل کن");
     return;
   }
 
@@ -1014,7 +1225,7 @@ async function login() {
 
   const captchaSolution = captchaControllers.login.getSolution();
   if (!captchaSolution) {
-    setError(errEl, "لطفاً پازلِ بالا رو کامل کن");
+    setError(errEl, "لطفاً روی تیکِ بالا کلیک کن و تست رو کامل کن");
     return;
   }
 
