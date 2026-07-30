@@ -289,40 +289,16 @@ try {
   .rotate-bottle.dragging { cursor: grabbing; }
   .rotate-bottle svg { width: 100%; height: 100%; display: block; pointer-events: none; }
 
-  /* مرحله‌ی ۳ (جدید): تکون دادنِ نوشابه تا کف کنه */
-  .shake-stage {
-    position: relative; height: 130px; display: flex; flex-direction: column;
-    align-items: center; justify-content: center; gap: 16px; touch-action: none;
-  }
-  .shake-bottle {
-    width: 40px; height: 82px; cursor: grab; touch-action: none; user-select: none;
-  }
-  .shake-bottle.dragging { cursor: grabbing; }
-  .shake-bottle svg { width: 100%; height: 100%; display: block; pointer-events: none; }
-  .shake-bottle.wobble-left { animation: shakeWobbleLeft 0.12s ease; }
-  .shake-bottle.wobble-right { animation: shakeWobbleRight 0.12s ease; }
-  .shake-bottle.popped { animation: shakePop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1); }
-  .shake-progress-track {
-    width: 70%; height: 8px; border-radius: 5px; background: var(--surface);
-    border: 1px solid var(--border); overflow: hidden;
-  }
-  .shake-progress-fill { height: 100%; width: 0%; background: var(--success); border-radius: 5px; transition: width 0.18s ease; }
-  @keyframes shakeWobbleLeft { 0% { transform: rotate(0deg); } 50% { transform: rotate(-16deg); } 100% { transform: rotate(0deg); } }
-  @keyframes shakeWobbleRight { 0% { transform: rotate(0deg); } 50% { transform: rotate(16deg); } 100% { transform: rotate(0deg); } }
-  @keyframes shakePop { 0% { transform: scale(1) rotate(0deg); } 30% { transform: scale(1.15) rotate(-6deg); } 60% { transform: scale(0.95) rotate(4deg); } 100% { transform: scale(1) rotate(0deg); } }
-
-  /* مرحله‌ی ۴: سوالِ متنی */
+  /* مرحله‌ی ۳: سوالِ متنی */
   .question-stage { text-align: center; padding: 4px 0 0; }
-  .question-text { font-size: 14px; color: var(--text); margin: 0 0 10px; white-space: pre-line; }
+  .question-text { font-size: 14px; color: var(--text); margin: 0 0 10px; }
   #captchaAnswerInput { width: 100%; box-sizing: border-box; text-align: center; }
   #captchaAnswerSubmit { width: 100%; margin-top: 8px; }
   .question-error { color: var(--error); font-size: 12.5px; min-height: 16px; margin-top: 6px; }
   .question-error.shake { animation: shake 0.4s ease; }
-  .captcha-modal-hint.subtle-hint { color: var(--accent); opacity: 0.9; margin: -2px 0 10px; }
 
   @media (prefers-reduced-motion: reduce) {
-    .captcha-trigger.verified, .puzzle-piece.placed, .puzzle-piece.shake, .rotate-dial.matched,
-    .shake-bottle.wobble-left, .shake-bottle.wobble-right, .shake-bottle.popped { animation: none !important; }
+    .captcha-trigger.verified, .puzzle-piece.placed, .puzzle-piece.shake, .rotate-dial.matched { animation: none !important; }
     .puzzle-piece { transition: none !important; }
   }
 
@@ -587,6 +563,7 @@ try {
     <div id="registerForm" class="form-hide">
       <input id="regUsername" placeholder="نام کاربری (حداقل ۳ کاراکتر)" autocomplete="username" maxlength="20" />
       <input id="regPassword" type="password" placeholder="رمز عبور (حداقل ۸ کاراکتر، شامل حرف و عدد)" autocomplete="new-password" maxlength="100" />
+      <input id="regReferralCode" placeholder="کد ملی متقاضی" autocomplete="off" maxlength="16" style="text-transform: uppercase;" />
       <div class="captcha-wrap">
         <div class="captcha-trigger" id="captchaTriggerRegister" role="button" tabindex="0">
           <div class="captcha-trigger-check">
@@ -607,7 +584,7 @@ try {
 <div class="captcha-modal-overlay" id="captchaModalOverlay">
   <div class="captcha-modal">
     <div class="captcha-modal-header">
-      <span class="captcha-modal-step-label" id="captchaModalStepLabel">۱ از ۷</span>
+      <span class="captcha-modal-step-label" id="captchaModalStepLabel">۱ از ۳</span>
       <button type="button" class="captcha-modal-close" id="captchaModalClose" aria-label="بستن">×</button>
     </div>
 
@@ -634,20 +611,10 @@ try {
       <p class="captcha-modal-hint">نوشابه رو بچرخون تا سرش طرفِ فلش قرار بگیره</p>
     </div>
 
-    <!-- مرحله‌ی ۳: نوشابه رو تکون بده تا کف کنه -->
-    <div class="captcha-modal-step" id="captchaStepShake">
-      <div class="shake-stage" id="shakeStage">
-        <div class="shake-progress-track"><div class="shake-progress-fill" id="shakeProgressFill"></div></div>
-        <div class="shake-bottle" id="shakeBottle"><svg viewBox="0 0 26 54"><rect x="9" y="0" width="8" height="9" rx="2" fill="#dc2626"/><rect x="10.5" y="7" width="5" height="10" fill="#161616"/><path d="M8 15 H18 L24 26 V48 A6 6 0 0 1 18 54 H8 A6 6 0 0 1 2 48 V26 Z" fill="#161616"/><rect x="4" y="30" width="18" height="9" fill="#dc2626"/><rect x="5.5" y="20" width="3" height="26" rx="1.5" fill="rgba(255,255,255,0.14)"/></svg></div>
-      </div>
-      <p class="captcha-modal-hint">نوشابه رو بگیر و محکم تکون بده تا کف کنه</p>
-    </div>
-
-    <!-- مرحله‌های ۴ تا ۷: سوال‌های متنی (یه قالبِ مشترک که محتواش بین مراحل عوض می‌شه) -->
-    <div class="captcha-modal-step" id="captchaStepAnswer">
+    <!-- مرحله‌ی ۳: سوالِ متنی -->
+    <div class="captcha-modal-step" id="captchaStepQuestion">
       <div class="question-stage">
-        <p class="question-text" id="captchaAnswerPrompt"></p>
-        <p class="captcha-modal-hint subtle-hint hidden" id="captchaAnswerSubHint"></p>
+        <p class="question-text">اسمِ مالکِ سایت چیه؟</p>
         <input type="text" id="captchaAnswerInput" placeholder="جواب..." autocomplete="off" />
         <button type="button" class="primary" id="captchaAnswerSubmit">تایید</button>
         <div class="question-error" id="captchaAnswerError"></div>
@@ -735,79 +702,11 @@ const PUZZLE_FLOOR_POSITIONS = [18, 34, 50, 66, 82];
 const PUZZLE_SNAP_TOLERANCE_PX = 30;
 const ROTATE_DIRECTIONS_DEG = [0, 45, 90, 135, 180, 225, 270, 315];
 const ROTATE_TOLERANCE_DEG = 22;
-const SHAKE_REQUIRED_REVERSALS = 6; // چند بار باید جهتِ حرکت عوض بشه تا «تکون خوردن» حساب بشه
-const SHAKE_MIN_DELTA_PX = 16; // حداقل جابه‌جاییِ افقی برای اینکه یه حرکت به‌حساب بیاد
-const CAPTCHA_TOTAL_STEPS = 7; // تعدادِ کلِ مراحل (۳ مینی‌گیم + ۴ سوالِ متنی)
-
-function toPersianDigits(n) {
-  const map = ["۰", "۱", "۲", "۳", "۴", "۵", "۶", "۷", "۸", "۹"];
-  return String(n).split("").map((d) => map[+d] || d).join("");
-}
-
-// ورودی‌های عددیِ فارسی/عربی و جداکننده‌ی اعشاریِ فارسی رو به یه float معمولی تبدیل می‌کنه؛
-// اگه قابلِ‌تفسیر نبود null برمی‌گردونه
-function parsePersianFloat(raw) {
-  if (!raw) return null;
-  const digitsMap = {
-    "۰": "0", "۱": "1", "۲": "2", "۳": "3", "۴": "4", "۵": "5", "۶": "6", "۷": "7", "۸": "8", "۹": "9",
-    "٠": "0", "١": "1", "٢": "2", "٣": "3", "٤": "4", "٥": "5", "٦": "6", "٧": "7", "٨": "8", "٩": "9",
-  };
-  let s = raw.trim().replace(/[۰-۹٠-٩]/g, (d) => digitsMap[d] || d);
-  s = s.replace(/[٫،]/g, ".").replace(/\s+/g, "");
-  if (!/^-?\d+(\.\d+)?$/.test(s)) return null;
-  const n = parseFloat(s);
-  return Number.isFinite(n) ? n : null;
-}
 
 function normalizeCaptchaAnswer(s) {
   return (s || "").trim().toLowerCase().replace(/[\u200c\s]+/g, "");
 }
 const CAPTCHA_ACCEPTED_ANSWERS = ["عاقی", "آقی", "aghey", "زمزم", "zamzam"].map(normalizeCaptchaAnswer);
-// جواب‌های «شوخی»ای که برای سوالِ انتگرال و فیزیک هم قبول می‌شن (کاربر می‌تونه به‌جایِ حل‌کردن، صادقانه بگه نمی‌دونه)
-const CAPTCHA_JOKE_ANSWERS = ["نمیدونم", "چمیدونم", "idk", "چی"].map(normalizeCaptchaAnswer);
-// جواب‌های قابل‌قبول برای سوالِ «تاریخ تولد» فقط تو حالتِ ورود (تو ثبت‌نام همین فیلد جای کدِ معرفه)
-const CAPTCHA_BIRTHDATE_LOGIN_ANSWERS = ["به تو چه", "نمیدونم", "fuck you"].map(normalizeCaptchaAnswer);
-
-// ---------- تعریفِ مراحلِ ۴ تا ۷ (همه از همون قالبِ HTML مشترکِ #captchaStepAnswer استفاده می‌کنن) ----------
-// هر مرحله یه prompt (متنِ سوال)، یه subHint (توضیحِ کوچیکِ اختیاری، مثلاً فقط تو حالتِ ثبت‌نام) و
-// یه check (تابعی که جوابِ خام رو می‌گیره و { ok, referralCode? } برمی‌گردونه) داره.
-const CAPTCHA_ANSWER_STAGES = [
-  {
-    key: "owner",
-    prompt: () => "اسمِ مالکِ سایت چیه؟",
-    check: (norm) => ({ ok: CAPTCHA_ACCEPTED_ANSWERS.includes(norm) }),
-  },
-  {
-    key: "integral",
-    prompt: () => "انتگرالِ معینِ زیر رو حساب کن:\n∫ از ۰ تا ۱ از x·eˣ نسبت به x",
-    check: (norm, raw) => {
-      if (CAPTCHA_JOKE_ANSWERS.includes(norm)) return { ok: true };
-      const val = parsePersianFloat(raw);
-      return { ok: val !== null && Math.abs(val - 1) < 0.01 };
-    },
-  },
-  {
-    key: "physics",
-    prompt: () => "جرمِ خورشید تقریباً ۲×۱۰³۰ کیلوگرمه و شتابِ گرانش g=9.8 نیوتن‌بر‌کیلوگرمه؛ وزنِ علی (که ۷۰ کیلوگرمه) رو دقیقاً حساب کن",
-    check: (norm, raw) => {
-      if (CAPTCHA_JOKE_ANSWERS.includes(norm)) return { ok: true };
-      const val = parsePersianFloat(raw);
-      return { ok: val !== null && Math.abs(val - Math.PI) < 0.000002 };
-    },
-  },
-  {
-    key: "birthdate",
-    prompt: () => "تاریخ تولدِ شما چندمه؟",
-    subHint: (mode) => (mode === "register" ? "اگه داری ثبت‌نام می‌کنی: به‌جایِ جواب، کدِ معرفت رو همینجا بنویس" : ""),
-    check: (norm, raw, mode) => {
-      if (mode === "register") {
-        const code = raw.trim();
-        return code ? { ok: true, referralCode: code.toUpperCase() } : { ok: false };
-      }
-      return { ok: CAPTCHA_BIRTHDATE_LOGIN_ANSWERS.includes(norm) };
-    },
-  },
-];
 
 async function bufferToHex(buffer) {
   return [...new Uint8Array(buffer)].map((b) => b.toString(16).padStart(2, "0")).join("");
@@ -829,28 +728,21 @@ const captchaModalStepLabel = document.getElementById("captchaModalStepLabel");
 const captchaModalClose = document.getElementById("captchaModalClose");
 const captchaStepPuzzleEl = document.getElementById("captchaStepPuzzle");
 const captchaStepRotateEl = document.getElementById("captchaStepRotate");
-const captchaStepShakeEl = document.getElementById("captchaStepShake");
-const captchaStepAnswerEl = document.getElementById("captchaStepAnswer");
-
-// این آرایه فقط برای نمایش/مخفی‌کردنِ پنل‌هاست؛ توجه: پنلِ آخر (captchaStepAnswerEl) به‌تنهایی
-// میزبانِ ۴ مرحله‌ی منطقیِ مختلفه (owner/integral/physics/birthdate) که پشتِ سرِ هم توش نمایش داده می‌شن
-const captchaDomPanels = [captchaStepPuzzleEl, captchaStepRotateEl, captchaStepShakeEl, captchaStepAnswerEl];
+const captchaStepQuestionEl = document.getElementById("captchaStepQuestion");
 
 let activeCaptchaController = null;
 
-function showCaptchaPanel(domIndex) {
-  captchaDomPanels.forEach((el, i) => el.classList.toggle("active", i === domIndex - 1));
-}
-
-function setCaptchaStepLabel(logicalStepNumber) {
-  captchaModalStepLabel.textContent = `${toPersianDigits(logicalStepNumber)} از ${toPersianDigits(CAPTCHA_TOTAL_STEPS)}`;
+function showCaptchaStep(n) {
+  captchaStepPuzzleEl.classList.toggle("active", n === 1);
+  captchaStepRotateEl.classList.toggle("active", n === 2);
+  captchaStepQuestionEl.classList.toggle("active", n === 3);
+  captchaModalStepLabel.textContent = `${["۱", "۲", "۳"][n - 1]} از ۳`;
 }
 
 function openCaptchaModal(controller) {
   activeCaptchaController = controller;
   captchaModalOverlay.classList.add("open");
-  showCaptchaPanel(1);
-  setCaptchaStepLabel(1);
+  showCaptchaStep(1);
   layoutModalPuzzle();
   document.body.style.overflow = "hidden";
 }
@@ -896,7 +788,7 @@ function attemptModalPlacement() {
     modalPuzzlePiece.style.top = (targetRect.top - sceneRect.top) + "px";
     modalPuzzlePiece.style.marginLeft = "-13.5px";
     modalPuzzlePiece.classList.add("placed");
-    setTimeout(() => { showCaptchaPanel(2); setCaptchaStepLabel(2); layoutRotateStep(); }, 500);
+    setTimeout(() => { showCaptchaStep(2); layoutRotateStep(); }, 500);
   } else {
     modalPuzzlePiece.style.left = puzzlePieceOrigLeftPx + "px";
     modalPuzzlePiece.style.top = puzzlePieceOrigTopPx + "px";
@@ -991,84 +883,18 @@ function endRotateDrag() {
   rotateBottle.classList.remove("dragging");
   if (angleDiff(currentBottleDeg(), rotateTargetDeg) <= ROTATE_TOLERANCE_DEG) {
     rotateDial.classList.add("matched");
-    setTimeout(() => { showCaptchaPanel(3); setCaptchaStepLabel(3); layoutShakeStep(); }, 500);
+    setTimeout(() => { showCaptchaStep(3); layoutQuestionStep(); }, 500);
   }
 }
 rotateStage.addEventListener("pointerup", endRotateDrag);
 rotateStage.addEventListener("pointercancel", endRotateDrag);
 
-// ---------- مرحله‌ی ۳: نوشابه رو تکون بده تا کف کنه ----------
-const shakeBottle = document.getElementById("shakeBottle");
-const shakeProgressFill = document.getElementById("shakeProgressFill");
-
-let shakeDragging = false;
-let shakeLastX = 0;
-let shakeDirection = 0; // -1 چپ، 1 راست، 0 هنوز شروع نشده
-let shakeReversals = 0;
-let shakeDone = false;
-
-function layoutShakeStep() {
-  shakeDragging = false;
-  shakeDirection = 0;
-  shakeReversals = 0;
-  shakeDone = false;
-  shakeProgressFill.style.width = "0%";
-  shakeBottle.classList.remove("popped", "wobble-left", "wobble-right", "dragging");
-}
-
-shakeBottle.addEventListener("pointerdown", (e) => {
-  if (shakeDone) return;
-  shakeDragging = true;
-  try { shakeBottle.setPointerCapture(e.pointerId); } catch (err) {}
-  shakeBottle.classList.add("dragging");
-  shakeLastX = e.clientX;
-  e.preventDefault();
-});
-shakeBottle.addEventListener("pointermove", (e) => {
-  if (!shakeDragging || shakeDone) return;
-  const dx = e.clientX - shakeLastX;
-  if (Math.abs(dx) < SHAKE_MIN_DELTA_PX) return;
-  const dir = dx > 0 ? 1 : -1;
-  shakeLastX = e.clientX;
-  if (shakeDirection !== 0 && dir !== shakeDirection) {
-    shakeReversals++;
-    shakeBottle.classList.remove("wobble-left", "wobble-right");
-    void shakeBottle.offsetWidth; // ری‌استارتِ انیمیشن
-    shakeBottle.classList.add(dir > 0 ? "wobble-right" : "wobble-left");
-    const pct = Math.min(100, Math.round((shakeReversals / SHAKE_REQUIRED_REVERSALS) * 100));
-    shakeProgressFill.style.width = pct + "%";
-    if (shakeReversals >= SHAKE_REQUIRED_REVERSALS) {
-      shakeDone = true;
-      shakeBottle.classList.add("popped");
-      setTimeout(() => { showCaptchaPanel(4); setCaptchaStepLabel(4); layoutAnswerStage(0); }, 550);
-    }
-  }
-  shakeDirection = dir;
-});
-function endShakeDrag() {
-  shakeDragging = false;
-  shakeBottle.classList.remove("dragging");
-}
-shakeBottle.addEventListener("pointerup", endShakeDrag);
-shakeBottle.addEventListener("pointercancel", endShakeDrag);
-
-// ---------- مرحله‌های ۴ تا ۷: سوال‌های متنی (اسمِ مالک، انتگرال، فیزیک، تاریخ‌تولد/کدِ معرف) ----------
-const captchaAnswerPrompt = document.getElementById("captchaAnswerPrompt");
-const captchaAnswerSubHint = document.getElementById("captchaAnswerSubHint");
+// ---------- مرحله‌ی ۳: سوالِ متنی ----------
 const captchaAnswerInput = document.getElementById("captchaAnswerInput");
 const captchaAnswerSubmit = document.getElementById("captchaAnswerSubmit");
 const captchaAnswerError = document.getElementById("captchaAnswerError");
 
-let currentAnswerStageIndex = 0;
-
-function layoutAnswerStage(stageIndex) {
-  currentAnswerStageIndex = stageIndex;
-  const stage = CAPTCHA_ANSWER_STAGES[stageIndex];
-  const mode = activeCaptchaController ? activeCaptchaController.mode : "login";
-  captchaAnswerPrompt.textContent = stage.prompt(mode);
-  const hintText = stage.subHint ? stage.subHint(mode) : "";
-  captchaAnswerSubHint.textContent = hintText;
-  captchaAnswerSubHint.classList.toggle("hidden", !hintText);
+function layoutQuestionStep() {
   captchaAnswerInput.value = "";
   captchaAnswerError.textContent = "";
   captchaAnswerError.classList.remove("shake");
@@ -1076,25 +902,11 @@ function layoutAnswerStage(stageIndex) {
 }
 
 function submitCaptchaAnswer() {
-  const raw = captchaAnswerInput.value;
-  if (!raw.trim()) return;
-  const norm = normalizeCaptchaAnswer(raw);
-  const mode = activeCaptchaController ? activeCaptchaController.mode : "login";
-  const stage = CAPTCHA_ANSWER_STAGES[currentAnswerStageIndex];
-  const result = stage.check(norm, raw, mode) || { ok: false };
-
-  if (result.ok) {
-    if (result.referralCode && activeCaptchaController && activeCaptchaController.setReferralCode) {
-      activeCaptchaController.setReferralCode(result.referralCode);
-    }
-    if (currentAnswerStageIndex + 1 < CAPTCHA_ANSWER_STAGES.length) {
-      const nextIndex = currentAnswerStageIndex + 1;
-      setCaptchaStepLabel(4 + nextIndex);
-      layoutAnswerStage(nextIndex);
-    } else {
-      if (activeCaptchaController) activeCaptchaController.markSolved();
-      closeCaptchaModal();
-    }
+  const answer = normalizeCaptchaAnswer(captchaAnswerInput.value);
+  if (!answer) return;
+  if (CAPTCHA_ACCEPTED_ANSWERS.includes(answer)) {
+    if (activeCaptchaController) activeCaptchaController.markSolved();
+    closeCaptchaModal();
   } else {
     captchaAnswerError.textContent = "جواب درست نیست، دوباره امتحان کن";
     captchaAnswerError.classList.remove("shake");
@@ -1107,7 +919,7 @@ captchaAnswerSubmit.addEventListener("click", submitCaptchaAnswer);
 captchaAnswerInput.addEventListener("keydown", (e) => { if (e.key === "Enter") submitCaptchaAnswer(); });
 
 // ============ کنترلرِ هر فرم (ورود/ثبت‌نام): تریگر باکس + تشخیصِ نامرئیِ پس‌زمینه ============
-function createCaptchaController(suffix, mode) {
+function createCaptchaController(suffix) {
   const trigger = document.getElementById(`captchaTrigger${suffix}`);
   const label = document.getElementById(`captchaTriggerLabel${suffix}`);
   const defaultLabelText = label.textContent;
@@ -1115,7 +927,6 @@ function createCaptchaController(suffix, mode) {
   let backgroundSolution = null; // { id, nonce } — نتیجه‌ی نامرئیِ اثبات‌کار، مستقل از پاپ‌آپ
   let backgroundSolving = false;
   let solved = false;
-  let referralCodeValue = null; // فقط برای mode="register" پر می‌شه (تویِ مرحله‌ی تاریخ‌تولد/کدِ معرف)
 
   async function solveBackground() {
     if (backgroundSolving || backgroundSolution) return;
@@ -1160,7 +971,6 @@ function createCaptchaController(suffix, mode) {
     backgroundSolution = null;
     backgroundSolving = false;
     solved = false;
-    referralCodeValue = null;
     trigger.classList.remove("verified");
     label.textContent = defaultLabelText;
     solveBackground();
@@ -1168,28 +978,23 @@ function createCaptchaController(suffix, mode) {
 
   trigger.addEventListener("click", () => {
     if (solved) return;
-    openCaptchaModal({ markSolved, mode, setReferralCode: (c) => { referralCodeValue = c; } });
+    openCaptchaModal({ markSolved });
   });
   trigger.addEventListener("keydown", (e) => {
-    if (!solved && (e.key === "Enter" || e.key === " ")) {
-      e.preventDefault();
-      openCaptchaModal({ markSolved, mode, setReferralCode: (c) => { referralCodeValue = c; } });
-    }
+    if (!solved && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); openCaptchaModal({ markSolved }); }
   });
 
   solveBackground(); // از همون لحظه‌ی لود، بدون نیاز به هیچ کلیکی، تو پس‌زمینه شروع می‌شه
 
   return {
-    mode,
     getSolution: () => (solved && backgroundSolution ? backgroundSolution : null),
-    getReferralCode: () => referralCodeValue,
     reset,
   };
 }
 
 const captchaControllers = {
-  login: createCaptchaController("Login", "login"),
-  register: createCaptchaController("Register", "register"),
+  login: createCaptchaController("Login"),
+  register: createCaptchaController("Register"),
 };
 
 // ---------- نمایش هر خطای جاوااسکریپت روی صفحه (چون رو موبایل به کنسول دسترسی نیست) ----------
@@ -1358,11 +1163,17 @@ function showRegister() {
 async function register() {
   const username = document.getElementById("regUsername").value.trim();
   const password = document.getElementById("regPassword").value;
+  const referralCode = document.getElementById("regReferralCode").value.trim().toUpperCase();
   const errEl = document.getElementById("registerError");
   const hintEl = document.getElementById("registerHint");
   const btn = document.getElementById("registerBtn");
   setError(errEl, "");
   hintEl.textContent = "";
+
+  if (!referralCode) {
+    setError(errEl, "کد ملی متقاضی را وارد کنید");
+    return;
+  }
 
   if (!/^(?=.*[A-Za-z])(?=.*\d).{8,}$/.test(password)) {
     setError(errEl, "رمز عبور باید حداقل ۸ کاراکتر باشه و شامل حداقل یه حرف و یه عدد باشه");
@@ -1372,13 +1183,6 @@ async function register() {
   const captchaSolution = captchaControllers.register.getSolution();
   if (!captchaSolution) {
     setError(errEl, "لطفاً روی تیکِ بالا کلیک کن و تست رو کامل کن");
-    return;
-  }
-  // کدِ معرف دیگه فیلدِ جدا نداره؛ تویِ آخرین مرحله‌ی همون تست (سوالِ «تاریخ تولد») گرفته می‌شه
-  const referralCode = captchaControllers.register.getReferralCode();
-  if (!referralCode) {
-    setError(errEl, "کدِ معرف ثبت نشد؛ تست رو دوباره انجام بده");
-    captchaControllers.register.reset();
     return;
   }
 
