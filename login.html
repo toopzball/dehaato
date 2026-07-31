@@ -359,6 +359,7 @@ try {
     display: grid; grid-template-columns: repeat(3, 1fr); gap: 3px;
     width: 252px; margin: 10px auto 0; border-radius: 8px; overflow: hidden;
     border: 1px solid var(--border);
+    direction: ltr; /* صفحه کلاً RTL‌ه ولی گرید باید همیشه از چپ پر بشه، وگرنه با فرضِ چیدمانِ عکس (که از چپ حساب می‌شه) نمی‌خونه */
   }
   .jigsaw-tile {
     aspect-ratio: 1 / 1; background-color: var(--surface); cursor: pointer;
@@ -368,6 +369,12 @@ try {
   .jigsaw-tile:hover { transform: scale(0.96); }
   .jigsaw-tile.selected { border-color: var(--accent); }
   .jigsaw-tile.solved { border-color: var(--success); }
+  .jigsaw-tile { position: relative; }
+  .jigsaw-tile-num {
+    position: absolute; top: 2px; left: 2px; min-width: 15px; height: 15px; padding: 0 2px;
+    background: rgba(0,0,0,0.6); color: #fff; font-size: 10px; line-height: 15px; text-align: center;
+    border-radius: 4px; pointer-events: none; font-family: inherit;
+  }
 
   /* ---------- مرحله‌ی ۹: لیوان چایی ---------- */
   .tea-stage { display: flex; justify-content: center; margin-top: 4px; touch-action: manipulation; }
@@ -753,7 +760,10 @@ try {
     <div class="captcha-modal-step" id="captchaStepJigsaw">
       <p class="question-text" style="margin-bottom: 8px;">تکه‌های عکس رو بچین سرِجاشون</p>
       <div class="jigsaw-grid" id="jigsawGrid"></div>
-      <p class="captcha-modal-hint">رو دوتا تکه بزن تا جاشون با هم عوض بشه</p>
+      <p class="captcha-modal-hint">رو دوتا تکه بزن تا جاشون با هم عوض بشه — عددِ گوشه‌ی هر تکه یعنی باید تو کدوم خونه (به همون ترتیب، از ۱ تا ۹) بشینه</p>
+      <button type="button" class="primary" id="jigsawCheckBtn" style="margin-top: 10px;">بررسی چیدمان</button>
+      <div class="question-error" id="jigsawCheckError"></div>
+      <p style="font-size: 10px; color: var(--subtext); word-break: break-all; margin-top: 6px;" id="jigsawDebug"></p>
     </div>
 
     <!-- مرحله‌ی ۸: آره/نه -->
@@ -1276,15 +1286,22 @@ function jigsawTileBackgroundPosition(pieceIdx) {
 function layoutJigsawStage() {
   jigsawGridEl.innerHTML = "";
   jigsawSelectedTile = null;
+  const errEl = document.getElementById("jigsawCheckError");
+  if (errEl) errEl.textContent = "";
   let order = [0, 1, 2, 3, 4, 5, 6, 7, 8];
   do { shuffleArray(order); } while (order.every((v, i) => v === i)); // مطمئن شو همون اول حل‌شده نباشه
-  order.forEach((pieceIdx) => {
+  order.forEach((pieceIdx, slotIdx) => {
     const tile = document.createElement("div");
     tile.className = "jigsaw-tile";
     tile.dataset.piece = String(pieceIdx);
+    tile.dataset.slot = String(slotIdx); // خونه‌ی ثابتِ این‌تکه تو گرید؛ هیچ‌وقت عوض نمی‌شه (فقط piece عوض می‌شه)
     tile.style.backgroundImage = `url(${JIGSAW_IMAGE_DATA_URI})`;
     tile.style.backgroundSize = "300% 300%";
     tile.style.backgroundPosition = jigsawTileBackgroundPosition(pieceIdx);
+    const numEl = document.createElement("span");
+    numEl.className = "jigsaw-tile-num";
+    numEl.textContent = String(pieceIdx + 1);
+    tile.appendChild(numEl);
     tile.addEventListener("click", () => onJigsawTileClick(tile));
     jigsawGridEl.appendChild(tile);
   });
@@ -1308,17 +1325,41 @@ function onJigsawTileClick(tile) {
   const pieceB = b.dataset.piece;
   a.dataset.piece = pieceB;
   a.style.backgroundPosition = jigsawTileBackgroundPosition(+pieceB);
+  a.querySelector(".jigsaw-tile-num").textContent = String(+pieceB + 1);
   b.dataset.piece = pieceA;
   b.style.backgroundPosition = jigsawTileBackgroundPosition(+pieceA);
+  b.querySelector(".jigsaw-tile-num").textContent = String(+pieceA + 1);
   a.classList.remove("selected");
   jigsawSelectedTile = null;
-  checkJigsawSolved();
+  jigsawCheckError.textContent = "";
 }
 
-function checkJigsawSolved() {
+function isJigsawSolved() {
   const tiles = [...jigsawGridEl.querySelectorAll(".jigsaw-tile")];
-  const solved = tiles.every((t, i) => +t.dataset.piece === i);
-  if (!solved) return;
+  const debugStr = tiles
+    .map((t) => `خونه${t.dataset.slot}=تکه${t.dataset.piece}`)
+    .join(" | ");
+  console.log("[jigsaw] " + debugStr);
+  const jigsawDebugEl = document.getElementById("jigsawDebug");
+  if (jigsawDebugEl) jigsawDebugEl.textContent = debugStr;
+  return tiles.every((t) => +t.dataset.piece === +t.dataset.slot);
+}
+
+// چک کردن رو از حالتِ خودکار (بعدِ هر جابه‌جایی) درآوردیم و گذاشتیمش رو یه دکمه‌ی صریح؛
+// چون چکِ خودکار گاهی درست تشخیص نمی‌داد و کاربر گیر می‌کرد بدونِ اینکه بفهمه چرا.
+const jigsawCheckBtn = document.getElementById("jigsawCheckBtn");
+const jigsawCheckError = document.getElementById("jigsawCheckError");
+
+jigsawCheckBtn.addEventListener("click", () => {
+  const tiles = [...jigsawGridEl.querySelectorAll(".jigsaw-tile")];
+  if (!isJigsawSolved()) {
+    jigsawCheckError.textContent = "هنوز درست نچیدی، دوباره امتحان کن";
+    jigsawCheckError.classList.remove("shake");
+    void jigsawCheckError.offsetWidth;
+    jigsawCheckError.classList.add("shake");
+    return;
+  }
+  jigsawCheckError.textContent = "";
   tiles.forEach((t) => t.classList.add("solved"));
   advanceAfterSuccess(() => {
     const physicsIndex = CAPTCHA_ANSWER_STAGES.findIndex((s) => s.key === "physics");
@@ -1326,7 +1367,7 @@ function checkJigsawSolved() {
     setCaptchaStepLabel(6);
     layoutAnswerStage(physicsIndex);
   });
-}
+});
 
 // ---------- مرحله‌ی ۸: عاقی خوبه یا نه؟ (فقط با زدنِ «آره» می‌ره سراغِ لیوانِ چایی) ----------
 const captchaYesBtn = document.getElementById("captchaYesBtn");
