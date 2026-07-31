@@ -68,16 +68,11 @@ try {
     overflow: hidden;
     background: var(--primary);
   }
-  /* پس‌زمینه‌ی ویدیویی: main/Bg.mp4 — به‌جای حباب‌های CSS. ویدیو تمامِ صفحه رو با object-fit:cover
-     پر می‌کنه و یه لایه‌ی تیره روش هست تا متن/فرمِ روش خونا بمونه */
+  /* پس‌زمینه‌ی ویدیویی: main/Bg.mp4 — به‌جای حباب‌های CSS. ویدیو تمامِ صفحه رو با object-fit:cover پر می‌کنه */
   .bg-anim { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; background: var(--primary); contain: strict; }
   .bg-video {
     position: absolute; top: 50%; left: 50%; min-width: 100%; min-height: 100%;
     width: auto; height: auto; transform: translate(-50%, -50%); object-fit: cover;
-  }
-  .bg-video-overlay { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(10, 10, 15, 0.55), rgba(10, 10, 15, 0.78)); }
-  @media (prefers-reduced-motion: reduce) {
-    .bg-video { display: none; } /* به‌جاش رنگِ ثابتِ var(--primary) که رویِ .bg-anim هست دیده می‌شه */
   }
   .box { width: 100%; max-width: 380px; position: relative; z-index: 1; }
 
@@ -94,7 +89,7 @@ try {
   .app-splash-emoji.brand-emoji {
     direction: ltr; font-size: 46px; font-weight: 800; letter-spacing: 1px; color: var(--text);
     font-variant-numeric: tabular-nums;
-    min-height: 60px; width: 80px; margin-inline: auto;
+    height: 60px; width: 80px; margin-inline: auto; overflow: hidden;
     display: flex; align-items: center; justify-content: center; margin-bottom: 6px;
     animation: popIn 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) both, float 4s ease-in-out 0.6s infinite;
   }
@@ -137,7 +132,7 @@ try {
   .tabs button:active { transform: scale(0.95); }
 
   input {
-    width: 100%; font-family: inherit; font-size: 15px; color: var(--text);
+    width: 100%; font-family: inherit; font-size: 13px; color: var(--text);
     background: var(--card); border: 1px solid var(--border); border-radius: 10px;
     padding: 11px 14px; margin-bottom: 10px;
     transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease;
@@ -576,7 +571,6 @@ try {
   <video class="bg-video" autoplay muted loop playsinline preload="auto">
     <source src="main/Bg.mp4" type="video/mp4" />
   </video>
-  <div class="bg-video-overlay"></div>
 </div>
 <div id="debugBanner" style="display:none; position:fixed; top:0; left:0; right:0; z-index:99; background:#EF4444; color:#fff; font-family:monospace; font-size:12px; padding:8px 10px; direction:ltr; text-align:left; word-break:break-all; max-height:40vh; overflow:auto;"></div>
 <audio id="bgMusic" loop></audio>
@@ -1417,10 +1411,8 @@ function pauseBgVideo() { if (bgVideoEl) bgVideoEl.pause(); }
 function resumeBgVideo() {
   if (!bgVideoEl) return;
   if (document.hidden) return;
-  if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
   bgVideoEl.play().catch(() => {}); // اگه مرورگر autoplay رو بلاک کنه، بی‌سروصدا نادیده می‌گیریم
 }
-if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) pauseBgVideo();
 document.addEventListener("focusin", (e) => {
   if (e.target.tagName === "INPUT") { bgAnimEl.classList.add("is-paused"); pauseBgVideo(); }
 });
