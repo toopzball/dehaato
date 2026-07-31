@@ -778,6 +778,7 @@
   .upload-composer { display: flex; flex-direction: column; }
   .upload-composer .u-dropzone { order: 1; }
   .upload-composer .u-title { order: 2; }
+  .upload-composer .u-radio-visual { order: 2.5; }
   .upload-composer .u-text { order: 3; }
   .upload-composer .u-tags { order: 4; }
   .upload-composer .u-submit { order: 5; }
@@ -785,6 +786,7 @@
   .upload-composer .u-title-cover-row,
   .upload-composer .u-feeling { display: none; }
   .upload-composer.mode-text .u-dropzone { display: none; }
+  .upload-composer.mode-text .u-radio-visual { display: none; }
   .upload-composer.mode-text .u-text { order: 1; }
   .upload-composer.mode-text .u-title { order: 2; }
   .upload-composer.mode-text .u-tags { order: 3; }
@@ -793,6 +795,7 @@
 
   /* حالت موسیقی: فقط کادر آپلود موسیقی + چرخ‌گرام + عنوان/کاور دلخواه + حس‌من + توضیحات + تگ‌ها دیده می‌شن */
   .upload-composer.mode-music .u-dropzone { display: none; }
+  .upload-composer.mode-music .u-radio-visual { display: none; }
   .upload-composer.mode-music .u-music-dropzone { order: 1; }
   .upload-composer.mode-music .music-dropzone.u-music-dropzone { display: flex; }
   .upload-composer.mode-music .u-title-cover-row { order: 2; display: flex; }
@@ -804,6 +807,7 @@
   /* تا وقتی فایلی انتخاب نشده (رسانه/موسیقی) یا چیزی تایپ نشده (متن)، هیچ کادرِ دیگه‌ای به‌جز
      کادرِ اصلیِ آپلود/نوشتن دیده نمی‌شه؛ محدودیت روی هر ۳ حالتِ آپلود اعمال می‌شه */
   .upload-composer:not(.content-ready) .u-title,
+  .upload-composer:not(.content-ready) .u-radio-visual,
   .upload-composer:not(.content-ready) .u-tags,
   .upload-composer:not(.content-ready) .u-submit,
   .upload-composer:not(.content-ready) .u-title-cover-row,
@@ -812,6 +816,16 @@
      تو حالتِ رسانه/موسیقی، متن هم مثلِ بقیه تا انتخابِ فایل مخفیه */
   .upload-composer:not(.mode-text):not(.content-ready) .u-text { display: none !important; }
   .upload-composer.mode-music .u-submit { order: 6; }
+
+  /* فقط تو حالتِ پیش‌فرض (عکس/ویدیو) دیده می‌شه — تو مود موسیقی و متنی از قبل مخفیه (بالاتر) */
+  .radio-visual-wrap {
+    display: flex; align-items: center; gap: 10px;
+    background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+    padding: 10px 12px; margin-bottom: 4px; cursor: pointer; user-select: none;
+  }
+  .radio-visual-wrap input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--accent); flex-shrink: 0; margin: 0; }
+  .radio-visual-wrap .radio-visual-label { font-size: 13px; color: var(--text); flex: 1; }
+  .radio-visual-wrap .radio-visual-hint { font-size: 11px; color: var(--subtext); display: block; margin-top: 1px; }
 
   /* ---------- کادر آپلود رسانه (دورچین‌دار) ---------- */
   .media-dropzone {
@@ -2861,6 +2875,26 @@
   .media-sort-btn.active { background: var(--accent-gradient); color: #fff; border-color: transparent; }
   .media-sort-btn.coming-soon { opacity: 0.55; cursor: default; }
 
+  /* دکمه‌ی «ده‌دودز» حالا خودش یه منوعه؛ اولین آیتمش رادیوعه، بعداً آیتم‌های دیگه هم اضافه می‌شن */
+  .dedoodz-menu-wrap { position: relative; flex: 1; }
+  .dedoodz-menu-wrap .media-sort-btn { width: 100%; }
+  .dedoodz-dropdown {
+    position: absolute; top: calc(100% + 6px); left: 0; right: 0; z-index: 30;
+    background: var(--card); border: 1px solid var(--border); border-radius: 10px;
+    padding: 6px; opacity: 0; transform: translateY(-6px); pointer-events: none;
+    transition: opacity 0.18s ease, transform 0.18s ease;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.35);
+  }
+  .dedoodz-dropdown.open { opacity: 1; transform: translateY(0); pointer-events: auto; }
+  .dedoodz-dropdown-item {
+    display: flex; align-items: center; gap: 8px; width: 100%;
+    background: none; border: none; border-radius: 8px; padding: 9px 10px;
+    font-family: inherit; font-size: 13px; color: var(--text); text-decoration: none;
+    cursor: pointer; text-align: right; transition: background 0.15s ease;
+  }
+  .dedoodz-dropdown-item:hover { background: var(--surface); }
+  .dedoodz-dropdown-item svg { width: 17px; height: 17px; color: var(--accent-hover); flex-shrink: 0; }
+
   /* گرید ۳ ستونه پروفایل برای رسانه/آهنگ‌ها */
   .profile-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 3px; }
   .grid-item {
@@ -3629,7 +3663,15 @@
     <div class="media-sort-row">
       <button class="media-sort-btn active" id="mediaSort-date" onclick="setMediaSort('date')">جدیدترین</button>
       <button class="media-sort-btn" id="mediaSort-popular" onclick="setMediaSort('popular')">پرطرفدار</button>
-      <button class="media-sort-btn coming-soon" id="mediaSort-dedoodz">ده‌دودز (بزودی)</button>
+      <div class="dedoodz-menu-wrap">
+        <button class="media-sort-btn" id="mediaSort-dedoodz" onclick="toggleDedoodzMenu(event)">ده‌دودز</button>
+        <div class="dedoodz-dropdown" id="dedoodzDropdown">
+          <a class="dedoodz-dropdown-item" href="radio.html" target="_blank" rel="noopener">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2a10 10 0 0 1 10 10M12 2a10 10 0 0 0-10 10M7 12a5 5 0 0 1 5-5M17 12a5 5 0 0 0-5-5"/></svg>
+            رادیو
+          </a>
+        </div>
+      </div>
     </div>
     <div id="mediaFeed">
       <div class="masonry-wrap" id="masonryWrap">
@@ -3775,6 +3817,12 @@
         <input type="text" id="postTitle" placeholder="عنوان کوتاه برای پست (اختیاری)" maxlength="15" oninput="onTitleInput()" />
         <span class="title-counter" id="titleCounter">۰/۱۵</span>
       </div>
+
+      <!-- نمایش در رادیو دهات: فقط برای عکس/ویدیو معنی داره -->
+      <label class="radio-visual-wrap u-radio-visual" for="radioVisualCheckbox">
+        <input type="checkbox" id="radioVisualCheckbox" />
+        <span class="radio-visual-label">نمایش در رادیو دهات<span class="radio-visual-hint">به‌عنوان پس‌زمینه‌ی تصویریِ رادیو استفاده می‌شه</span></span>
+      </label>
 
       <!-- متن/توضیحات -->
       <div class="text-input-wrap u-text">
@@ -4063,6 +4111,7 @@
       <div style="font-weight:700; font-size:16px; margin-bottom:10px;">پنل مدیریت</div>
       <div class="admin-stats" id="adminStats">در حال بارگذاری آمار...</div>
       <button class="ban-btn hidden" id="bulkUploadBtn" style="margin-top:10px;" onclick="openBulkUploadModal()">آپلودِ دسته‌ای موزیک</button>
+      <button class="ban-btn hidden" id="http3ToggleBtn" style="margin-top:10px;" onclick="toggleHttp3()">در حال بررسیِ وضعیتِ HTTP/3...</button>
     </div>
 
     <div class="profile-filter">
@@ -4943,6 +4992,8 @@ async function refreshCurrentView() {
       break;
     case "view-admin":
       document.getElementById("bulkUploadBtn")?.classList.toggle("hidden", !isSuperAdmin);
+      document.getElementById("http3ToggleBtn")?.classList.toggle("hidden", !isSuperAdmin);
+      if (isSuperAdmin) loadHttp3Status();
       await refreshAdminCurrentTab(true);
       break;
     default:
@@ -5752,6 +5803,11 @@ async function submitPost() {
     if (selectedAudioMeta.coverBlob) fd.append("audio_cover", selectedAudioMeta.coverBlob, "cover.jpg");
     if (feeling) fd.append("audio_feeling", feeling);
   }
+  const radioVisualCheckbox = document.getElementById("radioVisualCheckbox");
+  if (fileToUpload && radioVisualCheckbox && radioVisualCheckbox.checked
+    && (selectedFile.type.startsWith("image/") || selectedFile.type.startsWith("video/"))) {
+    fd.append("radio_visual", "1");
+  }
   btn.textContent = "در حال ارسال...";
   progressWrap.classList.remove("hidden");
   resetUploadProgressUI();
@@ -5836,6 +5892,8 @@ async function submitPost() {
     document.getElementById("postTitle").value = "";
     const tagsEl = document.getElementById("postTags");
     if (tagsEl) tagsEl.value = "";
+    const radioVisualCheckboxReset = document.getElementById("radioVisualCheckbox");
+    if (radioVisualCheckboxReset) radioVisualCheckboxReset.checked = false;
     onTitleInput();
     onPostTextInput();
     clearFile();
@@ -11213,6 +11271,19 @@ function setMediaSort(sort) {
   loadFeedView("media", true);
 }
 
+// دکمه‌ی «ده‌دودز»: یه منوعه، نه یه حالتِ مرتب‌سازیِ دیگه؛ اولین آیتمش رادیوعه (بعداً آیتم‌های
+// بیشتری بهش اضافه می‌شه). با کلیک بیرونِ منو یا خودِ دکمه (بار دوم) بسته می‌شه.
+function toggleDedoodzMenu(event) {
+  event.stopPropagation();
+  document.getElementById("dedoodzDropdown")?.classList.toggle("open");
+}
+document.addEventListener("click", (e) => {
+  const dropdown = document.getElementById("dedoodzDropdown");
+  if (dropdown && dropdown.classList.contains("open") && !dropdown.contains(e.target)) {
+    dropdown.classList.remove("open");
+  }
+});
+
 // ================= دفتر احوالات (تب متن‌ها) =================
 // هر صفحه‌ی دفتر دقیقاً ۳ متنه (pageSize=3 مستقیم از همون endpoint فیدِ متنی). صفحه‌ها تو یه کش نگه
 // داشته می‌شن تا برگشتن به عقب دوباره فچ نزنه؛ همیشه ۲ صفحه‌ی جلوتر از صفحه‌ی فعلی از قبل (بی‌سروصدا)
@@ -11939,7 +12010,55 @@ function setAdminTab(tab) {
   }
 }
 
-// ---------- پنل ادمین: فرستادنِ دستیِ changelog (فقط مالکِ سایت) ----------
+// ---------- سوییچِ HTTP/3 دامنه (فقط مالک سایت) — تنظیمِ شبکه، برای امتحان‌کردنِ سرعت تو ساعاتِ شلوغی ----------
+function renderHttp3Btn(enabled, busy) {
+  const btn = document.getElementById("http3ToggleBtn");
+  if (!btn) return;
+  btn.disabled = !!busy;
+  if (busy) {
+    btn.textContent = "در حال اعمال تغییر...";
+  } else if (enabled === null) {
+    btn.textContent = "وضعیتِ HTTP/3 گرفته نشد — دوباره امتحان کن";
+  } else {
+    btn.textContent = enabled ? "HTTP/3 روشنه — خاموشش کن" : "HTTP/3 خاموشه — روشنش کن";
+  }
+}
+
+async function loadHttp3Status() {
+  renderHttp3Btn(null, true);
+  try {
+    const res = await fetch(`${WORKER_URL}/api/admin/cloudflare/http3`, {
+      headers: { Authorization: `Bearer ${getToken()}` },
+    });
+    const data = await res.json();
+    if (!res.ok) { renderHttp3Btn(null, false); toast(data.error || "خطا", "error"); return; }
+    renderHttp3Btn(data.enabled, false);
+  } catch (e) {
+    renderHttp3Btn(null, false);
+  }
+}
+
+async function toggleHttp3() {
+  const btn = document.getElementById("http3ToggleBtn");
+  const currentlyOn = btn && btn.textContent.includes("روشنه");
+  if (!confirm(`HTTP/3 برای کل دامنه ${currentlyOn ? "خاموش" : "روشن"} بشه؟ این رو کل سایت و همه‌ی کاربرا اثر می‌ذاره.`)) return;
+  renderHttp3Btn(null, true);
+  try {
+    const res = await fetch(`${WORKER_URL}/api/admin/cloudflare/http3`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${getToken()}` },
+    });
+    const data = await res.json();
+    if (!res.ok) { toast(data.error || "تغییر ناموفق بود", "error"); renderHttp3Btn(null, false); return; }
+    renderHttp3Btn(data.enabled, false);
+    toast(data.enabled ? "HTTP/3 روشن شد" : "HTTP/3 خاموش شد", "success");
+  } catch (e) {
+    toast("اتصال به سرور برقرار نشد", "error");
+    renderHttp3Btn(null, false);
+  }
+}
+
+
 async function loadAdminChangelogForm() {
   const rowsEl = document.getElementById("adminChangelogRows");
   rowsEl.innerHTML = `<div class="empty-state">در حال بارگذاری...</div>`;
