@@ -354,6 +354,10 @@ try {
   .yesno-unsure { text-align: center; margin: 12px 0 0; }
   .yesno-unsure.shake { animation: shake 0.4s ease; }
 
+  /* ---------- مرحله‌ی ۴: اسمِ مالکِ سایت (۴گزینه‌ای) ---------- */
+  .owner-options { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 4px; }
+  .owner-options .yesno-btn:hover { background: var(--accent); border-color: var(--accent); color: #fff; }
+
   /* ---------- مرحله‌ی ۵: پازلِ ۹‌تکه‌ی بهم‌ریخته ---------- */
   .jigsaw-grid {
     display: grid; grid-template-columns: repeat(3, 1fr); gap: 3px;
@@ -745,7 +749,22 @@ try {
       <p class="captcha-modal-hint">نوشابه رو بگیر و محکم تکون بده تا کف کنه</p>
     </div>
 
-    <!-- مرحله‌های ۴ تا ۷: سوال‌های متنی (یه قالبِ مشترک که محتواش بین مراحل عوض می‌شه) -->
+    <!-- مرحله‌ی ۴: اسمِ مالکِ سایت (۴گزینه‌ای) -->
+    <div class="captcha-modal-step" id="captchaStepOwner">
+      <div class="question-stage">
+        <p class="question-text">اسمِ مالکِ سایت چیه؟</p>
+        <div class="owner-options" id="ownerOptions">
+          <button type="button" class="yesno-btn" data-answer="قاقی">قاقی</button>
+          <button type="button" class="yesno-btn" data-answer="ساقی">ساقی</button>
+          <button type="button" class="yesno-btn" data-answer="نمیدونم">نمی‌دونم</button>
+          <button type="button" class="yesno-btn" data-answer="عاقی">عاقی</button>
+        </div>
+        <p class="captcha-modal-hint subtle-hint yesno-unsure hidden" id="ownerUnsureMsg">جدی؟</p>
+        <div class="question-error" id="ownerError"></div>
+      </div>
+    </div>
+
+    <!-- مرحله‌های ۶ و ۷: سوال‌های متنی (فیزیک، تاریخ‌تولد/کدِ معرف) -->
     <div class="captcha-modal-step" id="captchaStepAnswer">
       <div class="question-stage">
         <p class="question-text" id="captchaAnswerPrompt"></p>
@@ -763,7 +782,6 @@ try {
       <p class="captcha-modal-hint">رو دوتا تکه بزن تا جاشون با هم عوض بشه — عددِ گوشه‌ی هر تکه یعنی باید تو کدوم خونه (به همون ترتیب، از ۱ تا ۹) بشینه</p>
       <button type="button" class="primary" id="jigsawCheckBtn" style="margin-top: 10px;">بررسی چیدمان</button>
       <div class="question-error" id="jigsawCheckError"></div>
-      <p style="font-size: 10px; color: var(--subtext); word-break: break-all; margin-top: 6px;" id="jigsawDebug"></p>
     </div>
 
     <!-- مرحله‌ی ۸: آره/نه -->
@@ -910,14 +928,9 @@ const CAPTCHA_JOKE_ANSWERS = ["نمیدونم", "چمیدونم", "idk", "چی"]
 // جواب‌های قابل‌قبول برای سوالِ «تاریخ تولد» فقط تو حالتِ ورود (تو ثبت‌نام همین فیلد جای کدِ معرفه)
 const CAPTCHA_BIRTHDATE_LOGIN_ANSWERS = ["به تو چه", "نمیدونم", "fuck you"].map(normalizeCaptchaAnswer);
 
-// ---------- تعریفِ مراحلِ متنیِ owner/physics/birthdate (همه از قالبِ HTML مشترکِ #captchaStepAnswer
-// استفاده می‌کنن). این سه‌تا پشتِ‌سرهم نیستن: بینِ owner و physics، پازلِ ۹تکه (مرحله‌ی جداگانه) میاد. ----------
+// ---------- تعریفِ مراحلِ متنیِ physics/birthdate (هردو از قالبِ HTML مشترکِ #captchaStepAnswer
+// استفاده می‌کنن). اسمِ مالکِ سایت (owner) دیگه ۴گزینه‌ایه و پنلِ جداگانه‌ی خودشو داره. ----------
 const CAPTCHA_ANSWER_STAGES = [
-  {
-    key: "owner",
-    prompt: () => "اسمِ مالکِ سایت چیه؟",
-    check: (norm) => ({ ok: CAPTCHA_ACCEPTED_ANSWERS.includes(norm) }),
-  },
   {
     key: "physics",
     prompt: () => "جرمِ خورشید تقریباً ۲×۱۰³۰ کیلوگرمه و شتابِ گرانش g=9.8 نیوتن‌بر‌کیلوگرمه؛ وزنِ علی (که ۷۰ کیلوگرمه) رو دقیقاً حساب کن",
@@ -962,16 +975,17 @@ const captchaModalClose = document.getElementById("captchaModalClose");
 const captchaStepPuzzleEl = document.getElementById("captchaStepPuzzle");
 const captchaStepRotateEl = document.getElementById("captchaStepRotate");
 const captchaStepShakeEl = document.getElementById("captchaStepShake");
+const captchaStepOwnerEl = document.getElementById("captchaStepOwner");
 const captchaStepAnswerEl = document.getElementById("captchaStepAnswer");
 const captchaStepJigsawEl = document.getElementById("captchaStepJigsaw");
 const captchaStepYesNoEl = document.getElementById("captchaStepYesNo");
 const captchaStepTeaEl = document.getElementById("captchaStepTea");
 const captchaSuccessTickEl = document.getElementById("captchaSuccessTick");
 
-// این آرایه فقط برای نمایش/مخفی‌کردنِ پنل‌هاست؛ توجه: پنلِ چهارم (captchaStepAnswerEl) به‌تنهایی
-// میزبانِ چند مرحله‌ی منطقیِ مختلفه (owner/physics/birthdate) که غیرِپیوسته (با پازلِ ۹تکه وسطشون) نمایش داده می‌شن
-// اندیس‌ها (۱-پایه): ۱=پازلِ تک‌تکه، ۲=چرخوندن، ۳=تکون‌دادن، ۴=سوالِ متنی، ۵=پازلِ ۹تکه، ۶=آره/نه، ۷=لیوانِ چایی
-const captchaDomPanels = [captchaStepPuzzleEl, captchaStepRotateEl, captchaStepShakeEl, captchaStepAnswerEl, captchaStepJigsawEl, captchaStepYesNoEl, captchaStepTeaEl];
+// این آرایه فقط برای نمایش/مخفی‌کردنِ پنل‌هاست.
+// اندیس‌ها (۱-پایه): ۱=پازلِ تک‌تکه، ۲=چرخوندن، ۳=تکون‌دادن، ۴=اسمِ مالکِ سایت (۴گزینه‌ای)،
+// ۵=سوالِ متنی (فیزیک/تاریخ‌تولد)، ۶=پازلِ ۹تکه، ۷=آره/نه، ۸=لیوانِ چایی
+const captchaDomPanels = [captchaStepPuzzleEl, captchaStepRotateEl, captchaStepShakeEl, captchaStepOwnerEl, captchaStepAnswerEl, captchaStepJigsawEl, captchaStepYesNoEl, captchaStepTeaEl];
 
 let activeCaptchaController = null;
 let captchaStageTransitionTimeout = null; // تایمرِ گذار بینِ مینی‌گیم‌ها؛ اگه مودال وسطِ گذار بسته بشه، باید لغو بشه
@@ -1195,7 +1209,7 @@ shakeBottle.addEventListener("pointermove", (e) => {
     if (shakeReversals >= SHAKE_REQUIRED_REVERSALS) {
       shakeDone = true;
       shakeBottle.classList.add("popped");
-      advanceAfterSuccess(() => { showCaptchaPanel(4); setCaptchaStepLabel(4); layoutAnswerStage(0); });
+      advanceAfterSuccess(() => { showCaptchaPanel(4); setCaptchaStepLabel(4); layoutOwnerStage(); });
     }
   }
   shakeDirection = dir;
@@ -1215,6 +1229,43 @@ const captchaAnswerSubmit = document.getElementById("captchaAnswerSubmit");
 const captchaAnswerError = document.getElementById("captchaAnswerError");
 
 let currentAnswerStageIndex = 0;
+
+// ---------- مرحله‌ی ۴: اسمِ مالکِ سایت (۴گزینه‌ای) ----------
+const ownerOptionsEl = document.getElementById("ownerOptions");
+const ownerUnsureMsg = document.getElementById("ownerUnsureMsg");
+const ownerErrorEl = document.getElementById("ownerError");
+
+function layoutOwnerStage() {
+  ownerErrorEl.textContent = "";
+  ownerUnsureMsg.classList.add("hidden");
+  ownerUnsureMsg.classList.remove("shake");
+}
+
+ownerOptionsEl.querySelectorAll(".yesno-btn").forEach((btn) => {
+  btn.addEventListener("click", () => {
+    const answer = btn.dataset.answer;
+    if (answer === "عاقی") {
+      ownerErrorEl.textContent = "";
+      ownerUnsureMsg.classList.add("hidden");
+      advanceAfterSuccess(() => { showCaptchaPanel(6); setCaptchaStepLabel(5); layoutJigsawStage(); });
+      return;
+    }
+    if (answer === "نمیدونم") {
+      ownerErrorEl.textContent = "";
+      ownerUnsureMsg.classList.remove("hidden");
+      ownerUnsureMsg.classList.remove("shake");
+      void ownerUnsureMsg.offsetWidth;
+      ownerUnsureMsg.classList.add("shake");
+      return;
+    }
+    // قاقی/ساقی: جواب غلط
+    ownerUnsureMsg.classList.add("hidden");
+    ownerErrorEl.textContent = "جواب درست نیست، دوباره امتحان کن";
+    ownerErrorEl.classList.remove("shake");
+    void ownerErrorEl.offsetWidth;
+    ownerErrorEl.classList.add("shake");
+  });
+});
 
 function layoutAnswerStage(stageIndex) {
   currentAnswerStageIndex = stageIndex;
@@ -1242,16 +1293,13 @@ function submitCaptchaAnswer() {
     if (result.referralCode && activeCaptchaController && activeCaptchaController.setReferralCode) {
       activeCaptchaController.setReferralCode(result.referralCode);
     }
-    if (stage.key === "owner") {
-      // بعدِ اسمِ مالکِ سایت، به‌جایِ سوالِ متنیِ بعدی، می‌ره سراغِ پازلِ ۹تکه (مرحله‌ی ۵)
-      advanceAfterSuccess(() => { showCaptchaPanel(5); setCaptchaStepLabel(5); layoutJigsawStage(); });
-    } else if (stage.key === "physics") {
+    if (stage.key === "physics") {
       // بعدِ فیزیک، برمی‌گرده به همون پنلِ سوالِ متنی برایِ تاریخ‌تولد/کدِ معرف (مرحله‌ی ۷)
       const birthdateIndex = CAPTCHA_ANSWER_STAGES.findIndex((s) => s.key === "birthdate");
       advanceAfterSuccess(() => { setCaptchaStepLabel(7); layoutAnswerStage(birthdateIndex); });
     } else {
       // آخرین سوالِ متنی (تاریخ‌تولد) تمومه؛ برو سراغِ آره/نه (مرحله‌ی ۸)
-      advanceAfterSuccess(() => { showCaptchaPanel(6); setCaptchaStepLabel(8); layoutYesNoStep(); });
+      advanceAfterSuccess(() => { showCaptchaPanel(7); setCaptchaStepLabel(8); layoutYesNoStep(); });
     }
   } else {
     captchaAnswerError.textContent = "جواب درست نیست، دوباره امتحان کن";
@@ -1336,12 +1384,6 @@ function onJigsawTileClick(tile) {
 
 function isJigsawSolved() {
   const tiles = [...jigsawGridEl.querySelectorAll(".jigsaw-tile")];
-  const debugStr = tiles
-    .map((t) => `خونه${t.dataset.slot}=تکه${t.dataset.piece}`)
-    .join(" | ");
-  console.log("[jigsaw] " + debugStr);
-  const jigsawDebugEl = document.getElementById("jigsawDebug");
-  if (jigsawDebugEl) jigsawDebugEl.textContent = debugStr;
   return tiles.every((t) => +t.dataset.piece === +t.dataset.slot);
 }
 
@@ -1363,7 +1405,7 @@ jigsawCheckBtn.addEventListener("click", () => {
   tiles.forEach((t) => t.classList.add("solved"));
   advanceAfterSuccess(() => {
     const physicsIndex = CAPTCHA_ANSWER_STAGES.findIndex((s) => s.key === "physics");
-    showCaptchaPanel(4);
+    showCaptchaPanel(5);
     setCaptchaStepLabel(6);
     layoutAnswerStage(physicsIndex);
   });
@@ -1379,7 +1421,7 @@ function layoutYesNoStep() {
   captchaYesNoUnsureMsg.classList.remove("shake");
 }
 captchaYesBtn.addEventListener("click", () => {
-  advanceAfterSuccess(() => { showCaptchaPanel(7); setCaptchaStepLabel(9); layoutTeaStage(); });
+  advanceAfterSuccess(() => { showCaptchaPanel(8); setCaptchaStepLabel(9); layoutTeaStage(); });
 });
 captchaNoBtn.addEventListener("click", () => {
   // با زدنِ «نه» کپچا بسته نمی‌شه؛ فقط یه پیامِ «مطمئنی؟» نشون داده می‌شه تا کاربر دوباره فکر کنه
