@@ -115,7 +115,7 @@ try {
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .brand, .app-splash-emoji, .card, .captcha-wrap { animation: none !important; }
+    .brand, .app-splash-emoji, .card, .captcha-wrap, .form-anim-field, .form-anim-bottom { animation: none !important; }
   }
 
   .card {
@@ -178,8 +178,25 @@ try {
 
   #formStage { display: grid; }
   #formStage > div { grid-area: 1 / 1; min-width: 0; }
-  #loginForm, #registerForm { animation: fadeIn 0.35s ease both; transition: opacity 0.2s ease; }
   .form-hide { visibility: hidden; pointer-events: none; opacity: 0; }
+
+  /* هر فیلدِ بالایی (نام‌کاربری/پسورد/کدِ ملی) با اسلایدِ افقی از طرفِ خودِ تب میاد تو؛
+     کادرِ کپچا و دکمه‌ی اصلی («form-anim-bottom») به‌جاش عمودی حرکت می‌کنن: تو ثبت‌نام از بالا
+     میان پایین (چون فیلدِ کدِ ملی بالاشون اضافه می‌شه)، تو ورود از پایین میان بالا. */
+  @keyframes fieldSlideInLogin { from { opacity: 0; transform: translateX(-16px); } to { opacity: 1; transform: translateX(0); } }
+  @keyframes fieldSlideInRegister { from { opacity: 0; transform: translateX(16px); } to { opacity: 1; transform: translateX(0); } }
+  @keyframes dropDownIn { from { opacity: 0; transform: translateY(-16px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes riseUpIn { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+
+  #loginForm .form-anim-field { animation: fieldSlideInLogin 0.4s cubic-bezier(0.22, 1, 0.36, 1) both; }
+  #loginForm .form-anim-bottom { animation: riseUpIn 0.4s cubic-bezier(0.22, 1, 0.36, 1) both; }
+  #registerForm .form-anim-field { animation: fieldSlideInRegister 0.4s cubic-bezier(0.22, 1, 0.36, 1) both; }
+  #registerForm .form-anim-bottom { animation: dropDownIn 0.4s cubic-bezier(0.22, 1, 0.36, 1) both; }
+  .field-1 { animation-delay: 0s !important; }
+  .field-2 { animation-delay: 0.05s !important; }
+  .field-3 { animation-delay: 0.1s !important; }
+  .field-4 { animation-delay: 0.15s !important; }
+  .field-5 { animation-delay: 0.2s !important; }
 
   button.primary {
     width: 100%; padding: 11px; border: none; border-radius: 10px;
@@ -211,7 +228,7 @@ try {
   @keyframes puzzleSettle { 0% { transform: scale(1.15) rotate(-4deg); } 55% { transform: scale(0.94) rotate(2deg); } 100% { transform: scale(1) rotate(0deg); } }
   @keyframes rotateSuccessPulse { 0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4); } 100% { box-shadow: 0 0 0 10px rgba(34, 197, 94, 0); } }
 
-  .captcha-wrap { margin-bottom: 10px; animation: fadeIn 0.6s ease 0.2s both; }
+  .captcha-wrap { margin-bottom: 10px; }
 
   /* ---------- تیکِ تایید تو خودِ فرم (کلیک=بازکردنِ پاپ‌آپ) ---------- */
   .captcha-trigger {
@@ -266,29 +283,50 @@ try {
     position: relative; overflow: hidden;
   }
   @keyframes tickJump {
-    0%   { opacity: 0; transform: scale(0.3); }
-    55%  { opacity: 1; transform: scale(1.22); }
-    75%  { transform: scale(0.9); }
+    0%   { opacity: 0; transform: scale(0.25); }
+    50%  { opacity: 1; transform: scale(1.12); }
+    72%  { transform: scale(0.94); }
     100% { transform: scale(1); }
+  }
+  @keyframes tickCardIn {
+    0%   { opacity: 0; transform: scale(0.7); }
+    100% { opacity: 1; transform: scale(1); }
   }
   .captcha-success-tick {
     position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
-    background: var(--card); border-radius: 14px; opacity: 0; transform: scale(0.3);
-    pointer-events: none; z-index: 30; transition: opacity 0.15s ease;
+    opacity: 0; pointer-events: none; z-index: 30;
   }
-  .captcha-success-tick.show { opacity: 1; animation: tickJump 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
-  .captcha-success-tick svg { width: 64px; height: 64px; }
+  .captcha-success-tick.show { opacity: 1; }
+  .captcha-success-tick.hiding { opacity: 0; transition: opacity 0.45s ease; }
+  .captcha-success-tick-card {
+    width: 42%; aspect-ratio: 1 / 1; max-width: 130px; min-width: 84px;
+    background: var(--card); border: 1px solid var(--border); border-radius: 18px;
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.2);
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden; /* چک‌مارک باید تویِ همین کادرِ کوچیک بمونه، نه اینکه ازش بزنه بیرون */
+    transform: scale(0.7); opacity: 0;
+  }
+  .captcha-success-tick.show .captcha-success-tick-card {
+    animation: tickCardIn 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+  .captcha-success-tick svg { width: 68%; height: 68%; opacity: 0; transform: scale(0.25); }
+  .captcha-success-tick.show svg {
+    animation: tickJump 0.75s cubic-bezier(0.34, 1.56, 0.64, 1) 0.05s both;
+  }
   .captcha-success-tick circle { fill: none; stroke: var(--success); stroke-width: 3; }
   .captcha-success-tick path {
     fill: none; stroke: var(--success); stroke-width: 4.5; stroke-linecap: round; stroke-linejoin: round;
-    stroke-dasharray: 34; stroke-dashoffset: 34; transition: stroke-dashoffset 0.3s ease 0.08s;
+    stroke-dasharray: 34; stroke-dashoffset: 34; transition: stroke-dashoffset 0.4s ease 0.45s;
   }
   .captcha-success-tick.show path { stroke-dashoffset: 0; }
   .captcha-modal-overlay.open .captcha-modal { transform: scale(1) translateY(0); }
-  .captcha-modal-overlay.open .captcha-modal.tick-showing { transform: scale(0.3) translateY(0); }
-  /* وقتی تیک نشون داده می‌شه، کادر باید حتماً مربع باشه (نه به‌شکلِ مستطیلِ مرحله‌ی قبل/بعد)؛
-     عرض/ارتفاعِ برابر رو خودِ جاوااسکریپت (پایینِ فایل، تابعِ advanceAfterSuccess) موقعِ نمایشِ تیک ست می‌کنه.
-     خودِ چک‌مارک هم (tickJump بالا) مستقل از اسکیلِ کادر یه پرشِ کامل داره، وگرنه تو این سایزِ کوچیک گم می‌شد. */
+  /* تیک دیگه با اسکیل‌کردنِ کلِ کادرِ مودال نمایش داده نمی‌شه (همون چیزی که باعثِ گلیچ/لگ می‌شد،
+     چون هم‌زمان دو تا انیمیشنِ سنگین‌ِ لِی‌آوت‌محور -هایت و ترنسفورم- روی خودِ کادرِ بزرگ اجرا می‌شد).
+     الان کادرِ اصلی اصلاً جابه‌جا/اسکیل نمی‌شه؛ فقط یه کارتِ کوچیکِ مربعِ کاملاً مستقل (بالا) روش
+     می‌شینه و با opacity+transform (که رویِ GPU اجرا می‌شن، نه لِی‌آوت) پاپ می‌کنه، برای همینم نرمه. */
+  .captcha-modal.tick-showing .captcha-modal-step.active {
+    opacity: 0.12; filter: blur(1px); transition: opacity 0.25s ease, filter 0.25s ease;
+  }
   .captcha-modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
   .captcha-modal-step-label { font-size: 11.5px; color: var(--subtext); }
   .captcha-modal-close {
@@ -727,15 +765,15 @@ try {
 
     <div id="formStage">
     <div id="loginForm">
-      <input id="loginUsername" placeholder="نام کاربری" autocomplete="username" maxlength="20" />
-      <div class="password-field password-field-spacer">
+      <input id="loginUsername" class="form-anim-field field-1" placeholder="نام کاربری" autocomplete="username" maxlength="20" />
+      <div class="password-field password-field-spacer form-anim-field field-2">
         <input id="loginPassword" type="password" placeholder="رمز عبور" autocomplete="current-password" maxlength="100" />
         <button type="button" class="password-toggle-btn" data-target="loginPassword" aria-label="نمایش/مخفی‌کردنِ رمز">
           <svg class="eye-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z"/><circle cx="12" cy="12" r="3"/></svg>
           <svg class="eye-off-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.94 10.94 0 0 1 12 19c-7 0-11-7-11-7a21.6 21.6 0 0 1 5.06-5.94M9.9 4.24A10.4 10.4 0 0 1 12 4c7 0 11 7 11 7a21.6 21.6 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><path d="M1 1l22 22"/></svg>
         </button>
       </div>
-      <div class="captcha-wrap">
+      <div class="captcha-wrap form-anim-bottom field-3">
         <div class="captcha-trigger" id="captchaTriggerLogin" role="button" tabindex="0">
           <div class="captcha-trigger-check">
             <img class="captcha-trigger-check-icon" src="data:image/png;base64,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" alt="" />
@@ -745,21 +783,21 @@ try {
           <span class="captcha-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>دهات</span>
         </div>
       </div>
-      <button class="primary" id="loginBtn" onclick="login()">ورود</button>
+      <button class="primary form-anim-bottom field-4" id="loginBtn" onclick="login()">ورود</button>
       <div class="error" id="loginError"></div>
     </div>
 
     <div id="registerForm" class="form-hide">
-      <input id="regUsername" placeholder="نام کاربری (حداقل ۳ کاراکتر)" autocomplete="username" maxlength="20" />
-      <div class="password-field password-field-spacer">
+      <input id="regUsername" class="form-anim-field field-1" placeholder="نام کاربری (حداقل ۳ کاراکتر)" autocomplete="username" maxlength="20" />
+      <div class="password-field password-field-spacer form-anim-field field-2">
         <input id="regPassword" type="password" placeholder="رمز عبور (حداقل ۸ کاراکتر، شامل حرف و عدد)" autocomplete="new-password" maxlength="100" />
         <button type="button" class="password-toggle-btn" data-target="regPassword" aria-label="نمایش/مخفی‌کردنِ رمز">
           <svg class="eye-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z"/><circle cx="12" cy="12" r="3"/></svg>
           <svg class="eye-off-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.94 10.94 0 0 1 12 19c-7 0-11-7-11-7a21.6 21.6 0 0 1 5.06-5.94M9.9 4.24A10.4 10.4 0 0 1 12 4c7 0 11 7 11 7a21.6 21.6 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><path d="M1 1l22 22"/></svg>
         </button>
       </div>
-      <input id="regReferralCode" placeholder="کد ملی متقاضی" autocomplete="off" maxlength="20" />
-      <div class="captcha-wrap">
+      <input id="regReferralCode" class="form-anim-field field-3" placeholder="کد ملی متقاضی" autocomplete="off" maxlength="20" />
+      <div class="captcha-wrap form-anim-bottom field-4">
         <div class="captcha-trigger" id="captchaTriggerRegister" role="button" tabindex="0">
           <div class="captcha-trigger-check">
             <img class="captcha-trigger-check-icon" src="data:image/png;base64,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" alt="" />
@@ -769,7 +807,7 @@ try {
           <span class="captcha-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>دهات</span>
         </div>
       </div>
-      <button class="primary" id="registerBtn" onclick="register()">ساخت حساب</button>
+      <button class="primary form-anim-bottom field-5" id="registerBtn" onclick="register()">ساخت حساب</button>
       <div class="error" id="registerError"></div>
       <div class="hint" id="registerHint"></div>
     </div>
@@ -786,10 +824,12 @@ try {
 
     <!-- تیکِ سبزِ موفقیت: بعد از هر مرحله، قبل از رفتن به بعدی، چند لحظه نشون داده می‌شه -->
     <div class="captcha-success-tick" id="captchaSuccessTick">
-      <svg viewBox="0 0 52 52">
-        <circle cx="26" cy="26" r="24" />
-        <path d="M14 27 l8 8 16-16" />
-      </svg>
+      <div class="captcha-success-tick-card">
+        <svg viewBox="0 0 52 52">
+          <circle cx="26" cy="26" r="24" />
+          <path d="M14 27 l8 8 16-16" />
+        </svg>
+      </div>
     </div>
 
     <!-- مرحله‌ی ۱: چیدنِ نوشابه تو جای خالیش رو قفسه -->
@@ -1066,22 +1106,20 @@ function setCaptchaStepLabel(logicalStepNumber) {
 // وقتی یه مرحله درست حل می‌شه، اول یه تیکِ سبز چند لحظه نشون داده می‌شه (تا کاربر مطمئن بشه درست
 // جواب داده)، بعد fn (که پنل/لیبل/لی‌اوتِ مرحله‌ی بعدی رو ست می‌کنه) صدا زده می‌شه
 function advanceAfterSuccess(fn) {
-  // قبل از اسکیل‌کردنِ کادر، ارتفاعش رو دقیقاً برابرِ عرضش می‌کنیم تا تیکِ سبز همیشه
-  // تو یه کادرِ کاملاً مربع نشون داده بشه، فارغ از اینکه محتوایِ مرحله‌ی قبل/بعد چه ارتفاعی داشت
-  if (captchaModalEl) {
-    const squareSize = captchaModalEl.getBoundingClientRect().width;
-    captchaModalEl.style.height = squareSize + "px";
-  }
+  // دیگه کادرِ اصلیِ مودال رو مربع/اسکیل نمی‌کنیم (همون چیزی که باعثِ گلیچ/لگ می‌شد).
+  // فقط یه کارتِ کوچیکِ مستقل روش پاپ می‌کنه (با opacity+transform، بدون دست‌زدن به لِی‌آوت).
+  captchaSuccessTickEl.classList.remove("hiding");
   captchaSuccessTickEl.classList.add("show");
   if (captchaModalEl) captchaModalEl.classList.add("tick-showing");
   captchaStageTransitionTimeout = setTimeout(() => {
+    // اول با یه فِیدِ آرومِ جدا محوش می‌کنیم (بدونِ اینکه ورودِ خودِ انیمیشن‌ها رو کند کنه)،
+    // بعد از تمومِ فِید، واقعاً مخفیش می‌کنیم و می‌ریم سراغِ مرحله‌ی بعد
     captchaSuccessTickEl.classList.remove("show");
-    if (captchaModalEl) {
-      captchaModalEl.classList.remove("tick-showing");
-      captchaModalEl.style.height = ""; // آزادش کن تا showCaptchaPanel ارتفاعِ واقعیِ مرحله‌ی بعدی رو خودش حساب کنه
-    }
+    captchaSuccessTickEl.classList.add("hiding");
+    if (captchaModalEl) captchaModalEl.classList.remove("tick-showing");
+    setTimeout(() => { captchaSuccessTickEl.classList.remove("hiding"); }, 460);
     fn();
-  }, 700);
+  }, 1500);
 }
 
 function openCaptchaModal(controller) {
@@ -1942,11 +1980,13 @@ function setError(el, msg) {
   }
 }
 
-// هر بار فرم دیده می‌شه، انیمیشن ورودش رو دوباره از اول اجرا می‌کنیم
+// هر بار فرم دیده می‌شه، انیمیشن ورودش رو دوباره از اول اجرا می‌کنیم (هم خودِ المان، هم بچه‌های
+// «form-anim-field»/«form-anim-bottom»یی که ممکنه توش باشن، همه با یه ریفلوی مشترک)
 function replayFormAnim(el) {
-  el.style.animation = "none";
+  const targets = [el, ...el.querySelectorAll(".form-anim-field, .form-anim-bottom")];
+  targets.forEach((t) => { t.style.animation = "none"; });
   void el.offsetWidth;
-  el.style.animation = "";
+  targets.forEach((t) => { t.style.animation = ""; });
 }
 
 // ---------- کپسولِ لغزنده‌ی زیرِ تبِ فعال (ورود/ثبت‌نام) ----------
