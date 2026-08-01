@@ -5296,7 +5296,12 @@ let customCoverOverride = false;
 // مدت‌زمانِ واقعیِ فایلِ صوتی رو با یه المانِ <audio> موقت (نه اون تگِ صفحه) می‌خونه؛ چون رادیوی
 // زنده برای زمان‌بندیِ دقیقِ تعویضِ آهنگ‌ها به این عدد وابسته‌ست — قبلاً این مقدار هیچ‌وقت به سرور
 // فرستاده نمی‌شد و سرور همیشه ۱۸۰ ثانیه (مقدارِ پیش‌فرض) فرض می‌کرد، پس آهنگ‌های بلندتر از ۳ دقیقه
-// وسطِ پخش قطع می‌شدن. سقفِ ایمنیِ ۶ ثانیه‌ای هم برای اینه که اگه لودشدنِ متادیتا گیر کرد، بی‌نهایت منتظر نمونیم.
+// وسطِ پخش قطع می‌شدن. سقفِ ایمنیِ ۸ ثانیه‌ای هم برای اینه که اگه لودشدنِ متادیتا گیر کرد، بی‌نهایت منتظر نمونیم.
+//
+// نکته‌ی مهم: بعضی فایل‌های MP3 با نرخ‌بیتِ متغیر (VBR) که هدرِ Xing/LAME ندارن، یه باگِ معروفِ
+// مرورگرها رو تریگر می‌کنن — audio.duration تا وقتی به انتهای فایل «سیک» نشده، Infinity گزارش
+// می‌شه، نه عددِ واقعی. راه‌حلِ استانداردش: یه سیکِ خیلی بزرگ بزن تا مرورگر مجبور بشه کل فایل رو
+// اسکن کنه و طولِ واقعی رو بفهمه، بعد دوباره برگرد به صفر.
 function readAudioDurationSeconds(file) {
   return new Promise((resolve) => {
     if (!file) return resolve(null);
@@ -5313,12 +5318,30 @@ function readAudioDurationSeconds(file) {
       "loadedmetadata",
       () => {
         const d = tempAudio.duration;
-        finish(Number.isFinite(d) && d > 0 ? Math.round(d) : null);
+        if (!Number.isFinite(d) || d <= 0) {
+          // باگِ Infinity: یه سیکِ خیلی بزرگ می‌زنیم تا مرورگر کل فایل رو اسکن کنه و طولِ واقعی رو بفهمه
+          try {
+            tempAudio.currentTime = 1e101;
+          } catch (e) {
+            return finish(null);
+          }
+          tempAudio.addEventListener(
+            "timeupdate",
+            () => {
+              const realD = tempAudio.duration;
+              try { tempAudio.currentTime = 0; } catch (e) {}
+              finish(Number.isFinite(realD) && realD > 0 ? Math.round(realD) : null);
+            },
+            { once: true }
+          );
+        } else {
+          finish(Math.round(d));
+        }
       },
       { once: true }
     );
     tempAudio.addEventListener("error", () => finish(null), { once: true });
-    setTimeout(() => finish(null), 6000);
+    setTimeout(() => finish(null), 8000);
     tempAudio.preload = "metadata";
     tempAudio.src = tempUrl;
   });
@@ -11367,12 +11390,20 @@ const DEDOODZ_ITEMS = [
     action: "openRadioOverlay()",
     icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2a10 10 0 0 1 10 10M12 2a10 10 0 0 0-10 10M7 12a5 5 0 0 1 5-5M17 12a5 5 0 0 0-5-5"/></svg>`,
   },
+  {
+    id: "fix-durations",
+    title: "اصلاحِ مدت‌زمانِ آهنگ‌های قدیمی",
+    action: "runDurationBackfill()",
+    adminOnly: true,
+    icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>`,
+  },
 ];
 
 function renderDedoodzPage() {
   const el = document.getElementById("dedoodzPage");
   if (!el) return;
-  el.innerHTML = DEDOODZ_ITEMS.map((item) => {
+  const items = DEDOODZ_ITEMS.filter((item) => !item.adminOnly || adminRank > 0);
+  el.innerHTML = items.map((item) => {
     const tag = item.action ? "button" : "a";
     const attrs = item.action
       ? `type="button" onclick="${item.action}"`
@@ -11394,7 +11425,75 @@ function selectDedoodz() {
   document.getElementById("dedoodzPage")?.classList.remove("hidden");
 }
 
-// ---------- رادیو، همینجا تو سایت: iframeِ دائمی که فقط اولین‌بار لود می‌شه؛ بستن یعنی مخفی‌کردن
+// ---------- اصلاحِ عقب‌ماندگیِ duration برای آهنگ‌های قدیمی ----------
+// همون منطقِ readAudioDurationSeconds، ولی رویِ یه فایلِ محلی نه؛ رویِ آدرسِ رسانه‌ی روی سرور کار
+// می‌کنه — چون خودِ ورکر توانِ دیکدکردنِ صدا رو نداره، این کار باید از تویِ یه مرورگرِ واقعی (اینجا:
+// مرورگرِ خودِ ادمین) انجام بشه.
+function readRemoteAudioDurationSeconds(url) {
+  return new Promise((resolve) => {
+    const tempAudio = new Audio();
+    let done = false;
+    const finish = (val) => { if (done) return; done = true; resolve(val); };
+    tempAudio.addEventListener(
+      "loadedmetadata",
+      () => {
+        const d = tempAudio.duration;
+        if (!Number.isFinite(d) || d <= 0) {
+          try { tempAudio.currentTime = 1e101; } catch (e) { return finish(null); }
+          tempAudio.addEventListener(
+            "timeupdate",
+            () => {
+              const realD = tempAudio.duration;
+              finish(Number.isFinite(realD) && realD > 0 ? Math.round(realD) : null);
+            },
+            { once: true }
+          );
+        } else {
+          finish(Math.round(d));
+        }
+      },
+      { once: true }
+    );
+    tempAudio.addEventListener("error", () => finish(null), { once: true });
+    setTimeout(() => finish(null), 15000); // فایل از شبکه میاد، سقفِ ایمنی رو بیشتر می‌ذاریم
+    tempAudio.preload = "auto";
+    tempAudio.src = url;
+  });
+}
+
+async function runDurationBackfill() {
+  if (isBackfillRunning) return;
+  if (!confirm("مدت‌زمانِ آهنگ‌های قدیمی رو یکی‌یکی، تو همینجا تو مرورگرت، اصلاح می‌کنه — ممکنه چند دقیقه طول بکشه و لازمه صفحه باز بمونه. ادامه بدم؟")) return;
+  isBackfillRunning = true;
+  let fixedCount = 0;
+  let failedCount = 0;
+  try {
+    while (true) {
+      const res = await fetch(`${WORKER_URL}/api/radio/durations/missing`, { headers: { Authorization: `Bearer ${getToken()}` } });
+      const data = await res.json();
+      if (!res.ok) { toast(data.error || "خطا تو گرفتنِ لیست", "error"); break; }
+      const items = data.items || [];
+      if (items.length === 0) break;
+      for (const item of items) {
+        toast(`در حالِ بررسیِ «${item.title}»...`, "info");
+        const duration = await readRemoteAudioDurationSeconds(mediaUrl(item.fileId));
+        if (!duration) { failedCount++; continue; }
+        const fixRes = await fetch(`${WORKER_URL}/api/radio/durations/fix`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${getToken()}` },
+          body: JSON.stringify({ postId: item.postId, duration }),
+        });
+        if (fixRes.ok) fixedCount++; else failedCount++;
+      }
+    }
+    toast(`تموم شد — ${toPersianDigits(fixedCount)} آهنگ اصلاح شد${failedCount ? `، ${toPersianDigits(failedCount)} تاش نشد` : ""}`, "success");
+  } catch (e) {
+    toast("یه خطا پیش اومد، دوباره امتحان کن", "error");
+  } finally {
+    isBackfillRunning = false;
+  }
+}
+let isBackfillRunning = false;
 // (نه نابودکردن) پس صدا/صفِ ویس تو پس‌زمینه ادامه پیدا می‌کنه و کاربر می‌تونه تو بقیه‌ی سایت بچرخه ----------
 let radioFrameLoaded = false;
 function openRadioOverlay() {
