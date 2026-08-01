@@ -2866,7 +2866,7 @@
   .filter-chip.active { background: var(--accent-gradient); color: #fff; border-color: transparent; }
 
   /* دکمه‌های مرتب‌سازی رسانه (جدیدترین / پرطرفدار / ده‌دودز) */
-  .media-sort-row { display: flex; gap: 8px; margin-bottom: 16px; }
+  .media-sort-row { display: flex; gap: 8px; margin-top: 14px; margin-bottom: 16px; }
   .media-sort-btn {
     flex: 1; background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
     padding: 9px 6px; font-size: 12.5px; font-weight: 500; color: var(--subtext); cursor: pointer;
@@ -2903,7 +2903,8 @@
   }
   .radio-overlay.hidden { display: none; }
   .radio-overlay-topbar {
-    position: absolute; top: calc(14px + var(--safe-top)); right: 14px; z-index: 2;
+    position: absolute; top: calc(14px + var(--safe-top)); right: 14px; left: 14px; z-index: 2;
+    display: flex; align-items: center; justify-content: space-between;
   }
   .radio-overlay-close {
     display: flex; align-items: center; gap: 6px; font-family: inherit;
@@ -2911,19 +2912,25 @@
     color: #fff; border-radius: 999px; padding: 8px 14px; font-size: 13px; cursor: pointer;
   }
   .radio-overlay-close svg { width: 15px; height: 15px; }
+  .radio-overlay-stop {
+    display: flex; align-items: center; justify-content: center; width: 34px; height: 34px;
+    background: rgba(20,10,40,0.65); backdrop-filter: blur(6px); border: 1px solid rgba(255,255,255,0.18);
+    color: #fff; border-radius: 50%; cursor: pointer; flex-shrink: 0;
+  }
+  .radio-overlay-stop svg { width: 15px; height: 15px; }
   .radio-overlay-iframe { flex: 1; width: 100%; height: 100%; border: none; }
 
-  .radio-mini-bar {
-    position: fixed; bottom: calc(14px + var(--safe-bottom)); left: 50%; transform: translateX(-50%); z-index: 355;
-    display: flex; align-items: center; gap: 8px; background: var(--card); border: 1px solid var(--border);
-    border-radius: 999px; padding: 8px 8px 8px 14px; box-shadow: 0 6px 18px rgba(0,0,0,0.35);
-    cursor: pointer; font-size: 12.5px; color: var(--text);
+  /* ---------- آیکونِ وضعیتِ رادیو، بینِ تایتلِ سایت و پروفایل تو هدر ---------- */
+  .radio-status-icon {
+    display: flex; flex-direction: column; align-items: center; gap: 2px;
+    background: none; border: none; cursor: pointer; color: var(--subtext);
+    font-family: inherit; padding: 2px 4px; flex-shrink: 0;
   }
-  .radio-mini-bar.hidden { display: none; }
-  .radio-mini-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--error); animation: radioMiniPulse 1.4s ease-in-out infinite; flex-shrink: 0; }
-  @keyframes radioMiniPulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
-  .radio-mini-stop { border: none; background: none; color: var(--subtext); cursor: pointer; padding: 4px; display: flex; }
-  .radio-mini-stop svg { width: 15px; height: 15px; }
+  .radio-status-icon svg { width: 20px; height: 20px; transition: color 0.2s ease; }
+  .radio-status-label { font-size: 9.5px; transition: color 0.2s ease; white-space: nowrap; }
+  .radio-status-icon.playing { color: var(--error); }
+  .radio-status-icon.playing svg { animation: radioIconPulse 1.6s ease-in-out infinite; }
+  @keyframes radioIconPulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.55; } }
 
   /* گرید ۳ ستونه پروفایل برای رسانه/آهنگ‌ها */
   .profile-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 3px; }
@@ -3643,6 +3650,10 @@
         <p>فید عمومی</p>
       </div>
     </div>
+    <button class="radio-status-icon" id="radioStatusIcon" onclick="openRadioOverlay()" aria-label="رادیو">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2a10 10 0 0 1 10 10M12 2a10 10 0 0 0-10 10M7 12a5 5 0 0 1 5-5M17 12a5 5 0 0 0-5-5"/></svg>
+      <span class="radio-status-label" id="radioStatusLabel">خاموش</span>
+    </button>
     <div class="who">
       <button class="bell-btn" id="bellBtn" onclick="openNotifications()" aria-label="اعلان‌ها">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
@@ -3687,9 +3698,6 @@
 
   <!-- بخش رسانه‌ها -->
   <div id="view-media" class="view">
-    <div class="feed-header">
-      <span>رسانه‌ها</span>
-    </div>
     <div class="media-sort-row">
       <button class="media-sort-btn active" id="mediaSort-date" onclick="setMediaSort('date')">جدیدترین</button>
       <button class="media-sort-btn" id="mediaSort-popular" onclick="setMediaSort('popular')">پرطرفدار</button>
@@ -4404,16 +4412,11 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l-6-6 6-6M3 12h18"/></svg>
       <span>برگشت به سایت</span>
     </button>
+    <button class="radio-overlay-stop" onclick="stopRadioOverlay()" aria-label="توقفِ کاملِ رادیو">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+    </button>
   </div>
   <iframe id="radioFrame" class="radio-overlay-iframe" src="about:blank" allow="autoplay" title="رادیونمای دهات"></iframe>
-</div>
-
-<div class="radio-mini-bar hidden" id="radioMiniBar" onclick="openRadioOverlay()" role="button" tabindex="0">
-  <span class="radio-mini-dot"></span>
-  <span>رادیو داره پخش می‌شه — برگرد</span>
-  <button class="radio-mini-stop" onclick="stopRadioOverlay(event)" aria-label="بستنِ کاملِ رادیو">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
-  </button>
 </div>
 
 <script>
@@ -11408,11 +11411,9 @@ function openRadioOverlay() {
     radioFrameLoaded = true;
   }
   document.getElementById("radioOverlay")?.classList.remove("hidden");
-  document.getElementById("radioMiniBar")?.classList.add("hidden");
 }
 function closeRadioOverlay() {
   document.getElementById("radioOverlay")?.classList.add("hidden");
-  if (radioFrameLoaded) document.getElementById("radioMiniBar")?.classList.remove("hidden");
 }
 function stopRadioOverlay(event) {
   if (event) event.stopPropagation();
@@ -11420,8 +11421,23 @@ function stopRadioOverlay(event) {
   iframe.src = "about:blank";
   radioFrameLoaded = false;
   document.getElementById("radioOverlay")?.classList.add("hidden");
-  document.getElementById("radioMiniBar")?.classList.add("hidden");
+  setRadioStatusIcon(false);
 }
+
+// آیکونِ بالای هدر وضعیتِ واقعیِ پخش رو نشون می‌ده، نه فقط اینکه iframe بازه یا نه — خودِ radio.html
+// هر بار صدا واقعاً play/pause می‌شه یه postMessage به این صفحه می‌فرسته (چون تو یه iframeِ دیگه‌ست
+// و این صفحه مستقیم به audioِ اونجا دسترسی نداره)
+function setRadioStatusIcon(isPlaying) {
+  const icon = document.getElementById("radioStatusIcon");
+  const label = document.getElementById("radioStatusLabel");
+  if (!icon || !label) return;
+  icon.classList.toggle("playing", !!isPlaying);
+  label.textContent = isPlaying ? "پخش" : "خاموش";
+}
+window.addEventListener("message", (event) => {
+  if (!event.data || event.data.type !== "dehaat-radio-status") return;
+  setRadioStatusIcon(!!event.data.playing);
+});
 
 // ================= دفتر احوالات (تب متن‌ها) =================
 // هر صفحه‌ی دفتر دقیقاً ۳ متنه (pageSize=3 مستقیم از همون endpoint فیدِ متنی). صفحه‌ها تو یه کش نگه
