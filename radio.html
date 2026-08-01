@@ -272,6 +272,11 @@ function setStatus(text, isError) {
 function setLive(isLive) {
   topBadge.classList.toggle("idle", !isLive);
   topBadgeText.textContent = isLive ? "پخشِ زنده" : "رادیونمای دهات";
+  // اگه این صفحه تو یه iframeِ داخلِ خودِ سایت بازه (نه یه تبِ جداگونه)، به صفحه‌ی اصلی خبر می‌ده تا
+  // آیکونِ وضعیتِ رادیو تو هدرِ سایت (بینِ تایتل و پروفایل) آپدیت بشه
+  try {
+    window.parent.postMessage({ type: "dehaat-radio-status", playing: !!isLive }, "*");
+  } catch (e) {}
 }
 
 // =========================================================================
