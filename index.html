@@ -2875,25 +2875,24 @@
   .media-sort-btn.active { background: var(--accent-gradient); color: #fff; border-color: transparent; }
   .media-sort-btn.coming-soon { opacity: 0.55; cursor: default; }
 
-  /* دکمه‌ی «ده‌دودز» حالا خودش یه منوعه؛ اولین آیتمش رادیوعه، بعداً آیتم‌های دیگه هم اضافه می‌شن */
-  .dedoodz-menu-wrap { position: relative; flex: 1; }
-  .dedoodz-menu-wrap .media-sort-btn { width: 100%; }
-  .dedoodz-dropdown {
-    position: absolute; top: calc(100% + 6px); left: 0; right: 0; z-index: 30;
-    background: var(--card); border: 1px solid var(--border); border-radius: 10px;
-    padding: 6px; opacity: 0; transform: translateY(-6px); pointer-events: none;
-    transition: opacity 0.18s ease, transform 0.18s ease;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.35);
+  /* دکمه‌ی «ده‌دودز» حالا به‌جای منوی کشویی، کل لیستِ رسانه رو با یه صفحه‌ی اسکرول‌شونده از
+     آیتم‌های خودمون (فعلاً فقط رادیو، بعداً بیشتر) عوض می‌کنه؛ هر آیتم یه مستطیلِ گوشه‌گرده که
+     ایکونش تو یه مربعِ گوشه‌گردِ سمتِ راستِ مستطیل جا گرفته و عنوانش جلوی (سمتِ چپِ) همون مربعه */
+  .dedoodz-page { margin-top: 2px; }
+  .dedoodz-item {
+    display: flex; align-items: center; gap: 12px;
+    background: var(--card); border: 1px solid var(--border); border-radius: 14px;
+    padding: 10px; margin-bottom: 10px; text-decoration: none; color: var(--text);
+    cursor: pointer; transition: background 0.15s ease, border-color 0.15s ease;
   }
-  .dedoodz-dropdown.open { opacity: 1; transform: translateY(0); pointer-events: auto; }
-  .dedoodz-dropdown-item {
-    display: flex; align-items: center; gap: 8px; width: 100%;
-    background: none; border: none; border-radius: 8px; padding: 9px 10px;
-    font-family: inherit; font-size: 13px; color: var(--text); text-decoration: none;
-    cursor: pointer; text-align: right; transition: background 0.15s ease;
+  .dedoodz-item:hover, .dedoodz-item:active { background: var(--surface); border-color: var(--accent); }
+  .dedoodz-icon-square {
+    width: 44px; height: 44px; border-radius: 12px; flex-shrink: 0;
+    background: var(--accent-gradient); display: flex; align-items: center; justify-content: center;
   }
-  .dedoodz-dropdown-item:hover { background: var(--surface); }
-  .dedoodz-dropdown-item svg { width: 17px; height: 17px; color: var(--accent-hover); flex-shrink: 0; }
+  .dedoodz-icon-square svg { width: 22px; height: 22px; color: #fff; }
+  .dedoodz-item-title { flex: 1; font-size: 14.5px; font-weight: 600; }
+  .dedoodz-item-chevron { width: 16px; height: 16px; color: var(--subtext); flex-shrink: 0; }
 
   /* گرید ۳ ستونه پروفایل برای رسانه/آهنگ‌ها */
   .profile-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 3px; }
@@ -3663,16 +3662,9 @@
     <div class="media-sort-row">
       <button class="media-sort-btn active" id="mediaSort-date" onclick="setMediaSort('date')">جدیدترین</button>
       <button class="media-sort-btn" id="mediaSort-popular" onclick="setMediaSort('popular')">پرطرفدار</button>
-      <div class="dedoodz-menu-wrap">
-        <button class="media-sort-btn" id="mediaSort-dedoodz" onclick="toggleDedoodzMenu(event)">ده‌دودز</button>
-        <div class="dedoodz-dropdown" id="dedoodzDropdown">
-          <a class="dedoodz-dropdown-item" href="radio.html" target="_blank" rel="noopener">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2a10 10 0 0 1 10 10M12 2a10 10 0 0 0-10 10M7 12a5 5 0 0 1 5-5M17 12a5 5 0 0 0-5-5"/></svg>
-            رادیو
-          </a>
-        </div>
-      </div>
+      <button class="media-sort-btn" id="mediaSort-dedoodz" onclick="selectDedoodz()">ده‌دودز</button>
     </div>
+    <div class="dedoodz-page hidden" id="dedoodzPage"></div>
     <div id="mediaFeed">
       <div class="masonry-wrap" id="masonryWrap">
         <div class="masonry-col" id="mediaCol0"></div>
@@ -5093,7 +5085,7 @@ function followTopNavIndicator(durationMs = 420) {
 window.addEventListener("resize", () => positionTopNavIndicator());
 
 let selectedFile = null;
-let selectedAudioMeta = { title: "", performer: "", coverBlob: null };
+let selectedAudioMeta = { title: "", performer: "", coverBlob: null, duration: null };
 let selectedFilePreviewUrl = null;
 let dzPreviewUrl = null;
 let uploadMode = "media";
@@ -5170,7 +5162,7 @@ function onFileChosen() {
   selectedFile = chosen;
   renderMediaDropzone();
 
-  selectedAudioMeta = { title: "", performer: "", coverBlob: null };
+  selectedAudioMeta = { title: "", performer: "", coverBlob: null, duration: null };
   if (selectedFile && selectedFile.type.startsWith("audio/") && window.jsmediatags) {
     window.jsmediatags.read(selectedFile, {
       onSuccess: (tag) => {
@@ -5240,7 +5232,7 @@ function onRemoveDropzoneFile(evt) {
 
 function clearFile() {
   selectedFile = null;
-  selectedAudioMeta = { title: "", performer: "", coverBlob: null };
+  selectedAudioMeta = { title: "", performer: "", coverBlob: null, duration: null };
   const input = document.getElementById("fileInput");
   if (input) input.value = "";
   renderMediaDropzone();
@@ -5253,15 +5245,50 @@ let musicVinylUrl = null;
 let coverPickUrl = null;
 let customCoverOverride = false;
 
+// مدت‌زمانِ واقعیِ فایلِ صوتی رو با یه المانِ <audio> موقت (نه اون تگِ صفحه) می‌خونه؛ چون رادیوی
+// زنده برای زمان‌بندیِ دقیقِ تعویضِ آهنگ‌ها به این عدد وابسته‌ست — قبلاً این مقدار هیچ‌وقت به سرور
+// فرستاده نمی‌شد و سرور همیشه ۱۸۰ ثانیه (مقدارِ پیش‌فرض) فرض می‌کرد، پس آهنگ‌های بلندتر از ۳ دقیقه
+// وسطِ پخش قطع می‌شدن. سقفِ ایمنیِ ۶ ثانیه‌ای هم برای اینه که اگه لودشدنِ متادیتا گیر کرد، بی‌نهایت منتظر نمونیم.
+function readAudioDurationSeconds(file) {
+  return new Promise((resolve) => {
+    if (!file) return resolve(null);
+    const tempUrl = URL.createObjectURL(file);
+    const tempAudio = new Audio();
+    let done = false;
+    const finish = (val) => {
+      if (done) return;
+      done = true;
+      URL.revokeObjectURL(tempUrl);
+      resolve(val);
+    };
+    tempAudio.addEventListener(
+      "loadedmetadata",
+      () => {
+        const d = tempAudio.duration;
+        finish(Number.isFinite(d) && d > 0 ? Math.round(d) : null);
+      },
+      { once: true }
+    );
+    tempAudio.addEventListener("error", () => finish(null), { once: true });
+    setTimeout(() => finish(null), 6000);
+    tempAudio.preload = "metadata";
+    tempAudio.src = tempUrl;
+  });
+}
+
 function onMusicFileChosen() {
   const input = document.getElementById("musicFileInput");
   selectedFile = input.files[0] || null;
   const dz = document.getElementById("musicDropzone");
   if (dz) dz.classList.toggle("has-file", !!selectedFile);
 
-  selectedAudioMeta = { title: "", performer: "", coverBlob: null };
+  selectedAudioMeta = { title: "", performer: "", coverBlob: null, duration: null };
   customCoverOverride = false;
   renderVinylCover();
+
+  if (selectedFile) {
+    readAudioDurationSeconds(selectedFile).then((d) => { selectedAudioMeta.duration = d; });
+  }
 
   if (selectedFile && window.jsmediatags) {
     window.jsmediatags.read(selectedFile, {
@@ -5396,7 +5423,7 @@ document.addEventListener("click", (evt) => {
 // پاک‌کردنِ کامل فیلدهای مخصوصِ حالت «موسیقی» (موقع سوییچ حالت یا بعد از ثبت موفق)
 function clearMusicFields() {
   selectedFile = null;
-  selectedAudioMeta = { title: "", performer: "", coverBlob: null };
+  selectedAudioMeta = { title: "", performer: "", coverBlob: null, duration: null };
   customCoverOverride = false;
 
   const musicInput = document.getElementById("musicFileInput");
@@ -5802,6 +5829,11 @@ async function submitPost() {
     if (selectedAudioMeta.performer) fd.append("audio_performer", selectedAudioMeta.performer);
     if (selectedAudioMeta.coverBlob) fd.append("audio_cover", selectedAudioMeta.coverBlob, "cover.jpg");
     if (feeling) fd.append("audio_feeling", feeling);
+    // مدت‌زمانِ واقعیِ آهنگ؛ اگه به هر دلیلی موقعِ انتخابِ فایل خونده نشده بود (مثلاً کاربر خیلی سریع
+    // دکمه‌ی ثبت رو زد)، همینجا یه بار دیگه امتحان می‌کنیم تا مقدار null به سرور نره
+    let audioDurationToSend = selectedAudioMeta.duration;
+    if (!audioDurationToSend) audioDurationToSend = await readAudioDurationSeconds(fileToUpload);
+    if (audioDurationToSend) fd.append("audio_duration", String(audioDurationToSend));
   }
   const radioVisualCheckbox = document.getElementById("radioVisualCheckbox");
   if (fileToUpload && radioVisualCheckbox && radioVisualCheckbox.checked
@@ -5999,7 +6031,10 @@ async function startBulkUpload() {
     if (startBtn) startBtn.textContent = `در حال آپلود (${toPersianDigits(i + 1)}/${toPersianDigits(bulkUploadFiles.length)})`;
 
     try {
-      const meta = await readAudioTagsPromise(item.file);
+      const [meta, durationSeconds] = await Promise.all([
+        readAudioTagsPromise(item.file),
+        readAudioDurationSeconds(item.file),
+      ]);
       const fd = new FormData();
       const title = (meta.title || item.file.name.replace(/\.[^/.]+$/, "")).slice(0, 15);
       fd.append("text", "");
@@ -6008,6 +6043,7 @@ async function startBulkUpload() {
       if (meta.title) fd.append("audio_title", meta.title);
       if (meta.performer) fd.append("audio_performer", meta.performer);
       if (meta.coverBlob) fd.append("audio_cover", meta.coverBlob, "cover.jpg");
+      if (durationSeconds) fd.append("audio_duration", String(durationSeconds));
 
       const { ok, data } = await uploadWithRetry(`${WORKER_URL}/api/post`, fd);
       if (!ok) throw new Error(data.error || "خطا");
@@ -11262,8 +11298,10 @@ function loadMoreFeed(kind) {
   loadFeedView(kind, false);
 }
 
-// سوییچ حالت مرتب‌سازی رسانه‌ها (جدیدترین / پرطرفدار)
+// سوییچ حالت مرتب‌سازی رسانه‌ها (جدیدترین / پرطرفدار)؛ اگه صفحه‌ی ده‌دودز باز بود، اول اونو می‌بندیم
 function setMediaSort(sort) {
+  document.getElementById("dedoodzPage")?.classList.add("hidden");
+  document.getElementById("mediaFeed")?.classList.remove("hidden");
   if (feedState.media.sort === sort) return;
   feedState.media.sort = sort;
   document.querySelectorAll(".media-sort-btn").forEach((el) => el.classList.remove("active"));
@@ -11271,18 +11309,39 @@ function setMediaSort(sort) {
   loadFeedView("media", true);
 }
 
-// دکمه‌ی «ده‌دودز»: یه منوعه، نه یه حالتِ مرتب‌سازیِ دیگه؛ اولین آیتمش رادیوعه (بعداً آیتم‌های
-// بیشتری بهش اضافه می‌شه). با کلیک بیرونِ منو یا خودِ دکمه (بار دوم) بسته می‌شه.
-function toggleDedoodzMenu(event) {
-  event.stopPropagation();
-  document.getElementById("dedoodzDropdown")?.classList.toggle("open");
+// ---------- «ده‌دودز»: به‌جای منویِ کشویی، یه صفحه‌ی اسکرول‌شونده جایگزینِ لیستِ رسانه‌ها می‌شه.
+// هر آیتم یه کارتِ مستطیلیِ گوشه‌گرده؛ برای اضافه‌کردنِ آیتمِ جدید بعداً، فقط کافیه یه عضوِ جدید
+// به آرایه‌ی DEDOODZ_ITEMS اضافه کنی — بقیه (رندر/استایل) خودکاره ----------
+const DEDOODZ_ITEMS = [
+  {
+    id: "radio",
+    title: "رادیو",
+    href: "radio.html",
+    external: true,
+    icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2a10 10 0 0 1 10 10M12 2a10 10 0 0 0-10 10M7 12a5 5 0 0 1 5-5M17 12a5 5 0 0 0-5-5"/></svg>`,
+  },
+];
+
+function renderDedoodzPage() {
+  const el = document.getElementById("dedoodzPage");
+  if (!el) return;
+  el.innerHTML = DEDOODZ_ITEMS.map(
+    (item) => `
+    <a class="dedoodz-item" href="${item.href}"${item.external ? ' target="_blank" rel="noopener"' : ""}>
+      <span class="dedoodz-icon-square">${item.icon}</span>
+      <span class="dedoodz-item-title">${escapeHtml(item.title)}</span>
+      <svg class="dedoodz-item-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+    </a>`
+  ).join("");
 }
-document.addEventListener("click", (e) => {
-  const dropdown = document.getElementById("dedoodzDropdown");
-  if (dropdown && dropdown.classList.contains("open") && !dropdown.contains(e.target)) {
-    dropdown.classList.remove("open");
-  }
-});
+
+function selectDedoodz() {
+  document.querySelectorAll(".media-sort-btn").forEach((el) => el.classList.remove("active"));
+  document.getElementById("mediaSort-dedoodz")?.classList.add("active");
+  document.getElementById("mediaFeed")?.classList.add("hidden");
+  renderDedoodzPage();
+  document.getElementById("dedoodzPage")?.classList.remove("hidden");
+}
 
 // ================= دفتر احوالات (تب متن‌ها) =================
 // هر صفحه‌ی دفتر دقیقاً ۳ متنه (pageSize=3 مستقیم از همون endpoint فیدِ متنی). صفحه‌ها تو یه کش نگه
