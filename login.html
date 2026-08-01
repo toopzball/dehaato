@@ -68,7 +68,7 @@ try {
     overflow: hidden;
     background: var(--primary);
   }
-  /* پس‌زمینه‌ی ویدیویی: main/bg.mp4 — به‌جای حباب‌های CSS. ویدیو تمامِ صفحه رو با object-fit:cover پر می‌کنه */
+  /* پس‌زمینه‌ی ویدیویی: bg.mp4 — به‌جای حباب‌های CSS. ویدیو تمامِ صفحه رو با object-fit:cover پر می‌کنه */
   .bg-anim { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; background: var(--primary); contain: strict; }
   .bg-video {
     position: absolute; top: 50%; left: 50%; min-width: 100%; min-height: 100%;
@@ -605,11 +605,9 @@ try {
   video.addEventListener("error", function () {
     // اگه ویدیو لود نشه (مثلاً مسیرش اشتباهه یا فایل رو ریپو نیست)، خطاش رو رو همون
     // نوار قرمز debugBanner (که پایین‌تر تو فایل تعریف شده) نشون بده تا رو موبایل هم دیده بشه
-    var banner = document.getElementById("debugBanner");
-    if (banner) {
-      var code = video.error ? video.error.code : "?";
-      banner.style.display = "block";
-      banner.textContent = "خطای بارگذاری ویدیوی اسپلش (کد " + code + ") — مسیر: " + video.currentSrc;
+    var code = video.error ? video.error.code : "?";
+    if (typeof logDebugBanner === "function") {
+      logDebugBanner("خطای بارگذاری ویدیوی اسپلش (کد " + code + ") — مسیر: " + video.currentSrc);
     }
     finishSplash();
   });
@@ -673,11 +671,11 @@ try {
 
 <div class="bg-anim">
   <video class="bg-video" autoplay muted loop playsinline preload="auto">
-    <source src="main/bg.mp4" type="video/mp4" />
+    <source src="bg.mp4" type="video/mp4" />
   </video>
 </div>
 <div id="debugBanner" style="display:none; position:fixed; top:0; left:0; right:0; z-index:99; background:#EF4444; color:#fff; font-family:monospace; font-size:12px; padding:8px 10px; direction:ltr; text-align:left; word-break:break-all; max-height:40vh; overflow:auto;"></div>
-<audio id="bgMusic" loop src="main/login/Login.mp3"></audio>
+<audio id="bgMusic" loop src="login/Login.mp3"></audio>
 <button class="sound-toggle" id="soundToggle" onclick="toggleSound()" aria-label="قطع/وصل صدا">
   <svg class="icon-on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18 6a9 9 0 0 1 0 12"/></svg>
   <svg class="icon-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M17 9l6 6M23 9l-6 6"/></svg>
@@ -1800,52 +1798,58 @@ const captchaControllers = {
 };
 
 // ---------- نمایش هر خطای جاوااسکریپت روی صفحه (چون رو موبایل به کنسول دسترسی نیست) ----------
-window.addEventListener("error", function (e) {
+// همه‌ی خطاها (JS، Promise، ویدیوی اسپلش، ویدیوی بک‌گراند، موزیکِ بک‌گراند) از همین تابع رد می‌شن
+// تا هرکدوم بعدی، خطای قبلی رو پاک نکنه؛ روی هم انباشته می‌شن (خط‌به‌خط)
+function logDebugBanner(msg) {
   const banner = document.getElementById("debugBanner");
+  if (!banner) return;
   banner.style.display = "block";
-  banner.textContent = "خطا: " + (e.message || "") + " — فایل: " + (e.filename || "") + " — خط: " + (e.lineno || "");
+  const line = document.createElement("div");
+  line.textContent = msg;
+  line.style.borderTop = banner.childElementCount ? "1px solid rgba(255,255,255,0.35)" : "none";
+  line.style.padding = "4px 0";
+  banner.appendChild(line);
+}
+window.addEventListener("error", function (e) {
+  logDebugBanner("خطا: " + (e.message || "") + " — فایل: " + (e.filename || "") + " — خط: " + (e.lineno || ""));
 });
 window.addEventListener("unhandledrejection", function (e) {
-  const banner = document.getElementById("debugBanner");
-  banner.style.display = "block";
-  banner.textContent = "خطای Promise: " + (e.reason && e.reason.message ? e.reason.message : String(e.reason));
+  logDebugBanner("خطای Promise: " + (e.reason && e.reason.message ? e.reason.message : String(e.reason)));
 });
 
-// ---------- گزارشِ خطای ویدیوی بک‌گراند: اگه main/bg.mp4 لود نشه، دقیقاً همینجا (نه فقط ساکت تو کنسول) نشون داده می‌شه ----------
+// ---------- گزارشِ خطای ویدیوی بک‌گراند: اگه bg.mp4 لود نشه، دقیقاً همینجا (نه فقط ساکت تو کنسول) نشون داده می‌شه ----------
 (function reportBgVideoError() {
   const video = document.querySelector(".bg-video");
   if (!video) return;
-  const banner = document.getElementById("debugBanner");
   const codeNames = { 1: "MEDIA_ERR_ABORTED", 2: "MEDIA_ERR_NETWORK", 3: "MEDIA_ERR_DECODE", 4: "MEDIA_ERR_SRC_NOT_SUPPORTED" };
   video.addEventListener("error", () => {
     const err = video.error;
     const code = err ? err.code : "؟";
     const codeName = codeNames[code] || "نامشخص";
-    banner.style.display = "block";
-    banner.textContent =
-      `ویدیوی بک‌گراند لود نشد — کدِ خطا: ${code} (${codeName}) — مسیرِ درخواست‌شده: ${video.currentSrc || "main/bg.mp4"}. ` +
+    logDebugBanner(
+      `ویدیوی بک‌گراند لود نشد — کدِ خطا: ${code} (${codeName}) — مسیرِ درخواست‌شده: ${video.currentSrc || "bg.mp4"}. ` +
       (code === 4
         ? "یعنی یا فایل پیدا نشد (۴۰۴/مسیرِ اشتباه) یا فرمتش پشتیبانی نمی‌شه."
-        : "");
+        : "")
+    );
   });
 })();
 
-// ---------- گزارشِ خطای موزیکِ بک‌گراند: اگه main/login/Login.mp3 لود نشه، همینجا نشون داده می‌شه ----------
+// ---------- گزارشِ خطای موزیکِ بک‌گراند: اگه login/Login.mp3 لود نشه، همینجا نشون داده می‌شه ----------
 (function reportBgMusicError() {
   const audioEl = document.getElementById("bgMusic");
   if (!audioEl) return;
-  const banner = document.getElementById("debugBanner");
   const codeNames = { 1: "MEDIA_ERR_ABORTED", 2: "MEDIA_ERR_NETWORK", 3: "MEDIA_ERR_DECODE", 4: "MEDIA_ERR_SRC_NOT_SUPPORTED" };
   audioEl.addEventListener("error", () => {
     const err = audioEl.error;
     const code = err ? err.code : "؟";
     const codeName = codeNames[code] || "نامشخص";
-    banner.style.display = "block";
-    banner.textContent =
-      `موزیکِ بک‌گراند لود نشد — کدِ خطا: ${code} (${codeName}) — مسیرِ درخواست‌شده: ${audioEl.currentSrc || "main/login/Login.mp3"}. ` +
+    logDebugBanner(
+      `موزیکِ بک‌گراند لود نشد — کدِ خطا: ${code} (${codeName}) — مسیرِ درخواست‌شده: ${audioEl.currentSrc || "login/Login.mp3"}. ` +
       (code === 4
         ? "یعنی یا فایل پیدا نشد (۴۰۴/مسیرِ اشتباه) یا فرمتش پشتیبانی نمی‌شه."
-        : "");
+        : "")
+    );
   });
 })();
 
