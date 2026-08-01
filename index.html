@@ -2880,10 +2880,11 @@
      ایکونش تو یه مربعِ گوشه‌گردِ سمتِ راستِ مستطیل جا گرفته و عنوانش جلوی (سمتِ چپِ) همون مربعه */
   .dedoodz-page { margin-top: 2px; }
   .dedoodz-item {
-    display: flex; align-items: center; gap: 12px;
+    display: flex; align-items: center; gap: 12px; width: 100%;
     background: var(--card); border: 1px solid var(--border); border-radius: 14px;
     padding: 10px; margin-bottom: 10px; text-decoration: none; color: var(--text);
     cursor: pointer; transition: background 0.15s ease, border-color 0.15s ease;
+    font-family: inherit; font-size: inherit; text-align: right; appearance: none; -webkit-appearance: none;
   }
   .dedoodz-item:hover, .dedoodz-item:active { background: var(--surface); border-color: var(--accent); }
   .dedoodz-icon-square {
@@ -2893,6 +2894,36 @@
   .dedoodz-icon-square svg { width: 22px; height: 22px; color: #fff; }
   .dedoodz-item-title { flex: 1; font-size: 14.5px; font-weight: 600; }
   .dedoodz-item-chevron { width: 16px; height: 16px; color: var(--subtext); flex-shrink: 0; }
+
+  /* ---------- رادیو، همینجا تو سایت (نه تبِ جدید) — یه iframeِ دائمیِ تمام‌صفحه که با بستن، فقط
+     مخفی می‌شه، نه نابود؛ این‌جوری صدا/صفِ ویس تو پس‌زمینه ادامه پیدا می‌کنه و کاربر می‌تونه بچرخه ---------- */
+  .radio-overlay {
+    position: fixed; inset: 0; z-index: 9500; background: #1A0A31;
+    display: flex; flex-direction: column;
+  }
+  .radio-overlay.hidden { display: none; }
+  .radio-overlay-topbar {
+    position: absolute; top: calc(14px + var(--safe-top)); right: 14px; z-index: 2;
+  }
+  .radio-overlay-close {
+    display: flex; align-items: center; gap: 6px; font-family: inherit;
+    background: rgba(20,10,40,0.65); backdrop-filter: blur(6px); border: 1px solid rgba(255,255,255,0.18);
+    color: #fff; border-radius: 999px; padding: 8px 14px; font-size: 13px; cursor: pointer;
+  }
+  .radio-overlay-close svg { width: 15px; height: 15px; }
+  .radio-overlay-iframe { flex: 1; width: 100%; height: 100%; border: none; }
+
+  .radio-mini-bar {
+    position: fixed; bottom: calc(14px + var(--safe-bottom)); left: 50%; transform: translateX(-50%); z-index: 355;
+    display: flex; align-items: center; gap: 8px; background: var(--card); border: 1px solid var(--border);
+    border-radius: 999px; padding: 8px 8px 8px 14px; box-shadow: 0 6px 18px rgba(0,0,0,0.35);
+    cursor: pointer; font-size: 12.5px; color: var(--text);
+  }
+  .radio-mini-bar.hidden { display: none; }
+  .radio-mini-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--error); animation: radioMiniPulse 1.4s ease-in-out infinite; flex-shrink: 0; }
+  @keyframes radioMiniPulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+  .radio-mini-stop { border: none; background: none; color: var(--subtext); cursor: pointer; padding: 4px; display: flex; }
+  .radio-mini-stop svg { width: 15px; height: 15px; }
 
   /* گرید ۳ ستونه پروفایل برای رسانه/آهنگ‌ها */
   .profile-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 3px; }
@@ -4362,6 +4393,27 @@
     </div>
     <div class="queue-panel-list" id="queuePanelList" onscroll="onQueuePanelScroll(event)"></div>
   </div>
+</div>
+
+<!-- رادیو به‌جای بازشدن تو تبِ جدید، همینجا تو یه iframeِ دائمی لود می‌شه؛ وقتی کاربر می‌بندتش
+     (نه استاپ می‌کنه)، iframe از بین نمی‌ره — فقط از دیدِ کاربر خارج می‌شه — پس صدا و صفِ ویس
+     همچنان تو پس‌زمینه ادامه پیدا می‌کنه و کاربر می‌تونه تو بقیه‌ی سایت بچرخه -->
+<div class="radio-overlay hidden" id="radioOverlay">
+  <div class="radio-overlay-topbar">
+    <button class="radio-overlay-close" onclick="closeRadioOverlay()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l-6-6 6-6M3 12h18"/></svg>
+      <span>برگشت به سایت</span>
+    </button>
+  </div>
+  <iframe id="radioFrame" class="radio-overlay-iframe" src="about:blank" allow="autoplay" title="رادیونمای دهات"></iframe>
+</div>
+
+<div class="radio-mini-bar hidden" id="radioMiniBar" onclick="openRadioOverlay()" role="button" tabindex="0">
+  <span class="radio-mini-dot"></span>
+  <span>رادیو داره پخش می‌شه — برگرد</span>
+  <button class="radio-mini-stop" onclick="stopRadioOverlay(event)" aria-label="بستنِ کاملِ رادیو">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+  </button>
 </div>
 
 <script>
@@ -11316,8 +11368,7 @@ const DEDOODZ_ITEMS = [
   {
     id: "radio",
     title: "رادیو",
-    href: "radio.html",
-    external: true,
+    action: "openRadioOverlay()",
     icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2a10 10 0 0 1 10 10M12 2a10 10 0 0 0-10 10M7 12a5 5 0 0 1 5-5M17 12a5 5 0 0 0-5-5"/></svg>`,
   },
 ];
@@ -11325,14 +11376,18 @@ const DEDOODZ_ITEMS = [
 function renderDedoodzPage() {
   const el = document.getElementById("dedoodzPage");
   if (!el) return;
-  el.innerHTML = DEDOODZ_ITEMS.map(
-    (item) => `
-    <a class="dedoodz-item" href="${item.href}"${item.external ? ' target="_blank" rel="noopener"' : ""}>
+  el.innerHTML = DEDOODZ_ITEMS.map((item) => {
+    const tag = item.action ? "button" : "a";
+    const attrs = item.action
+      ? `type="button" onclick="${item.action}"`
+      : `href="${item.href}"${item.external ? ' target="_blank" rel="noopener"' : ""}`;
+    return `
+    <${tag} class="dedoodz-item" ${attrs}>
       <span class="dedoodz-icon-square">${item.icon}</span>
       <span class="dedoodz-item-title">${escapeHtml(item.title)}</span>
       <svg class="dedoodz-item-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
-    </a>`
-  ).join("");
+    </${tag}>`;
+  }).join("");
 }
 
 function selectDedoodz() {
@@ -11341,6 +11396,31 @@ function selectDedoodz() {
   document.getElementById("mediaFeed")?.classList.add("hidden");
   renderDedoodzPage();
   document.getElementById("dedoodzPage")?.classList.remove("hidden");
+}
+
+// ---------- رادیو، همینجا تو سایت: iframeِ دائمی که فقط اولین‌بار لود می‌شه؛ بستن یعنی مخفی‌کردن
+// (نه نابودکردن) پس صدا/صفِ ویس تو پس‌زمینه ادامه پیدا می‌کنه و کاربر می‌تونه تو بقیه‌ی سایت بچرخه ----------
+let radioFrameLoaded = false;
+function openRadioOverlay() {
+  const iframe = document.getElementById("radioFrame");
+  if (!radioFrameLoaded) {
+    iframe.src = "radio.html";
+    radioFrameLoaded = true;
+  }
+  document.getElementById("radioOverlay")?.classList.remove("hidden");
+  document.getElementById("radioMiniBar")?.classList.add("hidden");
+}
+function closeRadioOverlay() {
+  document.getElementById("radioOverlay")?.classList.add("hidden");
+  if (radioFrameLoaded) document.getElementById("radioMiniBar")?.classList.remove("hidden");
+}
+function stopRadioOverlay(event) {
+  if (event) event.stopPropagation();
+  const iframe = document.getElementById("radioFrame");
+  iframe.src = "about:blank";
+  radioFrameLoaded = false;
+  document.getElementById("radioOverlay")?.classList.add("hidden");
+  document.getElementById("radioMiniBar")?.classList.add("hidden");
 }
 
 // ================= دفتر احوالات (تب متن‌ها) =================
