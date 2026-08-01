@@ -238,14 +238,38 @@ function scheduleNextUpPreview(remainingSeconds, nextData) {
   }, delay * 1000);
 }
 
+// یه فیدِ نرمِ صدا (کراس‌فید) بینِ آهنگ‌ها؛ برای فیدِ خروجی from=1,to=0 و برای فیدِ ورودی from=0,to=1
+function fadeVolume(el, from, to, durationMs) {
+  return new Promise((resolve) => {
+    const steps = 24;
+    const stepMs = durationMs / steps;
+    let i = 0;
+    el.volume = from;
+    const timer = setInterval(() => {
+      i++;
+      el.volume = Math.max(0, Math.min(1, from + (to - from) * (i / steps)));
+      if (i >= steps) {
+        clearInterval(timer);
+        el.volume = to;
+        resolve();
+      }
+    }, stepMs);
+  });
+}
+
+// «remainingSeconds»ای که سرور می‌ده، لحظه‌ی ارسالِ جوابِ سرور دقیقه؛ ولی تا خودِ کلاینت جوابو
+// بگیره و پردازش کنه، یه‌کم زمان (تاخیرِ شبکه، مخصوصاً رو اینترنتِ کند) گذشته. قبلاً این تاخیر رو
+// حساب نمی‌کردیم، پس تایمرِ تعویضِ آهنگ گاهی چند ثانیه زودتر از پایانِ واقعیِ آهنگ فایر می‌شد و
+// آهنگ رو ناقص قطع می‌کرد. الان به‌جای اعتماد کورکورانه به یه تایمرِ یک‌باره، هر بار که تایمر تموم
+// شد اول از سرور می‌پرسیم «واقعاً وقتشه؟» — اگه سرور بگه هنوز همون آهنگه، فقط دوباره زمان‌بندی
+// می‌کنیم و هیچی قطع نمی‌شه؛ یعنی حداکثر امکانه یه‌کم دیرتر عوض بشه، ولی هیچ‌وقت زودتر.
 function scheduleTransition(remainingSeconds) {
   clearTimeout(nextTrackTimer);
-  nextTrackTimer = setTimeout(() => { runJingleThenSync(); }, Math.max(1, remainingSeconds) * 1000);
+  const SAFETY_BUFFER_SECONDS = 1.5;
+  nextTrackTimer = setTimeout(() => { checkAndTransition(); }, (remainingSeconds + SAFETY_BUFFER_SECONDS) * 1000);
 }
 
 // ---------- صدای بینِ‌آهنگی: بعدِ پایانِ هر آهنگ پخش می‌شه، بعدش با موقعیتِ واقعیِ سرور sync می‌شیم ----------
-// (چون رادیو زنده‌ست، این وقفه‌ی کوتاه باعث می‌شه بعدِ جینگل کمی جلوترِ آهنگِ بعدی شروع بشیم — دقیقاً
-// مثلِ رادیوی واقعی که اگه چند ثانیه حواست نباشه، رد می‌شه، نه اینکه صبر کنه)
 let cachedJingleNames = null;
 async function playJingle() {
   try {
@@ -257,6 +281,7 @@ async function playJingle() {
     if (!cachedJingleNames.length) return;
     const pick = cachedJingleNames[Math.floor(Math.random() * cachedJingleNames.length)];
     jingleAudio.src = jingleUrl(pick);
+    jingleAudio.volume = 1;
     await new Promise((resolve) => {
       let done = false;
       const finish = () => { if (!done) { done = true; resolve(); } };
@@ -270,43 +295,64 @@ async function playJingle() {
   }
 }
 
-async function runJingleThenSync() {
-  if (inJingleTransition) return;
-  inJingleTransition = true;
+// اعمالِ نتیجه‌ی /api/radio/now رو (چه در بارِ اول، چه resync، چه تعویضِ واقعیِ آهنگ) رو خودِ audio
+function applyTrackData(data, isTrackTransition) {
+  const c = data.current;
+  if (c.postId !== currentPostId || isTrackTransition) {
+    currentPostId = c.postId;
+    updateNowPlayingUi(data);
+    audio.src = mediaUrl(c.fileId);
+    audio.volume = 0;
+    audio.addEventListener(
+      "loadedmetadata",
+      () => { try { audio.currentTime = c.offsetSeconds; } catch (e) {} },
+      { once: true }
+    );
+    if (started) {
+      audio.play().then(() => fadeVolume(audio, 0, 1, 900)).catch(() => {});
+    }
+  } else {
+    audio.volume = 1;
+    const drift = Math.abs(audio.currentTime - c.offsetSeconds);
+    if (drift > 4) {
+      try { audio.currentTime = c.offsetSeconds; } catch (e) {}
+    }
+  }
+  scheduleTransition(c.remainingSeconds);
+  scheduleNextUpPreview(c.remainingSeconds, data.next);
+}
+
+// وقتِ زمان‌بندی‌شده‌ی تعویض می‌رسه؛ اول از سرور تاییدِ واقعی می‌گیریم، نه اینکه کورکورانه قطع کنیم
+async function checkAndTransition() {
   try {
-    audio.pause();
-    nextUpBox.classList.remove("visible");
-    await playJingle();
-  } finally {
-    inJingleTransition = false;
-    await syncToServer(true);
+    const data = await fetchRadioNow();
+    if (data.current.postId === currentPostId) {
+      // زودتر از موقع بوده (یا سرور هنوز همون آهنگ رو معتبر می‌دونه)؛ فقط دوباره زمان‌بندی کن، هیچی قطع نشه
+      applyTrackData(data, false);
+      setStatus("");
+      return;
+    }
+    inJingleTransition = true;
+    try {
+      nextUpBox.classList.remove("visible");
+      if (!audio.paused) await fadeVolume(audio, audio.volume || 1, 0, 900);
+      audio.pause();
+      await playJingle();
+    } finally {
+      inJingleTransition = false;
+      applyTrackData(data, true);
+      setStatus("");
+    }
+  } catch (e) {
+    setStatus("اتصال به رادیو برقرار نشد، دوباره امتحان می‌کنیم...", true);
+    nextTrackTimer = setTimeout(checkAndTransition, 4000);
   }
 }
 
 async function syncToServer(isTrackTransition) {
   try {
     const data = await fetchRadioNow();
-    const c = data.current;
-
-    if (c.postId !== currentPostId || isTrackTransition) {
-      currentPostId = c.postId;
-      updateNowPlayingUi(data);
-      audio.src = mediaUrl(c.fileId);
-      audio.addEventListener(
-        "loadedmetadata",
-        () => { try { audio.currentTime = c.offsetSeconds; } catch (e) {} },
-        { once: true }
-      );
-      if (started) audio.play().catch(() => {});
-    } else {
-      const drift = Math.abs(audio.currentTime - c.offsetSeconds);
-      if (drift > 4) {
-        try { audio.currentTime = c.offsetSeconds; } catch (e) {}
-      }
-    }
-
-    scheduleTransition(c.remainingSeconds);
-    scheduleNextUpPreview(c.remainingSeconds, data.next);
+    applyTrackData(data, isTrackTransition);
     setStatus("");
   } catch (e) {
     setStatus("اتصال به رادیو برقرار نشد، دوباره امتحان می‌کنیم...", true);
