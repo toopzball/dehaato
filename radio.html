@@ -47,20 +47,50 @@
   }
   .bg-empty-note { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: var(--subtext); font-size: 13px; opacity: 0.6; }
 
-  /* ---------- بجِ «رادیونمای دهات» بالای صفحه ---------- */
-  .top-badge {
+  /* ---------- گوشه‌ی راستِ بالا: چیپِ فرستنده‌ی آهنگ (آواتار+یوزرنیم) + بجِ پخشِ زنده، زیرِ هم ---------- */
+  .top-right-stack {
     position: fixed; top: 18px; right: 18px; z-index: 5;
+    display: flex; flex-direction: column; align-items: flex-end; gap: 8px;
+  }
+  .sender-chip {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: rgba(36,18,67,0.72); backdrop-filter: blur(6px);
+    border: 1px solid var(--border); border-radius: 999px; padding: 5px 13px 5px 5px;
+    max-width: 55vw; opacity: 0; transform: translateY(-6px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+  }
+  .sender-chip.visible { opacity: 1; transform: translateY(0); }
+  .sender-avatar {
+    width: 26px; height: 26px; border-radius: 50%; flex-shrink: 0; overflow: hidden;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--accent); color: #fff; font-size: 12px; font-weight: 700;
+  }
+  .sender-avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .sender-username {
+    font-size: 12.5px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .top-badge {
     display: inline-flex; align-items: center; gap: 6px;
-    font-size: 12px; color: var(--subtext); background: rgba(36,18,67,0.65); backdrop-filter: blur(6px);
-    border: 1px solid var(--border); border-radius: 999px; padding: 6px 13px;
+    font-size: 11px; color: var(--subtext); background: rgba(36,18,67,0.65); backdrop-filter: blur(6px);
+    border: 1px solid var(--border); border-radius: 999px; padding: 5px 12px;
   }
   .live-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--error); animation: livePulse 1.4s ease-in-out infinite; }
   .top-badge.idle .live-dot { background: var(--subtext); animation: none; }
   @keyframes livePulse { 0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(239,68,68,0.5); } 50% { opacity: 0.6; box-shadow: 0 0 0 5px rgba(239,68,68,0); } }
 
-  /* ---------- کادرِ «بعدی» — بالا سمتِ چپ، فقط چند ثانیه قبلِ تعویضِ آهنگ ظاهر می‌شه ---------- */
+  /* ---------- گوشه‌ی چپِ بالا: ساعتِ دقیقِ دائمی + زیرش کادرِ «بعدی» ---------- */
+  .top-left-stack { position: fixed; top: 18px; left: 18px; z-index: 5; display: flex; flex-direction: column; gap: 8px; max-width: 62vw; }
+  .live-clock {
+    display: inline-flex; align-self: flex-start; align-items: baseline; gap: 3px;
+    background: rgba(36,18,67,0.65); backdrop-filter: blur(6px);
+    border: 1px solid var(--border); border-radius: 999px; padding: 6px 14px;
+    font-variant-numeric: tabular-nums; font-feature-settings: "tnum" 1;
+    letter-spacing: 0.5px; font-weight: 700; font-size: 15px; color: var(--text);
+    direction: ltr;
+  }
+  .live-clock .clock-sec { font-size: 11px; font-weight: 500; color: var(--subtext); }
+
   .next-up-box {
-    position: fixed; top: 18px; left: 18px; z-index: 5; max-width: 62vw;
     background: rgba(36,18,67,0.75); backdrop-filter: blur(6px);
     border: 1px solid var(--border); border-radius: 12px; padding: 9px 13px;
     opacity: 0; transform: translateY(-8px); pointer-events: none;
@@ -105,6 +135,32 @@
   }
   .radio-status.error { color: var(--error); }
 
+  /* ---------- دکمه‌ی شناور ضبطِ ویس: بالای نوارِ نام‌آهنگ، وسطِ صفحه ---------- */
+  .voice-record-btn {
+    position: fixed; bottom: 108px; left: 50%; transform: translateX(-50%); z-index: 6;
+    width: 56px; height: 56px; border-radius: 50%; border: 1px solid var(--border); cursor: pointer;
+    background: var(--card); color: var(--text); display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.4);
+    transition: background 0.2s ease, transform 0.15s ease;
+  }
+  .voice-record-btn svg { width: 23px; height: 23px; }
+  .voice-record-btn.recording { background: var(--error); border-color: var(--error); }
+  .voice-record-btn:active { transform: translateX(-50%) scale(0.92); }
+  .voice-record-ring {
+    position: absolute; inset: -6px; border-radius: 50%; border: 2px solid var(--error);
+    opacity: 0; pointer-events: none;
+  }
+  .voice-record-btn.recording .voice-record-ring { opacity: 1; animation: recPulse 1.2s ease-out infinite; }
+  @keyframes recPulse { 0% { transform: scale(0.9); opacity: 0.9; } 100% { transform: scale(1.35); opacity: 0; } }
+  .voice-status {
+    position: fixed; bottom: 174px; left: 50%; transform: translateX(-50%); z-index: 6;
+    font-size: 12px; color: var(--subtext); background: rgba(36,18,67,0.8); backdrop-filter: blur(6px);
+    border: 1px solid var(--border); border-radius: 999px; padding: 6px 14px; opacity: 0; pointer-events: none;
+    transition: opacity 0.25s ease; white-space: nowrap; max-width: 80vw; overflow: hidden; text-overflow: ellipsis;
+  }
+  .voice-status.visible { opacity: 1; }
+  .voice-status.error { color: var(--error); border-color: var(--error); }
+
   @media (prefers-reduced-motion: reduce) {
     .live-dot { animation: none !important; }
     .bg-layer { transition: none !important; }
@@ -118,11 +174,20 @@
 <div class="bg-scrim"></div>
 <div class="bg-empty-note" id="bgEmptyNote" style="display:none;">هنوز رسانه‌ای برای رادیونما تیک نخورده</div>
 
-<div class="top-badge idle" id="topBadge"><span class="live-dot"></span><span id="topBadgeText">رادیونمای دهات</span></div>
+<div class="top-right-stack">
+  <div class="sender-chip" id="senderChip">
+    <span class="sender-avatar" id="senderAvatar"></span>
+    <span class="sender-username" id="senderUsername"></span>
+  </div>
+  <div class="top-badge idle" id="topBadge"><span class="live-dot"></span><span id="topBadgeText">رادیونمای دهات</span></div>
+</div>
 
-<div class="next-up-box" id="nextUpBox">
-  <p class="next-up-label">بعدی</p>
-  <p class="next-up-title" id="nextUpTitle">—</p>
+<div class="top-left-stack">
+  <div class="live-clock" id="liveClock"><span id="liveClockMain">--:--</span><span class="clock-sec" id="liveClockSec">--</span></div>
+  <div class="next-up-box" id="nextUpBox">
+    <p class="next-up-label">بعدی</p>
+    <p class="next-up-title" id="nextUpTitle">—</p>
+  </div>
 </div>
 
 <div class="now-playing">
@@ -132,6 +197,17 @@
 </div>
 
 <div class="radio-status" id="radioStatus"></div>
+
+<button class="voice-record-btn" id="voiceRecordBtn" aria-label="ارسالِ ویس به صفِ رادیو" style="display:none;">
+  <span class="voice-record-ring"></span>
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="9" y="2" width="6" height="12" rx="3"/>
+    <path d="M5 10a7 7 0 0 0 14 0"/>
+    <path d="M12 17v4"/>
+    <path d="M9 21h6"/>
+  </svg>
+</button>
+<div class="voice-status" id="voiceStatus"></div>
 
 <div class="enter-overlay" id="enterOverlay">
   <p class="enter-title">رادیونمای دهات</p>
@@ -203,12 +279,26 @@ function setLive(isLive) {
 // (نه پاز، نه رد کردن)؛ فقط یه ژستِ ورودِ یک‌بارمصرف برای دورزدنِ محدودیتِ خودکارپخشیِ مرورگر.
 // =========================================================================
 let started = false;
-let currentPostId = null;
+let currentSegmentKey = null;
 let currentDuration = 0;
 let nextTrackTimer = null;
 let nextUpTimer = null;
 let progressTimer = null;
 let inJingleTransition = false;
+let crossfadeOutTimer = null;
+
+// کراس‌فید فقط برای پایانِ آهنگ معنی داره، نه شروعش: ۱۰ ثانیه‌ی آخرِ هر آهنگ به‌آرومی صدا کم می‌شه
+// و دقیقاً هم‌زمان با تمومِ‌شدنِ واقعیِ آهنگ به صفر می‌رسه؛ آهنگِ بعدی هیچ فیدی نداره، از همون لحظه‌ی
+// اولش با صدای کامل شروع می‌شه.
+const CROSSFADE_OUT_SECONDS = 10;
+function scheduleCrossfadeOut(remainingSeconds) {
+  clearTimeout(crossfadeOutTimer);
+  const delay = Math.max(0, remainingSeconds - CROSSFADE_OUT_SECONDS);
+  crossfadeOutTimer = setTimeout(() => {
+    if (inJingleTransition || audio.paused) return;
+    fadeVolume(audio, audio.volume || 1, 0, CROSSFADE_OUT_SECONDS * 1000);
+  }, delay * 1000);
+}
 
 async function fetchRadioNow() {
   const res = await fetchWithRetry(`${WORKER_URL}/api/radio/now`, {
@@ -219,20 +309,86 @@ async function fetchRadioNow() {
   return data;
 }
 
+// ---------- کمکی‌های نمایشی: تبدیل ارقام فارسی، escape متن، رنگِ ثابتِ آواتار ----------
+function toPersianDigits(str) {
+  const fa = ["۰", "۱", "۲", "۳", "۴", "۵", "۶", "۷", "۸", "۹"];
+  return String(str).replace(/[0-9]/g, (d) => fa[+d]);
+}
+function escapeHtml(str) {
+  return String(str || "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+}
+function avatarColor(name) {
+  const palette = ["#8B5CF6", "#22C55E", "#3B82F6", "#F59E0B", "#EF4444", "#EC4899"];
+  let sum = 0;
+  for (const ch of (name || "")) sum += ch.charCodeAt(0);
+  return palette[sum % palette.length];
+}
+
 function updateNowPlayingUi(data) {
   const c = data.current;
-  nowTitle.textContent = c.title || "بدون‌نام";
-  nowPerformer.textContent = c.performer || "";
   currentDuration = c.durationSeconds || 0;
+
+  if (c.segmentType === "voice") {
+    nowTitle.textContent = "🎙 پیامِ صوتی";
+    nowPerformer.textContent = c.username ? `از طرفِ ${c.username}` : "";
+  } else if (c.segmentType === "pause") {
+    nowTitle.textContent = "چند لحظه دیگه...";
+    nowPerformer.textContent = "";
+  } else {
+    nowTitle.textContent = c.title || "بدون‌نام";
+    nowPerformer.textContent = c.performer || "";
+  }
+
+  // چیپِ فرستنده: آواتار (عکس واقعی یا حرفِ اول با رنگِ ثابت) + یوزرنیم — هم برای فرستنده‌ی آهنگ
+  // و هم فرستنده‌ی ویس معنی داره؛ تو مکثِ کوتاه چیزی برای نشون‌دادن نیست، مخفی می‌شه.
+  const senderChip = document.getElementById("senderChip");
+  const senderAvatar = document.getElementById("senderAvatar");
+  const senderUsername = document.getElementById("senderUsername");
+  if (senderChip && senderAvatar && senderUsername) {
+    if (c.segmentType === "pause" || !c.username) {
+      senderChip.classList.remove("visible");
+    } else {
+      senderAvatar.innerHTML = c.avatarFileId ? `<img src="${mediaUrl(c.avatarFileId)}" alt="" />` : "";
+      if (!c.avatarFileId) {
+        senderAvatar.textContent = (c.username || "؟").trim().charAt(0).toUpperCase();
+        senderAvatar.style.background = avatarColor(c.username || "");
+      } else {
+        senderAvatar.style.background = "transparent";
+      }
+      senderUsername.textContent = c.username || "";
+      senderChip.classList.add("visible");
+    }
+  }
 }
+
+// ---------- ساعتِ دقیقِ بالا-چپ (بر مبنای وقتِ تهران، صرف‌نظر از تایم‌زونِ خودِ دستگاه) ----------
+function updateClock() {
+  const mainEl = document.getElementById("liveClockMain");
+  const secEl = document.getElementById("liveClockSec");
+  if (!mainEl || !secEl) return;
+  const parts = new Intl.DateTimeFormat("en-GB", {
+    timeZone: "Asia/Tehran", hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false,
+  }).formatToParts(new Date());
+  const get = (t) => parts.find((p) => p.type === t)?.value || "00";
+  mainEl.textContent = toPersianDigits(`${get("hour")}:${get("minute")}`);
+  secEl.textContent = toPersianDigits(get("second"));
+}
+updateClock();
+setInterval(updateClock, 1000);
 
 function scheduleNextUpPreview(remainingSeconds, nextData) {
   clearTimeout(nextUpTimer);
   nextUpBox.classList.remove("visible");
+  if (!nextData) return;
   const PREVIEW_LEAD_SECONDS = 15;
   const delay = Math.max(0, remainingSeconds - PREVIEW_LEAD_SECONDS);
   nextUpTimer = setTimeout(() => {
-    const label = nextData && nextData.title ? `${nextData.title}${nextData.performer ? " — " + nextData.performer : ""}` : "—";
+    const label =
+      nextData.type === "voice"
+        ? "🎙 پیامِ صوتی"
+        : nextData.title
+        ? `${nextData.title}${nextData.performer ? " — " + nextData.performer : ""}`
+        : "—";
     nextUpTitle.textContent = label;
     nextUpBox.classList.add("visible");
   }, delay * 1000);
@@ -295,49 +451,79 @@ async function playJingle() {
   }
 }
 
-// اعمالِ نتیجه‌ی /api/radio/now رو (چه در بارِ اول، چه resync، چه تعویضِ واقعیِ آهنگ) رو خودِ audio
-function applyTrackData(data, isTrackTransition) {
+// شناسه‌ی یکتای هر «قسمت» (آهنگ/ویس/مکث)؛ چون مکث شناسه‌ی خودش رو نداره، startMsِ سرور (لحظه‌ی
+// دقیقِ شروعِ همون قسمت) برای یکتاسازی کافیه — هر قسمتِ جدید startMsِ متفاوت داره.
+function segmentKey(c) {
+  return `${c.segmentType}:${c.postId || c.voiceId || "x"}:${c.startMs || 0}`;
+}
+
+// اعمالِ نتیجه‌ی /api/radio/now (چه در بارِ اول، چه resync، چه تعویضِ واقعیِ قسمت) رو خودِ audio
+function applyTrackData(data, isForceTransition) {
   const c = data.current;
-  if (c.postId !== currentPostId || isTrackTransition) {
-    currentPostId = c.postId;
+  const key = segmentKey(c);
+  const isNewSegment = key !== currentSegmentKey || isForceTransition;
+
+  if (isNewSegment) {
+    currentSegmentKey = key;
     updateNowPlayingUi(data);
-    audio.src = mediaUrl(c.fileId);
-    audio.volume = 0;
-    audio.addEventListener(
-      "loadedmetadata",
-      () => { try { audio.currentTime = c.offsetSeconds; } catch (e) {} },
-      { once: true }
-    );
-    if (started) {
-      audio.play().then(() => fadeVolume(audio, 0, 1, 900)).catch(() => {});
+    if (c.segmentType === "pause") {
+      // تو مکث چیزی پخش نمی‌شه؛ فقط سکوت تا قسمتِ بعدی
+      try { audio.pause(); } catch (e) {}
+    } else {
+      audio.src = mediaUrl(c.fileId);
+      // بدونِ فیدِ ورودی: کراس‌فید فقط مالِ پایانِ آهنگه، نه شروعِ هیچ قسمتی — پس همیشه از همون
+      // لحظه‌ی اول با صدای کامل شروع می‌شه
+      audio.volume = 1;
+      audio.addEventListener(
+        "loadedmetadata",
+        () => { try { audio.currentTime = c.offsetSeconds; } catch (e) {} },
+        { once: true }
+      );
+      if (started) {
+        audio.play().catch(() => {});
+      }
     }
-  } else {
+  } else if (c.segmentType !== "pause") {
     audio.volume = 1;
     const drift = Math.abs(audio.currentTime - c.offsetSeconds);
     if (drift > 4) {
       try { audio.currentTime = c.offsetSeconds; } catch (e) {}
     }
   }
+
   scheduleTransition(c.remainingSeconds);
   scheduleNextUpPreview(c.remainingSeconds, data.next);
+  // کراس‌فیدِ ۱۰ثانیه‌ای فقط برای پایانِ «آهنگ» معنی داره؛ ویس/مکث کوتاه‌ترن و فیدِ تدریجی لازم ندارن
+  if (c.segmentType === "song") {
+    scheduleCrossfadeOut(c.remainingSeconds);
+  } else {
+    clearTimeout(crossfadeOutTimer);
+  }
 }
 
 // وقتِ زمان‌بندی‌شده‌ی تعویض می‌رسه؛ اول از سرور تاییدِ واقعی می‌گیریم، نه اینکه کورکورانه قطع کنیم
 async function checkAndTransition() {
   try {
     const data = await fetchRadioNow();
-    if (data.current.postId === currentPostId) {
-      // زودتر از موقع بوده (یا سرور هنوز همون آهنگ رو معتبر می‌دونه)؛ فقط دوباره زمان‌بندی کن، هیچی قطع نشه
+    if (segmentKey(data.current) === currentSegmentKey) {
+      // زودتر از موقع بوده (یا سرور هنوز همون قسمت رو معتبر می‌دونه)؛ فقط دوباره زمان‌بندی کن، هیچی قطع نشه
       applyTrackData(data, false);
       setStatus("");
       return;
     }
     inJingleTransition = true;
+    clearTimeout(crossfadeOutTimer);
     try {
       nextUpBox.classList.remove("visible");
-      if (!audio.paused) await fadeVolume(audio, audio.volume || 1, 0, 900);
+      // تا اینجا معمولاً کراس‌فیدِ ۱۰ثانیه‌ایِ پایانِ آهنگ (scheduleCrossfadeOut) خودش صدا رو به صفر
+      // رسونده؛ این فقط یه سقفِ ایمنیِ سریعه برای وقتی resync دیرتر از موعد رسیده و صدا هنوز کامل نرسیده صفر.
+      if (!audio.paused && audio.volume > 0.02) await fadeVolume(audio, audio.volume, 0, 300);
       audio.pause();
-      await playJingle();
+      // جینگل فقط قبلِ شروعِ یه «آهنگِ» جدید پخش می‌شه؛ رفتن به سمتِ ویس یا مکث بدونِ جینگله، چون
+      // اونا کوتاه و بی‌واسطه‌ان و جینگل قبلِ‌شون فقط پخشِ رادیو رو کش می‌ده
+      if (data.current.segmentType === "song") {
+        await playJingle();
+      }
     } finally {
       inJingleTransition = false;
       applyTrackData(data, true);
@@ -444,6 +630,109 @@ async function syncVisual() {
 }
 
 // =========================================================================
+// بخشِ ۳: ضبط و ارسالِ ویس به صفِ رادیو — حداکثر ۲۰ ثانیه؛ یه‌بار لمس برای شروع، یه‌بار دیگه
+// برای توقفِ زودتر (یا خودش سرِ ۲۰ ثانیه قطع می‌شه). بعدِ ارسال، فقط «نفرِ چندم تو صف»ه رو می‌دونیم.
+// =========================================================================
+const voiceRecordBtn = document.getElementById("voiceRecordBtn");
+const voiceStatus = document.getElementById("voiceStatus");
+const VOICE_MAX_SECONDS = 20;
+let mediaRecorder = null;
+let recordChunks = [];
+let recordStream = null;
+let recordStartTime = 0;
+let recordAutoStopTimer = null;
+let isRecording = false;
+let isUploadingVoice = false;
+
+function setVoiceStatus(text, isError) {
+  voiceStatus.textContent = text || "";
+  voiceStatus.classList.toggle("visible", !!text);
+  voiceStatus.classList.toggle("error", !!isError);
+}
+
+async function startVoiceRecording() {
+  if (isRecording || isUploadingVoice) return;
+  if (!navigator.mediaDevices || !window.MediaRecorder) {
+    setVoiceStatus("مرورگرت از ضبطِ صدا پشتیبانی نمی‌کنه", true);
+    setTimeout(() => setVoiceStatus(""), 3000);
+    return;
+  }
+  try {
+    recordStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+  } catch (e) {
+    setVoiceStatus("اجازه‌ی دسترسی به میکروفون داده نشد", true);
+    setTimeout(() => setVoiceStatus(""), 3000);
+    return;
+  }
+  recordChunks = [];
+  const mimeCandidates = ["audio/webm;codecs=opus", "audio/ogg;codecs=opus", "audio/webm"];
+  const mimeType = mimeCandidates.find((m) => window.MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(m)) || "";
+  try {
+    mediaRecorder = mimeType ? new MediaRecorder(recordStream, { mimeType }) : new MediaRecorder(recordStream);
+  } catch (e) {
+    mediaRecorder = new MediaRecorder(recordStream);
+  }
+  mediaRecorder.addEventListener("dataavailable", (e) => { if (e.data && e.data.size > 0) recordChunks.push(e.data); });
+  mediaRecorder.addEventListener("stop", onVoiceRecordingStopped);
+  mediaRecorder.start();
+  isRecording = true;
+  recordStartTime = Date.now();
+  voiceRecordBtn.classList.add("recording");
+  setVoiceStatus("در حالِ ضبط... (حداکثر ۲۰ ثانیه)");
+  recordAutoStopTimer = setTimeout(() => stopVoiceRecording(), VOICE_MAX_SECONDS * 1000);
+}
+
+function stopVoiceRecording() {
+  if (!isRecording || !mediaRecorder) return;
+  clearTimeout(recordAutoStopTimer);
+  isRecording = false;
+  voiceRecordBtn.classList.remove("recording");
+  try { mediaRecorder.stop(); } catch (e) {}
+  if (recordStream) {
+    recordStream.getTracks().forEach((t) => t.stop());
+    recordStream = null;
+  }
+}
+
+async function onVoiceRecordingStopped() {
+  const durationSeconds = Math.min(VOICE_MAX_SECONDS, Math.round((Date.now() - recordStartTime) / 1000));
+  const chunks = recordChunks;
+  recordChunks = [];
+  if (durationSeconds < 1 || chunks.length === 0) {
+    setVoiceStatus("ویس خیلی کوتاه بود، دوباره امتحان کن", true);
+    setTimeout(() => setVoiceStatus(""), 2500);
+    return;
+  }
+  const blob = new Blob(chunks, { type: (mediaRecorder && mediaRecorder.mimeType) || "audio/webm" });
+  isUploadingVoice = true;
+  setVoiceStatus("در حالِ ارسال...");
+  try {
+    const fd = new FormData();
+    fd.append("file", blob, "voice.webm");
+    fd.append("duration", String(durationSeconds));
+    const res = await fetch(`${WORKER_URL}/api/radio/voice`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${getToken()}` },
+      body: fd,
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || "ارسال ناموفق بود");
+    setVoiceStatus(`تو صف قرار گرفتی — نفرِ ${toPersianDigits(data.position)}اُم`);
+    setTimeout(() => setVoiceStatus(""), 6000);
+  } catch (e) {
+    setVoiceStatus(e.message || "ارسالِ ویس ناموفق بود", true);
+    setTimeout(() => setVoiceStatus(""), 4000);
+  } finally {
+    isUploadingVoice = false;
+  }
+}
+
+voiceRecordBtn.addEventListener("click", () => {
+  if (isRecording) stopVoiceRecording();
+  else startVoiceRecording();
+});
+
+// =========================================================================
 // شروع: یه ژستِ کاربریِ یک‌بارمصرف (برای مجوزِ خودکارپخشِ صدا)؛ بعدش دیگه هیچ کنترلی دستِ کاربر نیست
 // =========================================================================
 enterBtn.addEventListener("click", async () => {
@@ -452,6 +741,7 @@ enterBtn.addEventListener("click", async () => {
   enterOverlay.classList.add("hidden-overlay");
   setStatus("در حال اتصال به رادیو...");
   audio.muted = false;
+  voiceRecordBtn.style.display = "flex";
   syncVisual();
   await syncToServer(true);
 });
