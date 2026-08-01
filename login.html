@@ -677,7 +677,7 @@ try {
   </video>
 </div>
 <div id="debugBanner" style="display:none; position:fixed; top:0; left:0; right:0; z-index:99; background:#EF4444; color:#fff; font-family:monospace; font-size:12px; padding:8px 10px; direction:ltr; text-align:left; word-break:break-all; max-height:40vh; overflow:auto;"></div>
-<audio id="bgMusic" loop></audio>
+<audio id="bgMusic" loop src="main/login/Login.mp3"></audio>
 <button class="sound-toggle" id="soundToggle" onclick="toggleSound()" aria-label="قطع/وصل صدا">
   <svg class="icon-on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18 6a9 9 0 0 1 0 12"/></svg>
   <svg class="icon-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M17 9l6 6M23 9l-6 6"/></svg>
@@ -1824,6 +1824,25 @@ window.addEventListener("unhandledrejection", function (e) {
     banner.style.display = "block";
     banner.textContent =
       `ویدیوی بک‌گراند لود نشد — کدِ خطا: ${code} (${codeName}) — مسیرِ درخواست‌شده: ${video.currentSrc || "main/bg.mp4"}. ` +
+      (code === 4
+        ? "یعنی یا فایل پیدا نشد (۴۰۴/مسیرِ اشتباه) یا فرمتش پشتیبانی نمی‌شه."
+        : "");
+  });
+})();
+
+// ---------- گزارشِ خطای موزیکِ بک‌گراند: اگه main/login/Login.mp3 لود نشه، همینجا نشون داده می‌شه ----------
+(function reportBgMusicError() {
+  const audioEl = document.getElementById("bgMusic");
+  if (!audioEl) return;
+  const banner = document.getElementById("debugBanner");
+  const codeNames = { 1: "MEDIA_ERR_ABORTED", 2: "MEDIA_ERR_NETWORK", 3: "MEDIA_ERR_DECODE", 4: "MEDIA_ERR_SRC_NOT_SUPPORTED" };
+  audioEl.addEventListener("error", () => {
+    const err = audioEl.error;
+    const code = err ? err.code : "؟";
+    const codeName = codeNames[code] || "نامشخص";
+    banner.style.display = "block";
+    banner.textContent =
+      `موزیکِ بک‌گراند لود نشد — کدِ خطا: ${code} (${codeName}) — مسیرِ درخواست‌شده: ${audioEl.currentSrc || "main/login/Login.mp3"}. ` +
       (code === 4
         ? "یعنی یا فایل پیدا نشد (۴۰۴/مسیرِ اشتباه) یا فرمتش پشتیبانی نمی‌شه."
         : "");
