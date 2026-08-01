@@ -68,7 +68,7 @@ try {
     overflow: hidden;
     background: var(--primary);
   }
-  /* پس‌زمینه‌ی ویدیویی: main/Bg.mp4 — به‌جای حباب‌های CSS. ویدیو تمامِ صفحه رو با object-fit:cover پر می‌کنه */
+  /* پس‌زمینه‌ی ویدیویی: main/bg.mp4 — به‌جای حباب‌های CSS. ویدیو تمامِ صفحه رو با object-fit:cover پر می‌کنه */
   .bg-anim { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; background: var(--primary); contain: strict; }
   .bg-video {
     position: absolute; top: 50%; left: 50%; min-width: 100%; min-height: 100%;
@@ -125,13 +125,24 @@ try {
     -webkit-backdrop-filter: blur(10px);
   }
 
-  .tabs { display: flex; gap: 4px; background: var(--primary); border-radius: 10px; padding: 4px; margin-bottom: 18px; }
-  .tabs button {
-    flex: 1; padding: 9px; border: none; border-radius: 8px; background: transparent;
-    font-family: inherit; font-size: 14px; color: var(--subtext); cursor: pointer;
-    transition: background 0.25s ease, color 0.25s ease, transform 0.15s ease;
+  .tabs {
+    display: flex; gap: 4px; position: relative;
+    background: transparent; border: 1px solid var(--border); border-radius: 999px; padding: 4px; margin-bottom: 18px;
+    backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
   }
-  .tabs button.active { background: var(--card); color: var(--text); font-weight: 500; animation: popIn 0.3s ease both; }
+  .tabs-indicator {
+    position: absolute; top: 4px; bottom: 4px; left: 0; width: 0;
+    background: var(--card); border: 1px solid var(--border); border-radius: 999px;
+    transform: translateX(0); will-change: transform, width; z-index: 0;
+    transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), width 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  .tabs button {
+    position: relative; z-index: 1;
+    flex: 1; padding: 9px; border: none; border-radius: 999px; background: transparent;
+    font-family: inherit; font-size: 14px; color: var(--subtext); cursor: pointer;
+    transition: color 0.25s ease, transform 0.15s ease;
+  }
+  .tabs button.active { color: var(--text); font-weight: 500; }
   .tabs button:active { transform: scale(0.95); }
 
   input {
@@ -662,7 +673,7 @@ try {
 
 <div class="bg-anim">
   <video class="bg-video" autoplay muted loop playsinline preload="auto">
-    <source src="main/Bg.mp4" type="video/mp4" />
+    <source src="main/bg.mp4" type="video/mp4" />
   </video>
 </div>
 <div id="debugBanner" style="display:none; position:fixed; top:0; left:0; right:0; z-index:99; background:#EF4444; color:#fff; font-family:monospace; font-size:12px; padding:8px 10px; direction:ltr; text-align:left; word-break:break-all; max-height:40vh; overflow:auto;"></div>
@@ -681,6 +692,7 @@ try {
 
   <div class="card">
     <div class="tabs">
+      <span class="tabs-indicator" id="tabsIndicator"></span>
       <button id="tabLogin" class="active" onclick="showLogin()">ورود</button>
       <button id="tabRegister" onclick="showRegister()">ثبت‌نام</button>
     </div>
@@ -1799,7 +1811,7 @@ window.addEventListener("unhandledrejection", function (e) {
   banner.textContent = "خطای Promise: " + (e.reason && e.reason.message ? e.reason.message : String(e.reason));
 });
 
-// ---------- گزارشِ خطای ویدیوی بک‌گراند: اگه main/Bg.mp4 لود نشه، دقیقاً همینجا (نه فقط ساکت تو کنسول) نشون داده می‌شه ----------
+// ---------- گزارشِ خطای ویدیوی بک‌گراند: اگه main/bg.mp4 لود نشه، دقیقاً همینجا (نه فقط ساکت تو کنسول) نشون داده می‌شه ----------
 (function reportBgVideoError() {
   const video = document.querySelector(".bg-video");
   if (!video) return;
@@ -1811,7 +1823,7 @@ window.addEventListener("unhandledrejection", function (e) {
     const codeName = codeNames[code] || "نامشخص";
     banner.style.display = "block";
     banner.textContent =
-      `ویدیوی بک‌گراند لود نشد — کدِ خطا: ${code} (${codeName}) — مسیرِ درخواست‌شده: ${video.currentSrc || "main/Bg.mp4"}. ` +
+      `ویدیوی بک‌گراند لود نشد — کدِ خطا: ${code} (${codeName}) — مسیرِ درخواست‌شده: ${video.currentSrc || "main/bg.mp4"}. ` +
       (code === 4
         ? "یعنی یا فایل پیدا نشد (۴۰۴/مسیرِ اشتباه) یا فرمتش پشتیبانی نمی‌شه."
         : "");
@@ -1973,12 +1985,33 @@ function replayFormAnim(el) {
   el.style.animation = "";
 }
 
+// ---------- کپسولِ لغزنده‌ی زیرِ تبِ فعال (ورود/ثبت‌نام) ----------
+function updateTabsIndicator() {
+  const tabsEl = document.querySelector(".tabs");
+  const indicator = document.getElementById("tabsIndicator");
+  if (!tabsEl || !indicator) return;
+  const activeBtn = tabsEl.querySelector("button.active");
+  if (!activeBtn) return;
+  indicator.style.width = activeBtn.offsetWidth + "px";
+  indicator.style.transform = `translateX(${activeBtn.offsetLeft}px)`;
+}
+// موقعِ اولین لود، بدونِ انیمیشنِ لغزش جاش بنداز (وگرنه از عرضِ صفر شروع می‌کنه به لغزیدن)
+(function initTabsIndicator() {
+  const indicator = document.getElementById("tabsIndicator");
+  if (!indicator) return;
+  indicator.style.transition = "none";
+  updateTabsIndicator();
+  requestAnimationFrame(() => { indicator.style.transition = ""; });
+})();
+window.addEventListener("resize", updateTabsIndicator);
+
 function showLogin() {
   document.getElementById("tabLogin").classList.add("active");
   document.getElementById("tabRegister").classList.remove("active");
   document.getElementById("loginForm").classList.remove("form-hide");
   document.getElementById("registerForm").classList.add("form-hide");
   replayFormAnim(document.getElementById("loginForm"));
+  updateTabsIndicator();
 }
 function showRegister() {
   document.getElementById("tabRegister").classList.add("active");
@@ -1986,6 +2019,7 @@ function showRegister() {
   document.getElementById("registerForm").classList.remove("form-hide");
   document.getElementById("loginForm").classList.add("form-hide");
   replayFormAnim(document.getElementById("registerForm"));
+  updateTabsIndicator();
 }
 
 async function register() {
