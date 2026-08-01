@@ -79,6 +79,10 @@ try {
 
   @keyframes fadeInUp { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: translateY(0); } }
   @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes windowPop {
+    from { opacity: 0; transform: scale(0.85); }
+    to { opacity: 1; transform: scale(1); }
+  }
   @keyframes popIn { 0% { opacity: 0; transform: scale(0.85); } 100% { opacity: 1; transform: scale(1); } }
   @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
   @keyframes shake { 10%, 90% { transform: translateX(-1px); } 20%, 80% { transform: translateX(2px); } 30%, 50%, 70% { transform: translateX(-4px); } 40%, 60% { transform: translateX(4px); } }
@@ -126,13 +130,13 @@ try {
   }
 
   .tabs {
-    display: flex; gap: 4px; position: relative;
+    display: flex; gap: 4px; position: relative; overflow: hidden;
     background: transparent; border: 1px solid var(--border); border-radius: 999px; padding: 4px; margin-bottom: 18px;
     backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
   }
   .tabs-indicator {
     position: absolute; top: 4px; bottom: 4px; left: 0; width: 0;
-    background: var(--card); border: 1px solid var(--border); border-radius: 999px;
+    background: rgba(139, 92, 246, 0.28); border: 1px solid rgba(139, 92, 246, 0.55); border-radius: 999px;
     transform: translateX(0); will-change: transform, width; z-index: 0;
     transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), width 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
   }
@@ -258,15 +262,21 @@ try {
   .captcha-modal {
     width: 100%; max-width: 320px; background: var(--card); border: 1px solid var(--border);
     border-radius: 14px; padding: 16px; transform: scale(0.92) translateY(10px);
-    transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+    transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1), height 0.55s cubic-bezier(0.22, 1, 0.36, 1);
     position: relative; overflow: hidden;
+  }
+  @keyframes tickJump {
+    0%   { opacity: 0; transform: scale(0.3); }
+    55%  { opacity: 1; transform: scale(1.22); }
+    75%  { transform: scale(0.9); }
+    100% { transform: scale(1); }
   }
   .captcha-success-tick {
     position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
-    background: var(--card); border-radius: 14px; opacity: 0; transform: scale(0.85);
-    pointer-events: none; z-index: 30; transition: opacity 0.2s ease, transform 0.2s ease;
+    background: var(--card); border-radius: 14px; opacity: 0; transform: scale(0.3);
+    pointer-events: none; z-index: 30; transition: opacity 0.15s ease;
   }
-  .captcha-success-tick.show { opacity: 1; transform: scale(1); }
+  .captcha-success-tick.show { opacity: 1; animation: tickJump 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
   .captcha-success-tick svg { width: 64px; height: 64px; }
   .captcha-success-tick circle { fill: none; stroke: var(--success); stroke-width: 3; }
   .captcha-success-tick path {
@@ -275,6 +285,10 @@ try {
   }
   .captcha-success-tick.show path { stroke-dashoffset: 0; }
   .captcha-modal-overlay.open .captcha-modal { transform: scale(1) translateY(0); }
+  .captcha-modal-overlay.open .captcha-modal.tick-showing { transform: scale(0.3) translateY(0); }
+  /* وقتی تیک نشون داده می‌شه، کادر باید حتماً مربع باشه (نه به‌شکلِ مستطیلِ مرحله‌ی قبل/بعد)؛
+     عرض/ارتفاعِ برابر رو خودِ جاوااسکریپت (پایینِ فایل، تابعِ advanceAfterSuccess) موقعِ نمایشِ تیک ست می‌کنه.
+     خودِ چک‌مارک هم (tickJump بالا) مستقل از اسکیلِ کادر یه پرشِ کامل داره، وگرنه تو این سایزِ کوچیک گم می‌شد. */
   .captcha-modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
   .captcha-modal-step-label { font-size: 11.5px; color: var(--subtext); }
   .captcha-modal-close {
@@ -283,7 +297,10 @@ try {
   }
   .captcha-modal-close:hover { color: var(--text); background: var(--surface); }
   .captcha-modal-step { display: none; }
-  .captcha-modal-step.active { display: block; animation: fadeIn 0.25s ease; }
+  .captcha-modal-step.active {
+    display: block; transform-origin: center;
+    animation: windowPop 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
 
   /* مرحله‌ی ۱: چیدنِ پازل (همون قفسه) */
   .puzzle-scene {
@@ -353,8 +370,6 @@ try {
   /* مرحله‌ی ۴: سوالِ متنی */
   .question-stage { text-align: center; padding: 4px 0 0; }
   .question-text { font-size: 14px; color: var(--text); margin: 0 0 10px; white-space: pre-line; }
-  #captchaAnswerInput { width: 100%; box-sizing: border-box; text-align: center; }
-  #captchaAnswerSubmit { width: 100%; margin-top: 8px; }
   .question-error { color: var(--error); font-size: 12.5px; min-height: 16px; margin-top: 6px; }
   .question-error.shake { animation: shake 0.4s ease; }
   .captcha-modal-hint.subtle-hint { color: var(--accent); opacity: 0.9; margin: -2px 0 10px; }
@@ -367,7 +382,7 @@ try {
   .question-timer-fill { height: 100%; width: 100%; background: var(--accent); border-radius: 2px; transition: width 0.1s linear, background 0.3s ease; }
   .question-timer-fill.warn { background: #dc2626; }
 
-  /* ---------- مرحله‌ی ۸: دکمه‌های آره/نه ---------- */
+  /* ---------- مرحله‌ی ۷: دکمه‌های آره/نه ---------- */
   .yesno-buttons { display: flex; gap: 12px; margin-top: 4px; }
   .yesno-btn {
     flex: 1; padding: 11px; border-radius: 10px; border: 1px solid var(--border);
@@ -383,6 +398,27 @@ try {
   /* ---------- مرحله‌ی ۴: اسمِ مالکِ سایت (۴گزینه‌ای) ---------- */
   .owner-options { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 4px; }
   .owner-options .yesno-btn:hover { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+  /* ---------- مرحله‌ی ۶: فیزیک — ۳ گزینه‌ی غلط تو یه ردیف؛ گزینه‌ی درست بعداً با انیمیشن از هیچ
+     باز می‌شه و بقیه‌ی دکمه‌ها (به‌خاطرِ flex) خودشون جمع می‌شن تا براش جا باز کنن ---------- */
+  .physics-options { display: flex; gap: 8px; margin-top: 4px; align-items: stretch; }
+  .physics-options .yesno-btn {
+    flex: 1 1 0; min-width: 0; padding: 11px 4px; font-size: 12.5px;
+    transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease,
+                flex-grow 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s ease, transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  .physics-options .yesno-btn:hover { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .physics-options .physics-correct-btn {
+    flex-grow: 0; flex-basis: 0; min-width: 0; padding-left: 0; padding-right: 0;
+    opacity: 0; transform: scale(0.5); overflow: hidden; white-space: nowrap;
+    pointer-events: none; border-color: var(--accent);
+  }
+  .physics-options .physics-correct-btn.revealed {
+    flex-grow: 1; opacity: 1; transform: scale(1); padding: 11px 4px; pointer-events: auto;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .physics-options .yesno-btn { transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease !important; }
+  }
 
   /* ---------- مرحله‌ی ۵: پازلِ ۹‌تکه‌ی بهم‌ریخته ---------- */
   .jigsaw-grid {
@@ -406,7 +442,7 @@ try {
     border-radius: 4px; pointer-events: none; font-family: inherit;
   }
 
-  /* ---------- مرحله‌ی ۹: لیوان چایی (عکسِ واقعی؛ هولد=بالاپایین‌شدنِ سریع، ۳ثانیه=تکه‌تکه‌شدن) ---------- */
+  /* ---------- مرحله‌ی ۸: لیوان چایی (عکسِ واقعی؛ هولد=بالاپایین‌شدنِ سریع، ۳ثانیه=تکه‌تکه‌شدن) ---------- */
   .tea-stage {
     position: relative; display: flex; justify-content: center; align-items: center;
     margin-top: 4px; touch-action: none; user-select: none; height: 150px;
@@ -560,7 +596,7 @@ try {
   // مستقیم می‌ریم سراغِ فرمِ لاگین (بدون آهنگ).
   var mediaReadyPromise = fetch("/api/splash-media/list")
     .then(function (res) {
-      if (!res.ok) throw new Error("splash media list error");
+      if (!res.ok) throw new Error("splash media list error — status: " + res.status);
       return res.json();
     })
     .then(function (data) {
@@ -573,7 +609,7 @@ try {
         if (bg) bg.src = "/api/splash-media/file/" + encodeURIComponent(audioPick);
       }
 
-      if (!videos.length) throw new Error("no mp4 files found in login folder");
+      if (!videos.length) throw new Error("no mp4 files found in login folder — data: " + JSON.stringify(data));
       var videoPick = videos[Math.floor(Math.random() * videos.length)];
       video.src = "/api/splash-media/file/" + encodeURIComponent(videoPick);
       video.load();
@@ -603,12 +639,7 @@ try {
     video.classList.add("video-ready");
   });
   video.addEventListener("error", function () {
-    // اگه ویدیو لود نشه (مثلاً مسیرش اشتباهه یا فایل رو ریپو نیست)، خطاش رو رو همون
-    // نوار قرمز debugBanner (که پایین‌تر تو فایل تعریف شده) نشون بده تا رو موبایل هم دیده بشه
-    var code = video.error ? video.error.code : "?";
-    if (typeof logDebugBanner === "function") {
-      logDebugBanner("خطای بارگذاری ویدیوی اسپلش (کد " + code + ") — مسیر: " + video.currentSrc);
-    }
+    // اگه ویدیو لود نشه (مثلاً مسیرش اشتباهه یا فایل رو ریپو نیست)، بی‌صدا رد می‌شیم سراغِ فرمِ لاگین
     finishSplash();
   });
 
@@ -674,7 +705,6 @@ try {
     <source src="bg.mp4" type="video/mp4" />
   </video>
 </div>
-<div id="debugBanner" style="display:none; position:fixed; top:0; left:0; right:0; z-index:99; background:#EF4444; color:#fff; font-family:monospace; font-size:12px; padding:8px 10px; direction:ltr; text-align:left; word-break:break-all; max-height:40vh; overflow:auto;"></div>
 <audio id="bgMusic" loop src="login/Login.mp3"></audio>
 <button class="sound-toggle" id="soundToggle" onclick="toggleSound()" aria-label="قطع/وصل صدا">
   <svg class="icon-on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18 6a9 9 0 0 1 0 12"/></svg>
@@ -728,6 +758,7 @@ try {
           <svg class="eye-off-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.94 10.94 0 0 1 12 19c-7 0-11-7-11-7a21.6 21.6 0 0 1 5.06-5.94M9.9 4.24A10.4 10.4 0 0 1 12 4c7 0 11 7 11 7a21.6 21.6 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><path d="M1 1l22 22"/></svg>
         </button>
       </div>
+      <input id="regReferralCode" placeholder="کد ملی متقاضی" autocomplete="off" maxlength="20" />
       <div class="captcha-wrap">
         <div class="captcha-trigger" id="captchaTriggerRegister" role="button" tabindex="0">
           <div class="captcha-trigger-check">
@@ -814,25 +845,13 @@ try {
       <div class="question-stage">
         <div class="question-timer-track"><div class="question-timer-fill" id="physicsTimerFill"></div></div>
         <p class="question-text">جرمِ خورشید تقریباً ۲×۱۰³۰ کیلوگرمه و شتابِ گرانش g=9.8 نیوتن‌بر‌کیلوگرمه؛ وزنِ علی (که ۷۰ کیلوگرمه) رو دقیقاً حساب کن</p>
-        <div class="owner-options" id="physicsOptions">
+        <div class="physics-options" id="physicsOptions">
           <button type="button" class="yesno-btn" data-correct="0">686 نیوتن</button>
           <button type="button" class="yesno-btn" data-correct="0">700 نیوتن</button>
           <button type="button" class="yesno-btn" data-correct="0">9.8 نیوتن</button>
-          <button type="button" class="yesno-btn hidden" id="physicsCorrectBtn" data-correct="1">π نیوتن</button>
+          <button type="button" class="yesno-btn physics-correct-btn" id="physicsCorrectBtn" data-correct="1">عاقیوم</button>
         </div>
         <div class="question-error" id="physicsError"></div>
-      </div>
-    </div>
-
-    <!-- مرحله‌ی ۷: تاریخ‌تولد / کدِ معرف -->
-    <div class="captcha-modal-step" id="captchaStepAnswer">
-      <div class="question-stage">
-        <div class="question-timer-track"><div class="question-timer-fill" id="answerTimerFill"></div></div>
-        <p class="question-text" id="captchaAnswerPrompt"></p>
-        <p class="captcha-modal-hint subtle-hint hidden" id="captchaAnswerSubHint"></p>
-        <input type="text" id="captchaAnswerInput" placeholder="جواب..." autocomplete="off" />
-        <button type="button" class="primary" id="captchaAnswerSubmit">تایید</button>
-        <div class="question-error" id="captchaAnswerError"></div>
       </div>
     </div>
 
@@ -845,7 +864,7 @@ try {
       <div class="question-error" id="jigsawCheckError"></div>
     </div>
 
-    <!-- مرحله‌ی ۸: آره/نه -->
+    <!-- مرحله‌ی ۷: آره/نه -->
     <div class="captcha-modal-step" id="captchaStepYesNo">
       <div class="question-stage">
         <p class="question-text">عاقی خوبه یا نه؟</p>
@@ -857,7 +876,7 @@ try {
       </div>
     </div>
 
-    <!-- مرحله‌ی ۹: لیوان چایی رو بخور -->
+    <!-- مرحله‌ی ۸: لیوان چایی رو بخور -->
     <div class="captcha-modal-step" id="captchaStepTea">
       <div class="tea-stage" id="teaStage">
         <img id="teaImg" class="tea-img" src="" alt="لیوان چایی" draggable="false" />
@@ -954,7 +973,7 @@ const ROTATE_DIRECTIONS_DEG = [0, 45, 90, 135, 180, 225, 270, 315];
 const ROTATE_TOLERANCE_DEG = 22;
 const SHAKE_REQUIRED_REVERSALS = 6; // چند بار باید جهتِ حرکت عوض بشه تا «تکون خوردن» حساب بشه
 const SHAKE_MIN_DELTA_PX = 16; // حداقل جابه‌جاییِ افقی برای اینکه یه حرکت به‌حساب بیاد
-const CAPTCHA_TOTAL_STEPS = 9; // تعدادِ کلِ مراحل (۳ مینی‌گیم + ۱ سوالِ متنی + پازلِ ۹تکه + ۲ سوالِ متنی + آره/نه + لیوانِ چایی)
+const CAPTCHA_TOTAL_STEPS = 8; // تعدادِ کلِ مراحل (۳ مینی‌گیم + ۱ سوالِ متنی + پازلِ ۹تکه + سوالِ فیزیک + آره/نه + لیوانِ چایی)
 
 function toPersianDigits(n) {
   const map = ["۰", "۱", "۲", "۳", "۴", "۵", "۶", "۷", "۸", "۹"];
@@ -1002,7 +1021,6 @@ const captchaStepRotateEl = document.getElementById("captchaStepRotate");
 const captchaStepShakeEl = document.getElementById("captchaStepShake");
 const captchaStepOwnerEl = document.getElementById("captchaStepOwner");
 const captchaStepPhysicsEl = document.getElementById("captchaStepPhysics");
-const captchaStepAnswerEl = document.getElementById("captchaStepAnswer"); // فقط تاریخ‌تولد/کدِ معرف
 const captchaStepJigsawEl = document.getElementById("captchaStepJigsaw");
 const captchaStepYesNoEl = document.getElementById("captchaStepYesNo");
 const captchaStepTeaEl = document.getElementById("captchaStepTea");
@@ -1011,14 +1029,34 @@ const captchaSuccessTickEl = document.getElementById("captchaSuccessTick");
 // این آرایه فقط برای نمایش/مخفی‌کردنِ پنل‌هاست؛ ترتیبش دقیقاً همون ترتیبِ ناوبریه،
 // یعنی اندیسِ ۱-پایه‌ش با شماره‌ی مرحله (۱ تا ۹) یکیه:
 // ۱=پازلِ تک‌تکه، ۲=چرخوندن، ۳=تکون‌دادن، ۴=اسمِ مالکِ سایت، ۵=پازلِ ۹تکه،
-// ۶=فیزیک، ۷=تاریخ‌تولد/کدِ معرف، ۸=آره/نه، ۹=لیوانِ چایی
-const captchaDomPanels = [captchaStepPuzzleEl, captchaStepRotateEl, captchaStepShakeEl, captchaStepOwnerEl, captchaStepJigsawEl, captchaStepPhysicsEl, captchaStepAnswerEl, captchaStepYesNoEl, captchaStepTeaEl];
+// ۶=فیزیک، ۷=آره/نه، ۸=لیوانِ چایی (تستِ «چند سالته» کلاً حذف شده)
+const captchaDomPanels = [captchaStepPuzzleEl, captchaStepRotateEl, captchaStepShakeEl, captchaStepOwnerEl, captchaStepJigsawEl, captchaStepPhysicsEl, captchaStepYesNoEl, captchaStepTeaEl];
 
 let activeCaptchaController = null;
 let captchaStageTransitionTimeout = null; // تایمرِ گذار بینِ مینی‌گیم‌ها؛ اگه مودال وسطِ گذار بسته بشه، باید لغو بشه
 
-function showCaptchaPanel(domIndex) {
+let captchaModalHeightResetTimeout = null;
+const captchaModalEl = document.querySelector(".captcha-modal");
+
+function showCaptchaPanel(domIndex, animateHeight) {
+  // اگه animateHeight فالس نباشه (یعنی این یه گذارِ واقعی بینِ دو مرحله‌ست، نه اولین‌بارِ باز شدنِ مودال)،
+  // خودِ کادرِ مودال (نه فقط محتوای داخلش) رو با ارتفاعِ دقیقِ مرحله‌ی بعدی، نرم کوچیک/بزرگ می‌کنیم
+  if (animateHeight === false || !captchaModalEl) {
+    captchaDomPanels.forEach((el, i) => el.classList.toggle("active", i === domIndex - 1));
+    return;
+  }
+  const startHeight = captchaModalEl.getBoundingClientRect().height;
   captchaDomPanels.forEach((el, i) => el.classList.toggle("active", i === domIndex - 1));
+  const endHeight = captchaModalEl.scrollHeight;
+  if (captchaModalHeightResetTimeout) { clearTimeout(captchaModalHeightResetTimeout); captchaModalHeightResetTimeout = null; }
+  captchaModalEl.style.height = startHeight + "px";
+  void captchaModalEl.offsetHeight; // ری‌فلو، تا مرورگر startHeight رو واقعاً به‌عنوانِ نقطه‌ی شروعِ ترنزیشن ثبت کنه
+  requestAnimationFrame(() => { captchaModalEl.style.height = endHeight + "px"; });
+  captchaModalHeightResetTimeout = setTimeout(() => {
+    // بعدِ تمومِ انیمیشن، ارتفاع رو آزاد می‌کنیم (auto) تا اگه بعداً همون مرحله محتواش عوض شد
+    // (مثلاً پیامِ خطا اومد)، جعبه دوباره قفلِ یه عددِ ثابت نمونه
+    captchaModalEl.style.height = "";
+  }, 420);
 }
 
 function setCaptchaStepLabel(logicalStepNumber) {
@@ -1028,21 +1066,37 @@ function setCaptchaStepLabel(logicalStepNumber) {
 // وقتی یه مرحله درست حل می‌شه، اول یه تیکِ سبز چند لحظه نشون داده می‌شه (تا کاربر مطمئن بشه درست
 // جواب داده)، بعد fn (که پنل/لیبل/لی‌اوتِ مرحله‌ی بعدی رو ست می‌کنه) صدا زده می‌شه
 function advanceAfterSuccess(fn) {
+  // قبل از اسکیل‌کردنِ کادر، ارتفاعش رو دقیقاً برابرِ عرضش می‌کنیم تا تیکِ سبز همیشه
+  // تو یه کادرِ کاملاً مربع نشون داده بشه، فارغ از اینکه محتوایِ مرحله‌ی قبل/بعد چه ارتفاعی داشت
+  if (captchaModalEl) {
+    const squareSize = captchaModalEl.getBoundingClientRect().width;
+    captchaModalEl.style.height = squareSize + "px";
+  }
   captchaSuccessTickEl.classList.add("show");
+  if (captchaModalEl) captchaModalEl.classList.add("tick-showing");
   captchaStageTransitionTimeout = setTimeout(() => {
     captchaSuccessTickEl.classList.remove("show");
+    if (captchaModalEl) {
+      captchaModalEl.classList.remove("tick-showing");
+      captchaModalEl.style.height = ""; // آزادش کن تا showCaptchaPanel ارتفاعِ واقعیِ مرحله‌ی بعدی رو خودش حساب کنه
+    }
     fn();
-  }, 620);
+  }, 700);
 }
 
 function openCaptchaModal(controller) {
   if (captchaStageTransitionTimeout) { clearTimeout(captchaStageTransitionTimeout); captchaStageTransitionTimeout = null; }
   captchaSuccessTickEl.classList.remove("show");
+  if (captchaModalEl) captchaModalEl.classList.remove("tick-showing");
   activeCaptchaController = controller;
   captchaModalOverlay.classList.add("open");
-  showCaptchaPanel(1);
+  showCaptchaPanel(1, false);
   setCaptchaStepLabel(1);
   layoutModalPuzzle();
+  // مرحله‌ی پازل تو HTML از اول active‌ه، پس انیمیشنِ ورودش (windowPop) همون لحظه‌ی لودِ صفحه یه بار
+  // پخش شده (وقتی مودال هنوز پشتِ پرده و نامرئی بود)، نه وقتی کاربر واقعاً بازش می‌کنه. برای همین این‌جا
+  // با همون ترفندِ replayFormAnim دوباره از نو پخشش می‌کنیم تا هر بار که مودال باز می‌شه، انیمیشن دیده بشه.
+  replayFormAnim(captchaStepPuzzleEl);
   document.body.style.overflow = "hidden";
 }
 function closeCaptchaModal() {
@@ -1052,6 +1106,7 @@ function closeCaptchaModal() {
   if (captchaStageTransitionTimeout) { clearTimeout(captchaStageTransitionTimeout); captchaStageTransitionTimeout = null; }
   clearQuestionTimer();
   captchaSuccessTickEl.classList.remove("show");
+  if (captchaModalEl) captchaModalEl.classList.remove("tick-showing");
   captchaModalOverlay.classList.remove("open");
   activeCaptchaController = null;
   document.body.style.overflow = "";
@@ -1288,13 +1343,6 @@ function restartCaptchaFromStart() {
   layoutModalPuzzle();
 }
 
-// ---------- مرحله‌های ۴، ۶ و ۷: سوال‌های اسمِ مالک، فیزیک، تاریخ‌تولد/کدِ معرف ----------
-const captchaAnswerPrompt = document.getElementById("captchaAnswerPrompt");
-const captchaAnswerSubHint = document.getElementById("captchaAnswerSubHint");
-const captchaAnswerInput = document.getElementById("captchaAnswerInput");
-const captchaAnswerSubmit = document.getElementById("captchaAnswerSubmit");
-const captchaAnswerError = document.getElementById("captchaAnswerError");
-
 // ---------- مرحله‌ی ۴: اسمِ مالکِ سایت (۴گزینه‌ای) ----------
 const ownerOptionsEl = document.getElementById("ownerOptions");
 const ownerUnsureMsg = document.getElementById("ownerUnsureMsg");
@@ -1346,11 +1394,11 @@ let physicsRevealed = false;
 function layoutPhysicsStage() {
   physicsErrorEl.textContent = "";
   physicsRevealed = false;
-  physicsCorrectBtn.classList.add("hidden");
+  physicsCorrectBtn.classList.remove("revealed");
   startQuestionTimer(physicsTimerFillEl, restartCaptchaFromStart, (remainSec) => {
     if (!physicsRevealed && remainSec <= PHYSICS_REVEAL_AT_SECONDS) {
       physicsRevealed = true;
-      physicsCorrectBtn.classList.remove("hidden");
+      physicsCorrectBtn.classList.add("revealed");
     }
   });
 }
@@ -1360,7 +1408,8 @@ physicsOptionsEl.querySelectorAll(".yesno-btn").forEach((btn) => {
     if (btn.dataset.correct === "1") {
       clearQuestionTimer();
       physicsErrorEl.textContent = "";
-      advanceAfterSuccess(() => { showCaptchaPanel(7); setCaptchaStepLabel(7); layoutAnswerStage(); });
+      // فیزیک تمومه؛ تستِ «چند سالته» کلاً حذف شده، پس مستقیم می‌ریم سراغِ آره/نه (مرحله‌ی ۷)
+      advanceAfterSuccess(() => { showCaptchaPanel(7); setCaptchaStepLabel(7); layoutYesNoStep(); });
       return;
     }
     physicsErrorEl.textContent = "جواب درست نیست، دوباره امتحان کن";
@@ -1369,55 +1418,6 @@ physicsOptionsEl.querySelectorAll(".yesno-btn").forEach((btn) => {
     physicsErrorEl.classList.add("shake");
   });
 });
-
-// ---------- مرحله‌ی ۷: تاریخ‌تولد / کدِ معرف ----------
-const answerTimerFillEl = document.getElementById("answerTimerFill");
-
-function layoutAnswerStage() {
-  const mode = activeCaptchaController ? activeCaptchaController.mode : "login";
-  captchaAnswerPrompt.textContent = "چند سالته؟";
-  const hintText = mode === "register" ? "اگه داری ثبت‌نام می‌کنی: به‌جایِ جواب، کدِ معرفت رو همینجا بنویس" : "";
-  captchaAnswerSubHint.textContent = hintText;
-  captchaAnswerSubHint.classList.toggle("hidden", !hintText);
-  captchaAnswerInput.value = "";
-  captchaAnswerError.textContent = "";
-  captchaAnswerError.classList.remove("shake");
-  setTimeout(() => captchaAnswerInput.focus(), 50);
-  startQuestionTimer(answerTimerFillEl, restartCaptchaFromStart);
-}
-
-function submitCaptchaAnswer() {
-  const raw = captchaAnswerInput.value;
-  if (!raw.trim()) return;
-  const mode = activeCaptchaController ? activeCaptchaController.mode : "login";
-
-  let ok = false;
-  let referralCode = null;
-  if (mode === "register") {
-    const code = raw.trim();
-    if (code) { ok = true; referralCode = code.toUpperCase(); }
-  } else {
-    const age = parsePersianFloat(raw);
-    ok = age !== null && age > 30;
-  }
-
-  if (ok) {
-    if (referralCode && activeCaptchaController && activeCaptchaController.setReferralCode) {
-      activeCaptchaController.setReferralCode(referralCode);
-    }
-    clearQuestionTimer();
-    // تاریخ‌تولد/کدِ معرف تمومه؛ برو سراغِ آره/نه (مرحله‌ی ۸)
-    advanceAfterSuccess(() => { showCaptchaPanel(8); setCaptchaStepLabel(8); layoutYesNoStep(); });
-  } else {
-    captchaAnswerError.textContent = "جواب درست نیست، دوباره امتحان کن";
-    captchaAnswerError.classList.remove("shake");
-    void captchaAnswerError.offsetWidth;
-    captchaAnswerError.classList.add("shake");
-    captchaAnswerInput.select();
-  }
-}
-captchaAnswerSubmit.addEventListener("click", submitCaptchaAnswer);
-captchaAnswerInput.addEventListener("keydown", (e) => { if (e.key === "Enter") submitCaptchaAnswer(); });
 
 // ---------- مرحله‌ی ۵: پازلِ ۹‌تکه‌ی بهم‌ریخته (از عکسِ نوشابه) ----------
 const JIGSAW_IMAGE_DATA_URI = "data:image/jpeg;base64,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";
@@ -1520,7 +1520,7 @@ jigsawCheckBtn.addEventListener("click", () => {
   });
 });
 
-// ---------- مرحله‌ی ۸: عاقی خوبه یا نه؟ (فقط با زدنِ «آره» می‌ره سراغِ لیوانِ چایی) ----------
+// ---------- مرحله‌ی ۷: عاقی خوبه یا نه؟ (فقط با زدنِ «آره» می‌ره سراغِ لیوانِ چایی) ----------
 const captchaYesBtn = document.getElementById("captchaYesBtn");
 const captchaNoBtn = document.getElementById("captchaNoBtn");
 const captchaYesNoUnsureMsg = document.getElementById("captchaYesNoUnsureMsg");
@@ -1531,7 +1531,7 @@ function layoutYesNoStep() {
 }
 captchaYesBtn.addEventListener("click", () => {
   clearQuestionTimer();
-  advanceAfterSuccess(() => { showCaptchaPanel(9); setCaptchaStepLabel(9); layoutTeaStage(); });
+  advanceAfterSuccess(() => { showCaptchaPanel(8); setCaptchaStepLabel(8); layoutTeaStage(); });
 });
 captchaNoBtn.addEventListener("click", () => {
   // با زدنِ «نه» کپچا بسته نمی‌شه؛ فقط یه پیامِ «مطمئنی؟» نشون داده می‌شه تا کاربر دوباره فکر کنه
@@ -1540,7 +1540,7 @@ captchaNoBtn.addEventListener("click", () => {
   captchaYesNoUnsureMsg.classList.add("shake");
 });
 
-// ---------- مرحله‌ی ۹: لیوان چایی رو نگه‌دار؛ تا وقتی نگه‌داری بالاپایین می‌شه و صدا می‌ده،
+// ---------- مرحله‌ی ۸: لیوان چایی رو نگه‌دار؛ تا وقتی نگه‌داری بالاپایین می‌شه و صدا می‌ده،
 // بعدِ ۳ ثانیه‌ی نگه‌داشتنِ پیوسته تکه‌تکه می‌شه و پخش می‌شه تو هوا (آخرین مرحله) ----------
 const teaStageEl = document.getElementById("teaStage");
 const teaImgEl = document.getElementById("teaImg");
@@ -1696,7 +1696,6 @@ function createCaptchaController(suffix, mode) {
   let backgroundSolving = false;
   let solved = false;
   let userInteracted = false; // تا کاربر روی جعبه کلیک نکرده، اسپینر نباید نشون داده بشه (حتی اگه حلِ نامرئی از قبل شروع شده باشه)
-  let referralCodeValue = null; // فقط برای mode="register" پر می‌شه (تویِ مرحله‌ی تاریخ‌تولد/کدِ معرف)
   let powCancelled = false; // اگه کاربر زودتر از تمومِ محاسبه‌ی تعیینِ ربات، تست‌هاشو کامل کنه، دیگه لازم نیست منتظرِ اون بمونیم
 
   // اسپینرِ رویِ جعبه رو فقط وقتی نشون بده که هم واقعاً درحالِ حل‌شدنه، هم کاربر حداقل یه‌بار کلیک کرده، هم لغو نشده باشه
@@ -1756,7 +1755,6 @@ function createCaptchaController(suffix, mode) {
     backgroundSolving = false;
     solved = false;
     userInteracted = false;
-    referralCodeValue = null;
     powCancelled = false;
     trigger.classList.remove("verified", "solving");
     label.textContent = defaultLabelText;
@@ -1768,7 +1766,7 @@ function createCaptchaController(suffix, mode) {
     userInteracted = true;
     updateSolvingIndicator();
     if (typeof unlockTeaAudio === "function") unlockTeaAudio();
-    openCaptchaModal({ markSolved, mode, setReferralCode: (c) => { referralCodeValue = c; } });
+    openCaptchaModal({ markSolved, mode });
   });
   trigger.addEventListener("keydown", (e) => {
     if (!solved && (e.key === "Enter" || e.key === " ")) {
@@ -1776,7 +1774,7 @@ function createCaptchaController(suffix, mode) {
       userInteracted = true;
       updateSolvingIndicator();
       if (typeof unlockTeaAudio === "function") unlockTeaAudio();
-      openCaptchaModal({ markSolved, mode, setReferralCode: (c) => { referralCodeValue = c; } });
+      openCaptchaModal({ markSolved, mode });
     }
   });
 
@@ -1787,7 +1785,6 @@ function createCaptchaController(suffix, mode) {
     // اگه تست‌ها کامل شده باشن، حتی بدونِ آماده‌بودنِ تعیینِ بات هم یه سولوشنِ معتبر برمی‌گردونیم
     // (بدونِ id/nonceِ واقعی؛ سمتِ سرور هم باید طوری تنظیم بشه که این حالت رو قبول کنه)
     getSolution: () => (!solved ? null : (backgroundSolution || { bypassed: true })),
-    getReferralCode: () => referralCodeValue,
     reset,
   };
 }
@@ -1796,62 +1793,6 @@ const captchaControllers = {
   login: createCaptchaController("Login", "login"),
   register: createCaptchaController("Register", "register"),
 };
-
-// ---------- نمایش هر خطای جاوااسکریپت روی صفحه (چون رو موبایل به کنسول دسترسی نیست) ----------
-// همه‌ی خطاها (JS، Promise، ویدیوی اسپلش، ویدیوی بک‌گراند، موزیکِ بک‌گراند) از همین تابع رد می‌شن
-// تا هرکدوم بعدی، خطای قبلی رو پاک نکنه؛ روی هم انباشته می‌شن (خط‌به‌خط)
-function logDebugBanner(msg) {
-  const banner = document.getElementById("debugBanner");
-  if (!banner) return;
-  banner.style.display = "block";
-  const line = document.createElement("div");
-  line.textContent = msg;
-  line.style.borderTop = banner.childElementCount ? "1px solid rgba(255,255,255,0.35)" : "none";
-  line.style.padding = "4px 0";
-  banner.appendChild(line);
-}
-window.addEventListener("error", function (e) {
-  logDebugBanner("خطا: " + (e.message || "") + " — فایل: " + (e.filename || "") + " — خط: " + (e.lineno || ""));
-});
-window.addEventListener("unhandledrejection", function (e) {
-  logDebugBanner("خطای Promise: " + (e.reason && e.reason.message ? e.reason.message : String(e.reason)));
-});
-
-// ---------- گزارشِ خطای ویدیوی بک‌گراند: اگه bg.mp4 لود نشه، دقیقاً همینجا (نه فقط ساکت تو کنسول) نشون داده می‌شه ----------
-(function reportBgVideoError() {
-  const video = document.querySelector(".bg-video");
-  if (!video) return;
-  const codeNames = { 1: "MEDIA_ERR_ABORTED", 2: "MEDIA_ERR_NETWORK", 3: "MEDIA_ERR_DECODE", 4: "MEDIA_ERR_SRC_NOT_SUPPORTED" };
-  video.addEventListener("error", () => {
-    const err = video.error;
-    const code = err ? err.code : "؟";
-    const codeName = codeNames[code] || "نامشخص";
-    logDebugBanner(
-      `ویدیوی بک‌گراند لود نشد — کدِ خطا: ${code} (${codeName}) — مسیرِ درخواست‌شده: ${video.currentSrc || "bg.mp4"}. ` +
-      (code === 4
-        ? "یعنی یا فایل پیدا نشد (۴۰۴/مسیرِ اشتباه) یا فرمتش پشتیبانی نمی‌شه."
-        : "")
-    );
-  });
-})();
-
-// ---------- گزارشِ خطای موزیکِ بک‌گراند: اگه login/Login.mp3 لود نشه، همینجا نشون داده می‌شه ----------
-(function reportBgMusicError() {
-  const audioEl = document.getElementById("bgMusic");
-  if (!audioEl) return;
-  const codeNames = { 1: "MEDIA_ERR_ABORTED", 2: "MEDIA_ERR_NETWORK", 3: "MEDIA_ERR_DECODE", 4: "MEDIA_ERR_SRC_NOT_SUPPORTED" };
-  audioEl.addEventListener("error", () => {
-    const err = audioEl.error;
-    const code = err ? err.code : "؟";
-    const codeName = codeNames[code] || "نامشخص";
-    logDebugBanner(
-      `موزیکِ بک‌گراند لود نشد — کدِ خطا: ${code} (${codeName}) — مسیرِ درخواست‌شده: ${audioEl.currentSrc || "login/Login.mp3"}. ` +
-      (code === 4
-        ? "یعنی یا فایل پیدا نشد (۴۰۴/مسیرِ اشتباه) یا فرمتش پشتیبانی نمی‌شه."
-        : "")
-    );
-  });
-})();
 
 // ---------- نشانِ متحرکِ ترکیب‌های «:» و «D» (لوگوی صفحه‌ی لاگین): همون افکتِ تایپِ اسپلش‌اسکرینِ اصلیِ اپ ----------
 (function initBrandEmoji() {
@@ -2048,6 +1989,7 @@ function showRegister() {
 async function register() {
   const username = document.getElementById("regUsername").value.trim();
   const password = document.getElementById("regPassword").value;
+  const referralCode = document.getElementById("regReferralCode").value.trim().toUpperCase();
   const errEl = document.getElementById("registerError");
   const hintEl = document.getElementById("registerHint");
   const btn = document.getElementById("registerBtn");
@@ -2058,17 +2000,14 @@ async function register() {
     setError(errEl, "رمز عبور باید حداقل ۸ کاراکتر باشه و شامل حداقل یه حرف و یه عدد باشه");
     return;
   }
+  if (!referralCode) {
+    setError(errEl, "کدِ ملیِ متقاضی (کدِ معرف) رو وارد کن");
+    return;
+  }
 
   const captchaSolution = captchaControllers.register.getSolution();
   if (!captchaSolution) {
     setError(errEl, "لطفاً روی تیکِ بالا کلیک کن و تست رو کامل کن");
-    return;
-  }
-  // کدِ معرف دیگه فیلدِ جدا نداره؛ تویِ آخرین مرحله‌ی همون تست (سوالِ «تاریخ تولد») گرفته می‌شه
-  const referralCode = captchaControllers.register.getReferralCode();
-  if (!referralCode) {
-    setError(errEl, "کدِ معرف ثبت نشد؛ تست رو دوباره انجام بده");
-    captchaControllers.register.reset();
     return;
   }
 
