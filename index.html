@@ -2903,21 +2903,15 @@
   }
   .radio-overlay.hidden { display: none; }
   .radio-overlay-topbar {
-    position: absolute; top: calc(14px + var(--safe-top)); right: 14px; left: 14px; z-index: 2;
-    display: flex; align-items: center; justify-content: space-between;
+    position: absolute; top: calc(14px + var(--safe-top)); left: 50%; transform: translateX(-50%); z-index: 2;
+    display: flex; align-items: center; gap: 10px;
   }
-  .radio-overlay-close {
-    display: flex; align-items: center; gap: 6px; font-family: inherit;
-    background: rgba(20,10,40,0.65); backdrop-filter: blur(6px); border: 1px solid rgba(255,255,255,0.18);
-    color: #fff; border-radius: 999px; padding: 8px 14px; font-size: 13px; cursor: pointer;
-  }
-  .radio-overlay-close svg { width: 15px; height: 15px; }
-  .radio-overlay-stop {
-    display: flex; align-items: center; justify-content: center; width: 34px; height: 34px;
+  .radio-overlay-close, .radio-overlay-stop {
+    display: flex; align-items: center; justify-content: center; width: 40px; height: 40px;
     background: rgba(20,10,40,0.65); backdrop-filter: blur(6px); border: 1px solid rgba(255,255,255,0.18);
     color: #fff; border-radius: 50%; cursor: pointer; flex-shrink: 0;
   }
-  .radio-overlay-stop svg { width: 15px; height: 15px; }
+  .radio-overlay-close svg, .radio-overlay-stop svg { width: 17px; height: 17px; }
   .radio-overlay-iframe { flex: 1; width: 100%; height: 100%; border: none; }
 
   /* ---------- آیکونِ وضعیتِ رادیو، بینِ تایتلِ سایت و پروفایل تو هدر ---------- */
@@ -4408,9 +4402,8 @@
      همچنان تو پس‌زمینه ادامه پیدا می‌کنه و کاربر می‌تونه تو بقیه‌ی سایت بچرخه -->
 <div class="radio-overlay hidden" id="radioOverlay">
   <div class="radio-overlay-topbar">
-    <button class="radio-overlay-close" onclick="closeRadioOverlay()">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l-6-6 6-6M3 12h18"/></svg>
-      <span>برگشت به سایت</span>
+    <button class="radio-overlay-close" onclick="closeRadioOverlay()" aria-label="برگشت به سایت (رادیو ادامه پیدا می‌کنه)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
     </button>
     <button class="radio-overlay-stop" onclick="stopRadioOverlay()" aria-label="توقفِ کاملِ رادیو">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
