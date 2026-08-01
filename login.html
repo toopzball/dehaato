@@ -72,7 +72,8 @@ try {
   .bg-anim { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; background: var(--primary); contain: strict; }
   .bg-video {
     position: absolute; top: 50%; left: 50%; min-width: 100%; min-height: 100%;
-    width: auto; height: auto; transform: translate(-50%, -50%); object-fit: cover;
+    width: auto; height: auto; transform: translate(-50%, -50%) translateZ(0); object-fit: cover;
+    will-change: transform; backface-visibility: hidden;
   }
   .box { width: 100%; max-width: 380px; position: relative; z-index: 1; }
 
@@ -114,12 +115,14 @@ try {
   }
 
   .card {
-    background: var(--surface);
-    border: 1px solid var(--border);
+    background: transparent;
+    border: none;
     border-radius: var(--radius);
     padding: 22px;
     animation: fadeInUp 0.6s ease 0.1s both;
     transition: box-shadow 0.3s ease;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
   }
 
   .tabs { display: flex; gap: 4px; background: var(--primary); border-radius: 10px; padding: 4px; margin-bottom: 18px; }
@@ -133,9 +136,11 @@ try {
 
   input {
     width: 100%; font-family: inherit; font-size: 13px; color: var(--text);
-    background: var(--card); border: 1px solid var(--border); border-radius: 10px;
-    padding: 11px 14px; margin-bottom: 10px;
-    transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease;
+    background: transparent; border: 1px solid var(--border); border-radius: 999px;
+    padding: 11px 18px; margin-bottom: 10px;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease, background 0.2s ease;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
   }
   input::placeholder { color: var(--subtext); }
   input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.25); transform: translateY(-1px); }
@@ -196,9 +201,11 @@ try {
   /* ---------- تیکِ تایید تو خودِ فرم (کلیک=بازکردنِ پاپ‌آپ) ---------- */
   .captcha-trigger {
     display: flex; align-items: center; gap: 12px;
-    background: var(--card); border: 1px solid var(--border); border-radius: 10px;
-    padding: 12px 14px; cursor: pointer; user-select: none;
-    transition: border-color 0.25s ease, box-shadow 0.25s ease;
+    background: transparent; border: 1px solid var(--border); border-radius: 999px;
+    padding: 12px 18px; cursor: pointer; user-select: none;
+    transition: border-color 0.25s ease, box-shadow 0.25s ease, background 0.25s ease;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
   }
   .captcha-trigger:hover { border-color: var(--accent); }
   .captcha-trigger.verified { border-color: var(--success); box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.16); cursor: default; animation: captchaRingPulse 0.7s ease-out; }
@@ -305,7 +312,7 @@ try {
   }
   .rotate-bottle {
     position: absolute; top: 50%; left: 50%; width: 32px; height: 66px; margin: -33px 0 0 -16px;
-    cursor: grab; touch-action: none; transform-origin: 50% 50%;
+    cursor: grab; touch-action: none; transform-origin: 50% 50%; will-change: transform;
   }
   .rotate-bottle.dragging { cursor: grabbing; }
   .rotate-bottle svg { width: 100%; height: 100%; display: block; pointer-events: none; }
@@ -316,7 +323,7 @@ try {
     align-items: center; justify-content: center; gap: 16px; touch-action: none;
   }
   .shake-bottle {
-    width: 40px; height: 82px; cursor: grab; touch-action: none; user-select: none;
+    width: 40px; height: 82px; cursor: grab; touch-action: none; user-select: none; will-change: transform;
   }
   .shake-bottle.dragging { cursor: grabbing; }
   .shake-bottle svg { width: 100%; height: 100%; display: block; pointer-events: none; }
@@ -375,7 +382,7 @@ try {
   }
   .jigsaw-tile {
     aspect-ratio: 1 / 1; background-color: var(--surface); cursor: pointer;
-    border: 2px solid transparent; box-sizing: border-box;
+    border: 2px solid transparent; box-sizing: border-box; will-change: transform;
     transition: border-color 0.15s ease, transform 0.15s ease, opacity 0.3s ease;
   }
   .jigsaw-tile:hover { transform: scale(0.96); }
@@ -398,7 +405,7 @@ try {
     -webkit-user-drag: none; pointer-events: none; /* رویدادها رو خودِ tea-stage می‌گیره، نه عکس */
     transition: opacity 0.15s ease;
   }
-  .tea-stage.holding .tea-img { animation: teaBounce 0.24s steps(2) infinite; }
+  .tea-stage.holding .tea-img { animation: teaBounce 0.24s steps(2) infinite; will-change: transform; }
   @keyframes teaBounce {
     0%   { transform: translateY(0) rotate(0deg); }
     50%  { transform: translateY(-14px) rotate(-4deg); }
@@ -410,7 +417,7 @@ try {
   .tea-shard {
     position: absolute; top: 50%; left: 50%; width: 26px; height: 26px;
     background-image: var(--tea-shard-bg); background-size: 150px 112px; background-repeat: no-repeat;
-    opacity: 1; transform: translate(-50%, -50%);
+    opacity: 1; transform: translate(-50%, -50%); will-change: transform, opacity;
     animation: teaShardFly 0.85s cubic-bezier(0.2, 0.7, 0.4, 1) forwards;
   }
   @keyframes teaShardFly {
