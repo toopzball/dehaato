@@ -1920,6 +1920,73 @@
   .music-fab:hover { filter: brightness(1.1); }
   .music-fab svg { width: 22px; height: 22px; }
 
+  /* پلی‌لیست‌های سگ‌تونز */
+  .playlists-panel { display: none; }
+  .playlists-panel.active { display: block; }
+  .playlists-subtabs { display: flex; gap: 8px; margin-bottom: 12px; }
+  .playlists-subtab-btn {
+    flex: 1; padding: 8px 0; border-radius: 10px; border: 1px solid var(--border);
+    background: var(--card); color: var(--subtext); font-size: 13px; cursor: pointer;
+  }
+  .playlists-subtab-btn.active { background: var(--accent-gradient); color: #fff; border-color: transparent; }
+  .playlist-create-btn {
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+    width: 100%; padding: 10px; margin-bottom: 12px; border-radius: 12px; border: 1px dashed var(--border);
+    background: transparent; color: var(--accent); font-size: 13px; cursor: pointer;
+  }
+  .playlist-create-btn svg { width: 16px; height: 16px; }
+  .playlist-card {
+    display: flex; align-items: center; gap: 10px;
+    background: var(--card-gradient); border: 1px solid var(--border); border-radius: 12px;
+    padding: 10px 12px; margin-bottom: 8px; cursor: pointer;
+  }
+  .playlist-card-icon {
+    width: 42px; height: 42px; border-radius: 10px; flex-shrink: 0;
+    background: var(--accent-gradient); color: #fff; display: flex; align-items: center; justify-content: center;
+  }
+  .playlist-card-icon svg { width: 20px; height: 20px; }
+  .playlist-card-info { flex: 1; min-width: 0; }
+  .playlist-card-title { font-size: 14px; font-weight: 500; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .playlist-card-sub { font-size: 12px; color: var(--subtext); margin-top: 2px; display: flex; align-items: center; gap: 6px; }
+  .playlist-badge { font-size: 10px; padding: 1px 6px; border-radius: 20px; border: 1px solid var(--border); }
+  .playlist-badge.public { color: var(--success); border-color: var(--success); }
+
+  .playlist-detail-header { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+  .playlist-detail-header.hidden { display: none; }
+  .playlist-detail-back {
+    width: 34px; height: 34px; border-radius: 50%; border: 1px solid var(--border); background: var(--card);
+    color: var(--text); display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0;
+  }
+  .playlist-detail-back svg { width: 16px; height: 16px; }
+  .playlist-detail-title { flex: 1; min-width: 0; font-size: 15px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .playlist-detail-actions { display: flex; gap: 6px; flex-shrink: 0; }
+  .playlist-detail-action-btn {
+    width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--border); background: var(--card);
+    color: var(--subtext); display: flex; align-items: center; justify-content: center; cursor: pointer;
+  }
+  .playlist-detail-action-btn svg { width: 15px; height: 15px; }
+
+  .music-row-add-btn, .music-row-remove-btn {
+    width: 30px; height: 30px; border-radius: 50%; border: 1px solid var(--border); background: var(--card);
+    color: var(--subtext); display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0;
+  }
+  .music-row-remove-btn { border-color: var(--error); color: var(--error); background: transparent; }
+  .music-row-add-btn svg, .music-row-remove-btn svg { width: 14px; height: 14px; }
+
+  /* لیستِ چک‌باکسیِ پلی‌لیست‌ها داخلِ مودالِ «افزودن به پلی‌لیست» */
+  .playlist-modal-item {
+    display: flex; align-items: center; gap: 10px; padding: 10px 4px; border-bottom: 1px solid var(--border);
+    cursor: pointer;
+  }
+  .playlist-modal-item:last-child { border-bottom: none; }
+  .playlist-modal-item-check {
+    width: 22px; height: 22px; border-radius: 6px; border: 1.5px solid var(--border); flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center; color: transparent;
+  }
+  .playlist-modal-item.checked .playlist-modal-item-check { background: var(--accent-gradient); border-color: transparent; color: #fff; }
+  .playlist-modal-item-check svg { width: 13px; height: 13px; }
+  .playlist-modal-item-name { flex: 1; font-size: 14px; color: var(--text); }
+
   /* اورلی ریلز موزیک */
   /* طراحی تمام‌صفحه‌ی پلیر — طراحی دوم مینی‌پلیره: همیشه توی DOM هست و با محتوای مینی‌پلیر همگامه،
      فقط با کلاس open (با انیمیشن) نمایان می‌شه؛ چیزی مستقل/جدا فچ نمی‌شه */
@@ -3894,7 +3961,25 @@
     <div class="media-sort-row">
       <button class="media-sort-btn active" id="musicSort-date" onclick="setMusicSort('date')">جدیدترین</button>
       <button class="media-sort-btn" id="musicSort-random" onclick="setMusicSort('random')">تصادفی</button>
+      <button class="media-sort-btn" id="musicSort-playlists" onclick="setMusicSort('playlists')">پلی‌لیست‌ها</button>
     </div>
+
+    <!-- بخشِ مرورِ پلی‌لیست‌ها؛ فقط وقتی تبِ «پلی‌لیست‌ها» فعاله دیده می‌شه -->
+    <div id="musicPlaylistsPanel" class="playlists-panel">
+      <div class="playlists-subtabs">
+        <button class="playlists-subtab-btn active" id="playlistsScope-mine" onclick="setPlaylistsScope('mine')">پلی‌لیست‌های من</button>
+        <button class="playlists-subtab-btn" id="playlistsScope-public" onclick="setPlaylistsScope('public')">پابلیک‌های سایت</button>
+      </div>
+      <button class="playlist-create-btn" onclick="openCreatePlaylistModal()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+        پلی‌لیست جدید
+      </button>
+      <div id="playlistsGrid"></div>
+    </div>
+
+    <!-- سرتیترِ حالتِ «داخلِ یه پلی‌لیست»: دکمه‌ی برگشت + اسم + دکمه‌های مدیریتِ مالک -->
+    <div id="playlistDetailHeader" class="playlist-detail-header hidden"></div>
+
     <div id="musicList"></div>
     <button class="music-fab" onclick="openFullPlayer()" title="پخش تمام‌صفحه" aria-label="پخش تمام‌صفحه">
       <svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 14H5v5h5v-2H7v-3zM5 10h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/></svg>
@@ -4511,6 +4596,9 @@
   </button>
   <button class="reels-download" onclick="downloadCurrentTrack()" aria-label="دانلود آهنگ" title="دانلود آهنگ">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
+  </button>
+  <button class="reels-download" id="fullPlayerAddToPlaylistBtn" onclick="addCurrentTrackToPlaylist()" aria-label="افزودن به پلی‌لیست" title="افزودن به پلی‌لیست" style="top:calc(64px + var(--safe-top));">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
   </button>
   <canvas id="fullPlayerVisualizer" class="reels-visualizer"></canvas>
   <div class="reels-center">
@@ -5257,8 +5345,10 @@ const feedState = {
   text: { page: 1, loaded: false },
   admin: { page: 1, loaded: false },
 };
-const musicState = { page: 1, loaded: false, sort: "date" };
+const musicState = { page: 1, loaded: false, sort: "date", viewingPlaylistId: null };
 const MUSIC_PAGE_SIZE = 20;
+let playlistsScopeState = "mine"; // mine | public
+let playlistsPanelLoaded = { mine: false, public: false };
 
 function switchView(name, forceReload = false) {
   if (deelsState.loaded) flushDeelsSeenMarks();
@@ -10884,6 +10974,13 @@ function startFullPlayerSeekLoop() {
 }
 
 // ---------- دانلود آهنگ فعلی ----------
+function addCurrentTrackToPlaylist() {
+  if (!currentAudio) return;
+  const meta = audioMetaRegistry[currentAudio.safeId];
+  if (!meta || !meta.postId) return;
+  openAddToPlaylistSheet(meta.postId);
+}
+
 async function downloadCurrentTrack() {
   if (!currentAudio) return;
   const meta = audioMetaRegistry[currentAudio.safeId] || {};
@@ -12690,7 +12787,10 @@ async function reloadNotebook() {
 })();
 
 // ---------- تب موسیقی: لیست همه‌ی آهنگ‌های آپلود شده تو سایت ----------
-function renderMusicRow(p) {
+// context.mode: "feed" (پیش‌فرض؛ دکمه‌ی «افزودن به پلی‌لیست» می‌ذاره) یا "playlist" (داخلِ یه پلی‌لیستِ بازشده؛
+// اگه context.canRemove باشه به‌جاش دکمه‌ی حذف از همون پلی‌لیست می‌ذاره)
+function renderMusicRow(p, context) {
+  context = context || { mode: "feed" };
   const safeId = p.id.replace(/[^a-zA-Z0-9_]/g, "");
   audioMetaRegistry[safeId] = {
     postId: p.id,
@@ -12712,6 +12812,15 @@ function renderMusicRow(p) {
   subParts.push(escapeHtml(p.username));
   const subText = subParts.join(" — ");
 
+  const canRemoveFromPlaylist = context.mode === "playlist" && context.canRemove;
+  const extraBtnHtml = canRemoveFromPlaylist
+    ? `<button class="music-row-remove-btn" onclick="event.stopPropagation(); removeTrackFromOpenPlaylist('${escapeHtml(p.id)}')" title="حذف از این پلی‌لیست" aria-label="حذف از این پلی‌لیست">
+         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/></svg>
+       </button>`
+    : `<button class="music-row-add-btn" onclick="event.stopPropagation(); openAddToPlaylistSheet('${escapeHtml(p.id)}')" title="افزودن به پلی‌لیست" aria-label="افزودن به پلی‌لیست">
+         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+       </button>`;
+
   return `
     <div class="music-row">
       <audio id="audioEl-${safeId}" src="${mediaUrl(p.file_id)}" preload="none" disableRemotePlayback x-webkit-airplay="deny"></audio>
@@ -12725,10 +12834,14 @@ function renderMusicRow(p) {
         <svg class="icon-pause" viewBox="0 0 24 24" fill="currentColor"><path d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg>
         <span class="icon-loading"></span>
       </button>
+      ${extraBtnHtml}
     </div>`;
 }
 
 async function loadMusicList(reset = true) {
+  // اگه داخلِ یه پلی‌لیستِ بازشده‌ایم، این تابع دیگه فیدِ عمومی رو نمی‌ره بگیره؛ اون یکی تابعِ جداست
+  if (musicState.viewingPlaylistId) return loadPlaylistTracksList(reset);
+
   const listEl = document.getElementById("musicList");
   if (reset) {
     musicState.page = 1;
@@ -12747,7 +12860,7 @@ async function loadMusicList(reset = true) {
     }
     if (reset) listEl.innerHTML = "";
 
-    const html = data.posts.map((p) => renderMusicRow(p)).join("");
+    const html = data.posts.map((p) => renderMusicRow(p, { mode: "feed" })).join("");
     listEl.insertAdjacentHTML("beforeend", html);
     bindAllAudioPlayers(listEl);
     bindAllVideoPlayers(listEl);
@@ -12763,19 +12876,362 @@ async function loadMusicList(reset = true) {
 }
 
 function loadMoreMusic() {
+  if (musicState.viewingPlaylistId) {
+    musicState.plPage = (musicState.plPage || 1) + 1;
+    loadPlaylistTracksList(false);
+    return;
+  }
   musicState.page++;
   loadMusicList(false);
 }
 
-// سوییچ بین «جدیدترین» و «تصادفی» تو سگ‌تونز؛ چون هردو لیست تو همون #musicList رندر می‌شن
-// (نه هم‌زمان)، صف پخش بعدی/قبلی همیشه از روی همون لیستی تعیین می‌شه که کاربر توش بوده
+// سوییچ بین «جدیدترین»، «تصادفی» و «پلی‌لیست‌ها» تو سگ‌تونز؛ اولی‌ها تو همون #musicList رندر می‌شن،
+// سومی یه پنلِ جداست (#musicPlaylistsPanel)
 function setMusicSort(sort) {
+  document.querySelectorAll("#view-music .media-sort-btn").forEach((el) => el.classList.remove("active"));
+  document.getElementById(`musicSort-${sort}`)?.classList.add("active");
+
+  if (sort === "playlists") {
+    musicState.sort = sort;
+    closePlaylistDetail(false);
+    document.getElementById("musicPlaylistsPanel")?.classList.add("active");
+    document.getElementById("musicList").innerHTML = "";
+    document.getElementById("musicList").classList.add("hidden");
+    document.querySelector("#view-music .music-fab")?.classList.add("hidden");
+    loadPlaylistsPanel();
+    return;
+  }
+
+  document.getElementById("musicPlaylistsPanel")?.classList.remove("active");
+  document.getElementById("musicList").classList.remove("hidden");
+  document.querySelector("#view-music .music-fab")?.classList.remove("hidden");
+  musicState.viewingPlaylistId = null;
+  document.getElementById("playlistDetailHeader")?.classList.add("hidden");
+
   // برای «تصادفی» حتی اگه از قبل همون فعال بوده، دوباره بارگذاری می‌شه تا ترتیب عوض بشه
   if (musicState.sort === sort && sort !== "random") return;
   musicState.sort = sort;
-  document.querySelectorAll("#view-music .media-sort-btn").forEach((el) => el.classList.remove("active"));
-  document.getElementById(`musicSort-${sort}`)?.classList.add("active");
   loadMusicList(true);
+}
+
+// ================= پلی‌لیست‌های سگ‌تونز =================
+
+// ---------- پنلِ مرورِ پلی‌لیست‌ها (خودم / پابلیک‌های سایت) ----------
+function setPlaylistsScope(scope) {
+  if (playlistsScopeState === scope) return;
+  playlistsScopeState = scope;
+  document.querySelectorAll(".playlists-subtab-btn").forEach((el) => el.classList.remove("active"));
+  document.getElementById(`playlistsScope-${scope}`)?.classList.add("active");
+  loadPlaylistsPanel();
+}
+
+function renderPlaylistCard(pl) {
+  const trackCount = pl.track_count || 0;
+  const isPublic = !!pl.is_public;
+  const ownerLine = playlistsScopeState === "public" && pl.owner_username ? ` — ${escapeHtml(pl.owner_username)}` : "";
+  return `
+    <div class="playlist-card" onclick="openPlaylistDetail('${escapeHtml(pl.id)}')">
+      <div class="playlist-card-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+      </div>
+      <div class="playlist-card-info">
+        <div class="playlist-card-title">${escapeHtml(pl.name)}</div>
+        <div class="playlist-card-sub">
+          <span>${trackCount} آهنگ${ownerLine}</span>
+          ${isPublic ? `<span class="playlist-badge public">پابلیک</span>` : `<span class="playlist-badge">خصوصی</span>`}
+        </div>
+      </div>
+    </div>`;
+}
+
+async function loadPlaylistsPanel() {
+  const gridEl = document.getElementById("playlistsGrid");
+  gridEl.innerHTML = `<div class="empty-state">در حال بارگذاری...</div>`;
+  try {
+    const res = await fetch(`${WORKER_URL}/api/playlists?scope=${playlistsScopeState}&page=1`, {
+      headers: { "Authorization": `Bearer ${getToken()}` },
+    });
+    const data = await res.json();
+    if (!data.playlists || data.playlists.length === 0) {
+      gridEl.innerHTML =
+        playlistsScopeState === "mine"
+          ? `<div class="empty-state">هنوز پلی‌لیستی نساختی — با دکمه‌ی بالا یکی بساز.</div>`
+          : `<div class="empty-state">هنوز پلی‌لیستِ پابلیکی تو سایت نیست.</div>`;
+      return;
+    }
+    gridEl.innerHTML = data.playlists.map((pl) => renderPlaylistCard(pl)).join("");
+  } catch (e) {
+    gridEl.innerHTML = `<div class="empty-state">لیست بارگذاری نشد. اتصال اینترنتت رو چک کن.</div>`;
+  }
+}
+
+// ---------- بازکردنِ یه پلی‌لیست (نمایشِ آهنگ‌هاش داخلِ همون #musicList) ----------
+async function openPlaylistDetail(playlistId) {
+  musicState.viewingPlaylistId = playlistId;
+  musicState.plPage = 1;
+  document.getElementById("musicPlaylistsPanel")?.classList.remove("active");
+  document.getElementById("musicList").classList.remove("hidden");
+  document.querySelector("#view-music .music-fab")?.classList.remove("hidden");
+  await loadPlaylistTracksList(true);
+}
+
+function closePlaylistDetail(reopenPanel = true) {
+  musicState.viewingPlaylistId = null;
+  document.getElementById("playlistDetailHeader")?.classList.add("hidden");
+  document.getElementById("musicList").innerHTML = "";
+  if (reopenPanel) {
+    document.getElementById("musicPlaylistsPanel")?.classList.add("active");
+    document.getElementById("musicList").classList.add("hidden");
+    document.querySelector("#view-music .music-fab")?.classList.add("hidden");
+    loadPlaylistsPanel();
+  }
+}
+
+async function loadPlaylistTracksList(reset = true) {
+  const playlistId = musicState.viewingPlaylistId;
+  if (!playlistId) return;
+  const listEl = document.getElementById("musicList");
+  if (reset) {
+    musicState.plPage = 1;
+    listEl.innerHTML = `<div class="empty-state">در حال بارگذاری...</div>`;
+  }
+  try {
+    const res = await fetch(`${WORKER_URL}/api/playlist/${encodeURIComponent(playlistId)}/tracks?page=${musicState.plPage}`, {
+      headers: { "Authorization": `Bearer ${getToken()}` },
+    });
+    const data = await res.json();
+    if (!data.ok) {
+      listEl.innerHTML = `<div class="empty-state">${escapeHtml(data.error || "بارگذاری نشد")}</div>`;
+      return;
+    }
+    renderPlaylistDetailHeader(data.playlist);
+
+    if (reset && (!data.posts || data.posts.length === 0)) {
+      listEl.innerHTML = `<div class="empty-state">هنوز آهنگی به این پلی‌لیست اضافه نشده.</div>`;
+      return;
+    }
+    if (reset) listEl.innerHTML = "";
+
+    const isOwner = data.playlist.owner_username === getUsername();
+    const html = data.posts.map((p) => renderMusicRow(p, { mode: "playlist", canRemove: isOwner })).join("");
+    listEl.insertAdjacentHTML("beforeend", html);
+    bindAllAudioPlayers(listEl);
+    bindAllVideoPlayers(listEl);
+
+    const oldBtn = document.getElementById("loadMoreBtn-music");
+    if (oldBtn) oldBtn.remove();
+    if (data.hasMore) {
+      listEl.insertAdjacentHTML("beforeend", `<button class="load-more-btn" id="loadMoreBtn-music" onclick="loadMoreMusic()">بارگذاری بیشتر</button>`);
+    }
+  } catch (e) {
+    if (reset) listEl.innerHTML = `<div class="empty-state">لیست بارگذاری نشد. اتصال اینترنتت رو چک کن.</div>`;
+  }
+}
+
+function renderPlaylistDetailHeader(playlist) {
+  const headerEl = document.getElementById("playlistDetailHeader");
+  if (!headerEl) return;
+  const isOwner = playlist.owner_username === getUsername();
+  headerEl.classList.remove("hidden");
+  headerEl.innerHTML = `
+    <button class="playlist-detail-back" onclick="closePlaylistDetail()" title="برگشت" aria-label="برگشت">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+    </button>
+    <div class="playlist-detail-title">${escapeHtml(playlist.name)}</div>
+    ${
+      isOwner
+        ? `<div class="playlist-detail-actions">
+             <button class="playlist-detail-action-btn" onclick="openCreatePlaylistModal(${JSON.stringify(playlist).replace(/"/g, "&quot;")})" title="ویرایش">
+               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/></svg>
+             </button>
+             <button class="playlist-detail-action-btn" onclick="deletePlaylistConfirm('${escapeHtml(playlist.id)}')" title="حذفِ پلی‌لیست">
+               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/></svg>
+             </button>
+           </div>`
+        : ""
+    }`;
+}
+
+function removeTrackFromOpenPlaylist(postId) {
+  const playlistId = musicState.viewingPlaylistId;
+  if (!playlistId) return;
+  if (!confirm("این آهنگ از پلی‌لیست حذف بشه؟")) return;
+  fetch(`${WORKER_URL}/api/playlist/remove-track`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${getToken()}` },
+    body: JSON.stringify({ playlist_id: playlistId, post_id: postId }),
+  })
+    .then((r) => r.json())
+    .then((data) => {
+      if (!data.ok) throw new Error(data.error || "خطا");
+      loadPlaylistTracksList(true);
+    })
+    .catch((e) => toast(e.message || "حذف نشد", "error"));
+}
+
+async function deletePlaylistConfirm(playlistId) {
+  if (!confirm("این پلی‌لیست کاملاً حذف بشه؟ این کار برگشت نداره.")) return;
+  try {
+    const res = await fetch(`${WORKER_URL}/api/playlist/delete`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${getToken()}` },
+      body: JSON.stringify({ playlist_id: playlistId }),
+    });
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.error || "خطا");
+    toast("پلی‌لیست حذف شد", "success");
+    closePlaylistDetail(true);
+  } catch (e) {
+    toast(e.message || "حذف نشد", "error");
+  }
+}
+
+// ---------- ساخت/ویرایشِ پلی‌لیست (یه مودالِ ساده: اسم + سوییچِ عمومی/خصوصی) ----------
+function closePlaylistFormModal() {
+  document.getElementById("playlistFormBackdrop")?.remove();
+}
+
+function openCreatePlaylistModal(editPlaylist) {
+  closePlaylistFormModal();
+  const isEdit = !!(editPlaylist && editPlaylist.id);
+  const backdrop = document.createElement("div");
+  backdrop.className = "user-search-modal-backdrop";
+  backdrop.id = "playlistFormBackdrop";
+  backdrop.onclick = (e) => { if (e.target === backdrop) closePlaylistFormModal(); };
+  backdrop.innerHTML = `
+    <div class="user-search-modal">
+      <div class="user-search-modal-header">
+        <div class="user-search-modal-title">${isEdit ? "ویرایشِ پلی‌لیست" : "پلی‌لیستِ جدید"}</div>
+        <input type="text" class="user-search-group-title-input show" id="playlistFormNameInput"
+          placeholder="اسمِ پلی‌لیست" maxlength="60" value="${isEdit ? escapeHtml(editPlaylist.name) : ""}" oninput="updatePlaylistFormConfirmState()" />
+        <div class="settings-toggle-row" style="margin-top:10px;">
+          <span class="settings-toggle-title">پابلیک باشه (همه ببینن)</span>
+          <label class="switch">
+            <input type="checkbox" id="playlistFormPublicInput" ${isEdit && editPlaylist.is_public ? "checked" : ""} />
+            <span class="switch-slider"></span>
+          </label>
+        </div>
+      </div>
+      <button class="user-search-confirm-btn" id="playlistFormConfirmBtn" onclick="confirmPlaylistForm(${isEdit ? `'${escapeHtml(editPlaylist.id)}'` : "null"})" ${isEdit ? "" : "disabled"}>${isEdit ? "ذخیره" : "ساخت پلی‌لیست"}</button>
+    </div>`;
+  document.body.appendChild(backdrop);
+  document.getElementById("playlistFormNameInput").focus();
+}
+
+function updatePlaylistFormConfirmState() {
+  const nameInput = document.getElementById("playlistFormNameInput");
+  const btn = document.getElementById("playlistFormConfirmBtn");
+  if (!nameInput || !btn) return;
+  btn.disabled = !nameInput.value.trim();
+}
+
+async function confirmPlaylistForm(editPlaylistId) {
+  const name = document.getElementById("playlistFormNameInput").value.trim();
+  const isPublic = document.getElementById("playlistFormPublicInput").checked;
+  if (!name) return;
+  const btn = document.getElementById("playlistFormConfirmBtn");
+  btn.disabled = true;
+  try {
+    if (editPlaylistId) {
+      const res = await fetch(`${WORKER_URL}/api/playlist/update`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${getToken()}` },
+        body: JSON.stringify({ playlist_id: editPlaylistId, name, is_public: isPublic }),
+      });
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.error || "خطا");
+      toast("ذخیره شد", "success");
+      closePlaylistFormModal();
+      if (musicState.viewingPlaylistId === editPlaylistId) loadPlaylistTracksList(true);
+    } else {
+      const res = await fetch(`${WORKER_URL}/api/playlist/create`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${getToken()}` },
+        body: JSON.stringify({ name, is_public: isPublic }),
+      });
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.error || "خطا");
+      toast("پلی‌لیست ساخته شد", "success");
+      closePlaylistFormModal();
+      if (playlistsScopeState !== "mine") setPlaylistsScope("mine");
+      else loadPlaylistsPanel();
+    }
+  } catch (e) {
+    toast(e.message || "ذخیره نشد", "error");
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+// ---------- مودالِ «افزودن به پلی‌لیست»: لیستِ چک‌باکسیِ پلی‌لیست‌های خودِ کاربر برای یه آهنگِ مشخص ----------
+function closeAddToPlaylistSheet() {
+  document.getElementById("addToPlaylistBackdrop")?.remove();
+}
+
+async function openAddToPlaylistSheet(postId) {
+  closeAddToPlaylistSheet();
+  const backdrop = document.createElement("div");
+  backdrop.className = "user-search-modal-backdrop";
+  backdrop.id = "addToPlaylistBackdrop";
+  backdrop.onclick = (e) => { if (e.target === backdrop) closeAddToPlaylistSheet(); };
+  backdrop.innerHTML = `
+    <div class="user-search-modal">
+      <div class="user-search-modal-header">
+        <div class="user-search-modal-title">افزودن به پلی‌لیست</div>
+      </div>
+      <div id="addToPlaylistList" class="user-search-results">
+        <div class="user-search-empty">در حال بارگذاری...</div>
+      </div>
+      <button class="user-search-confirm-btn" onclick="closeAddToPlaylistSheet(); openCreatePlaylistModal();">+ ساختِ پلی‌لیستِ جدید</button>
+    </div>`;
+  document.body.appendChild(backdrop);
+
+  try {
+    const res = await fetch(`${WORKER_URL}/api/playlist/for-track?post_id=${encodeURIComponent(postId)}`, {
+      headers: { Authorization: `Bearer ${getToken()}` },
+    });
+    const data = await res.json();
+    const listEl = document.getElementById("addToPlaylistList");
+    if (!listEl) return;
+    if (!data.playlists || data.playlists.length === 0) {
+      listEl.innerHTML = `<div class="user-search-empty">هنوز پلی‌لیستی نساختی</div>`;
+      return;
+    }
+    listEl.innerHTML = data.playlists
+      .map(
+        (pl) => `
+      <div class="playlist-modal-item${pl.has_track ? " checked" : ""}" id="ptItem-${escapeHtml(pl.id)}" onclick="toggleAddToPlaylistItem('${escapeHtml(pl.id)}', '${escapeHtml(postId)}')">
+        <div class="playlist-modal-item-check">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+        </div>
+        <div class="playlist-modal-item-name">${escapeHtml(pl.name)}</div>
+      </div>`
+      )
+      .join("");
+  } catch (e) {
+    const listEl = document.getElementById("addToPlaylistList");
+    if (listEl) listEl.innerHTML = `<div class="user-search-empty">بارگذاری نشد</div>`;
+  }
+}
+
+async function toggleAddToPlaylistItem(playlistId, postId) {
+  const itemEl = document.getElementById(`ptItem-${playlistId}`);
+  const wasChecked = itemEl?.classList.contains("checked");
+  const endpoint = wasChecked ? "remove-track" : "add-track";
+  try {
+    const res = await fetch(`${WORKER_URL}/api/playlist/${endpoint}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${getToken()}` },
+      body: JSON.stringify({ playlist_id: playlistId, post_id: postId }),
+    });
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.error || "خطا");
+    itemEl?.classList.toggle("checked", !wasChecked);
+    toast(wasChecked ? "از پلی‌لیست حذف شد" : "به پلی‌لیست اضافه شد", "success");
+    if (musicState.viewingPlaylistId === playlistId) loadPlaylistTracksList(true);
+  } catch (e) {
+    toast(e.message || "خطا", "error");
+  }
 }
 
 async function loadAdminFeed(reset = true) {
