@@ -286,8 +286,8 @@ try {
   @keyframes tickJump {
     0%   { opacity: 0; transform: scale(0.25); }
     50%  { opacity: 1; transform: scale(1.12); }
-    72%  { transform: scale(0.94); }
-    100% { transform: scale(1); }
+    72%  { opacity: 1; transform: scale(0.94); }
+    100% { opacity: 1; transform: scale(1); }
   }
   @keyframes tickCardIn {
     0%   { opacity: 0; transform: scale(0.7); }
@@ -573,30 +573,68 @@ try {
     transition: none;
   }
   .door-gate.hide { opacity: 0; transform: scale(1.08); pointer-events: none; transition: opacity 0.55s ease, transform 0.55s ease; }
-  .door-gate:active:not(.opening) .door-wrap { transform: scale(0.96); transition: transform 0.15s ease; }
+  .door-gate:active:not(.exploding) .door-wrap { transform: scale(0.96); transition: transform 0.15s ease; }
   .door-gate-text {
     color: #fff; font-size: 16px; font-weight: 500; margin: 0;
     animation: fadeInUp 0.6s ease both;
     transition: opacity 0.3s ease, transform 0.3s ease;
   }
-  .door-gate.opening .door-gate-text { opacity: 0; transform: translateY(-6px); }
+  .door-gate.exploding .door-gate-text { opacity: 0; transform: translateY(-6px); }
   .door-wrap {
     position: relative; width: min(46vw, 170px);
     animation: popIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) both;
   }
-  .door-gate.opening .door-wrap { animation: none; transform: scale(1.04); transition: transform 0.75s cubic-bezier(0.65, 0, 0.35, 1); }
+  .door-gate.exploding .door-wrap { animation: none; transform: scale(1.04); transition: transform 0.3s ease; }
   .door-svg {
     position: relative; z-index: 1;
     width: 100%; height: auto; overflow: visible; display: block;
     filter: drop-shadow(0 0 14px rgba(255, 255, 255, 0.25));
     transition: filter 0.75s ease;
   }
-  .door-gate.opening .door-svg { filter: drop-shadow(0 0 28px rgba(255, 255, 255, 0.55)); }
-  #doorLeaf {
-    transition: transform 0.75s cubic-bezier(0.65, 0, 0.35, 1);
-    transform-box: fill-box; transform-origin: left center;
+  .door-gate.exploding .door-svg { filter: drop-shadow(0 0 28px rgba(255, 255, 255, 0.55)); }
+
+  /* --- تکه‌های درِ منفجرشونده: به‌جای چرخیدن، در به ۴ تکه می‌شکنه و به بیرون پرت می‌شه --- */
+  .door-frag {
+    transition: transform 0.65s cubic-bezier(0.34, 0.7, 0.36, 1), opacity 0.55s ease;
+    transform-box: fill-box; transform-origin: center;
   }
-  .door-gate.opening #doorLeaf { transform: perspective(420px) rotateY(-100deg); }
+  .door-gate.exploding #doorFragTL { transition-delay: 0.02s; transform: translate(-95px, -78px) rotate(-55deg) scale(0.85); opacity: 0; }
+  .door-gate.exploding #doorFragTR { transition-delay: 0.06s; transform: translate(95px, -78px) rotate(55deg) scale(0.85); opacity: 0; }
+  .door-gate.exploding #doorFragBL { transition-delay: 0.03s; transform: translate(-95px, 78px) rotate(60deg) scale(0.85); opacity: 0; }
+  .door-gate.exploding #doorFragBR { transition-delay: 0.07s; transform: translate(95px, 78px) rotate(-60deg) scale(0.85); opacity: 0; }
+
+  /* --- فلاشِ نورانیِ لحظه‌ی انفجار --- */
+  .explosion-flash {
+    position: absolute; top: 50%; left: 50%; width: 40px; height: 40px;
+    transform: translate(-50%, -50%) scale(0); border-radius: 50%;
+    background: radial-gradient(circle, rgba(255,255,255,0.95) 0%, rgba(255,196,120,0.65) 35%, rgba(255,140,60,0) 72%);
+    opacity: 0; pointer-events: none; z-index: 4;
+  }
+  .door-gate.exploding .explosion-flash { animation: explosionFlash 0.6s ease-out forwards; }
+  @keyframes explosionFlash {
+    0% { opacity: 0; transform: translate(-50%, -50%) scale(0); }
+    14% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+    100% { opacity: 0; transform: translate(-50%, -50%) scale(9); }
+  }
+
+  /* --- کانواسی که ویدیوی انفجار (بدون پس‌زمینه‌ی سبز) روش پخش می‌شه --- */
+  .explosion-canvas {
+    position: absolute; top: 50%; left: 50%;
+    width: min(92vw, 480px); height: auto;
+    transform: translate(-50%, -50%) scale(0.7);
+    opacity: 0; pointer-events: none; z-index: 6;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+  }
+  /* --- حالت تستِ بدون کروماکی: خودِ ویدیو مستقیم روی صفحه دیده می‌شه --- */
+  .explosion-video-direct {
+    position: absolute; top: 50%; left: 50%;
+    width: min(92vw, 480px); height: auto;
+    transform: translate(-50%, -50%) scale(0.7);
+    opacity: 0; pointer-events: none; z-index: 6;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    border-radius: 12px;
+  }
+  .explosion-video-direct.show { opacity: 1; transform: translate(-50%, -50%) scale(1); }
 </style>
 </head>
 <body class="splash-active">
@@ -606,13 +644,35 @@ try {
   <div class="door-wrap">
     <svg class="door-svg" viewBox="0 0 200 320" xmlns="http://www.w3.org/2000/svg">
       <rect x="14" y="20" width="172" height="286" rx="10" fill="none" stroke="#fff" stroke-width="3" opacity="0.5"/>
-      <g id="doorLeaf">
+      <defs>
+        <clipPath id="clipTL"><rect x="20" y="26" width="80" height="137"/></clipPath>
+        <clipPath id="clipTR"><rect x="100" y="26" width="80" height="137"/></clipPath>
+        <clipPath id="clipBL"><rect x="20" y="163" width="80" height="137"/></clipPath>
+        <clipPath id="clipBR"><rect x="100" y="163" width="80" height="137"/></clipPath>
+      </defs>
+      <!-- در به ۴ تکه تقسیم شده تا موقعِ کلیک به‌جای چرخیدن، منفجر بشه و به بیرون پرت بشه -->
+      <g id="doorFragTL" class="door-frag" clip-path="url(#clipTL)">
+        <rect x="20" y="26" width="160" height="274" fill="#fff"/>
+        <rect x="34" y="42" width="132" height="102" fill="none" stroke="#000" stroke-width="1.5" opacity="0.15"/>
+        <rect x="34" y="150" width="132" height="138" fill="none" stroke="#000" stroke-width="1.5" opacity="0.15"/>
+      </g>
+      <g id="doorFragTR" class="door-frag" clip-path="url(#clipTR)">
         <rect x="20" y="26" width="160" height="274" fill="#fff"/>
         <rect x="34" y="42" width="132" height="102" fill="none" stroke="#000" stroke-width="1.5" opacity="0.15"/>
         <rect x="34" y="150" width="132" height="138" fill="none" stroke="#000" stroke-width="1.5" opacity="0.15"/>
         <circle cx="168" cy="163" r="5" fill="#000" opacity="0.55"/>
       </g>
+      <g id="doorFragBL" class="door-frag" clip-path="url(#clipBL)">
+        <rect x="20" y="26" width="160" height="274" fill="#fff"/>
+        <rect x="34" y="150" width="132" height="138" fill="none" stroke="#000" stroke-width="1.5" opacity="0.15"/>
+      </g>
+      <g id="doorFragBR" class="door-frag" clip-path="url(#clipBR)">
+        <rect x="20" y="26" width="160" height="274" fill="#fff"/>
+        <rect x="34" y="150" width="132" height="138" fill="none" stroke="#000" stroke-width="1.5" opacity="0.15"/>
+      </g>
     </svg>
+    <div class="explosion-flash"></div>
+    <video id="explosionVideo" src="door-explosion.mp4" preload="auto" playsinline webkit-playsinline muted class="explosion-video-direct" style=""></video>
   </div>
 </div>
 
@@ -710,10 +770,28 @@ try {
     });
   }
 
+  // ---------- پخشِ ویدیوی انفجار (حالت تست: مستقیم، بدون کروماکی) ----------
+  function playExplosionVideo() {
+    var vid = document.getElementById("explosionVideo");
+    if (!vid) return;
+    vid.classList.add("show");
+    try { vid.currentTime = 0; } catch (e) {}
+    vid.muted = false;
+    var p = vid.play();
+    if (p && p.catch) {
+      p.catch(function () {
+        vid.muted = true;
+        vid.play().catch(function () {});
+      });
+    }
+    vid.addEventListener("ended", function () { vid.classList.remove("show"); }, { once: true });
+  }
+
   function openDoor() {
     gate.removeEventListener("click", openDoor);
     gate.removeEventListener("keydown", onGateKeydown);
-    gate.classList.add("opening");
+    gate.classList.add("exploding");
+    playExplosionVideo();
 
     // همین‌جا، تو دلِ کلیک واقعی کاربر، آهنگِ پس‌زمینه رو (اگه تا این لحظه src گرفته باشه) یه بار
     // پلی و بلافاصله پاز می‌کنیم. این کار مرورگر رو مجاب می‌کنه این المان صوتی رو «تاییدشده با
@@ -726,14 +804,14 @@ try {
       bg.play().then(function () { bg.pause(); bg.currentTime = 0; }).catch(function () {});
     }
 
+    // صبر می‌کنیم تا ویدیوی انفجار (~۲ ثانیه) تقریباً تموم بشه، بعد در رو کامل محو می‌کنیم
     setTimeout(function () {
       gate.classList.add("hide");
       setTimeout(function () {
         gate.remove();
-        // یک ثانیه بعد از محو کامل شدن در، ویدیو پلی می‌شه
-        setTimeout(playSplashVideo, 1000);
+        setTimeout(playSplashVideo, 300);
       }, 550);
-    }, 700);
+    }, 1850);
   }
   function onGateKeydown(e) {
     if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openDoor(); }
@@ -1109,8 +1187,11 @@ function setCaptchaStepLabel(logicalStepNumber) {
 }
 
 // وقتی یه مرحله درست حل می‌شه، اول یه تیکِ سبز چند لحظه نشون داده می‌شه (تا کاربر مطمئن بشه درست
-// جواب داده)، بعد fn (که پنل/لیبل/لی‌اوتِ مرحله‌ی بعدی رو ست می‌کنه) صدا زده می‌شه
+// جواب داده)، بعد fn (که پنل/لیبل/لی‌اوتِ مرحله‌ی بعدی رو ست می‌کنه) صدا زده می‌شه.
+// اگه دکمه/ژست دوباره (مثلاً دبل‌تپ رو موبایل) قبل از تمومِ همین گذار صدا زده بشه، نادیده می‌گیریمش
+// وگرنه تایمرِ قبلی زودتر از موعد فایر می‌شد و تیک وسطِ انیمیشنش محو می‌شد و یه کادرِ خالی می‌موند.
 function advanceAfterSuccess(fn) {
+  if (captchaStageTransitionTimeout) return; // یه گذار همین الان در حال اجراست، این فراخوانی رو نادیده بگیر
   // دیگه کادرِ اصلیِ مودال رو مربع/اسکیل نمی‌کنیم (همون چیزی که باعثِ گلیچ/لگ می‌شد).
   // فقط یه کارتِ کوچیکِ مستقل روش پاپ می‌کنه (با opacity+transform، بدون دست‌زدن به لِی‌آوت).
   captchaSuccessTickEl.classList.remove("hiding");
@@ -1122,9 +1203,10 @@ function advanceAfterSuccess(fn) {
     captchaSuccessTickEl.classList.remove("show");
     captchaSuccessTickEl.classList.add("hiding");
     if (captchaModalEl) captchaModalEl.classList.remove("tick-showing");
+    captchaStageTransitionTimeout = null;
     setTimeout(() => { captchaSuccessTickEl.classList.remove("hiding"); }, 460);
     fn();
-  }, 1500);
+  }, 950);
 }
 
 function openCaptchaModal(controller) {
