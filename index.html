@@ -3871,6 +3871,25 @@
         <input type="text" id="postTags" placeholder="تگ (اختیاری)" oninput="updateUploadPreview()" />
       </div>
 
+      <!-- انتخابِ مسیرِ آپلود: مستقل از دامنه‌ای که کاربر فعلاً باهاش سایت رو باز کرده -->
+      <div class="upload-route-row u-submit" style="display:flex;gap:8px;margin-bottom:10px;">
+        <button type="button" id="uploadRouteGithub" onclick="setUploadRoute('github')"
+          style="flex:1;padding:8px;border-radius:10px;border:1px solid var(--border-color,#444);background:transparent;cursor:pointer;font-size:13px;">
+          آپلود با گیت‌هاب
+        </button>
+        <button type="button" id="uploadRouteCloudflare" onclick="setUploadRoute('cloudflare')"
+          style="flex:1;padding:8px;border-radius:10px;border:1px solid var(--border-color,#444);background:transparent;cursor:pointer;font-size:13px;">
+          آپلود با کلادفلر
+        </button>
+      </div>
+      <style>
+        #uploadRouteGithub.active, #uploadRouteCloudflare.active {
+          background: var(--accent-color, #4a9eff);
+          color: #fff;
+          border-color: transparent;
+        }
+      </style>
+
       <!-- دکمه ارسال -->
       <div class="submit-row u-submit">
         <button class="primary upload-submit-btn" id="submitBtn" onclick="submitPost()">ثبت در دهات</button>
@@ -4423,7 +4442,45 @@
 </div>
 
 <script>
-const WORKER_URL = "";
+// ---------- تعیینِ خودکارِ آدرسِ ورکر بر اساسِ دامنه‌ای که کاربر باهاش وارد شده ----------
+// دهات از دو مسیر در دسترسه: یکی از پشتِ Cloudflare Pages (که یه Pages Function جلوش داره و
+// مسیرهای نسبیِ /api/... رو با هدرِ مخفیِ X-Internal-Key به ورکرِ اصلی پروکسی می‌کنه)، و یکی از
+// پشتِ GitHub Pages (که فقط میزبانیِ استاتیکه و هیچ پروکسی‌ای نداره؛ پس باید مستقیم و cross-origin
+// با آدرسِ عمومیِ همون ورکرِ پروکسی حرف بزنه).
+const WORKER_DIRECT_URL = "https://api-7x2.pages.dev"; // مسیرِ مستقیم به بک‌اندِ واقعی؛ از هر دامنه‌ای کار می‌کنه
+const WORKER_PAGES_PROXY_URL = ""; // مسیرِ نسبی؛ فقط وقتی از پشتِ Cloudflare Pages Function سرو بشه کار می‌کنه
+const IS_GITHUB_HOST = /(^|\.)github\.io$/.test(location.hostname) || location.hostname === "dehaat.bbboi.ir";
+const WORKER_URL = IS_GITHUB_HOST ? WORKER_DIRECT_URL : WORKER_PAGES_PROXY_URL;
+
+// ---------- مسیرِ جداگانه و قابل‌انتخاب برای آپلود ----------
+// بدونِ توجه به این‌که کاربر از کدوم دامنه وارد شده، دو دکمه («آپلود با گیت‌هاب» / «آپلود با
+// کلادفلر») بهش اجازه می‌ده مستقیماً مشخص کنه آپلودِ فایل از کدوم مسیر انجام بشه. برای مسیرِ
+// کلادفلر همیشه از آدرسِ کاملِ Pages استفاده می‌کنیم (نه مسیرِ نسبیِ خالی)، چون اگه کاربر از
+// GitHub Pages وارد شده باشه و این مسیر رو انتخاب کنه، یه مسیرِ نسبی به‌اشتباه به همون دامنه‌ی
+// GitHub اشاره می‌کرد (که پروکسی نداره) و بی‌صدا fail می‌شد.
+const UPLOAD_CLOUDFLARE_URL = "https://dehaat.aghey.faggott.fun";
+let UPLOAD_WORKER_URL = WORKER_URL;
+
+function setUploadRoute(route) {
+  UPLOAD_WORKER_URL = route === "github" ? WORKER_DIRECT_URL : UPLOAD_CLOUDFLARE_URL;
+  try { localStorage.setItem("dehaatUploadRoute", route); } catch (e) {}
+  updateUploadRouteUI(route);
+}
+
+function updateUploadRouteUI(route) {
+  const btnGithub = document.getElementById("uploadRouteGithub");
+  const btnCloudflare = document.getElementById("uploadRouteCloudflare");
+  if (btnGithub) btnGithub.classList.toggle("active", route === "github");
+  if (btnCloudflare) btnCloudflare.classList.toggle("active", route === "cloudflare");
+}
+
+function initUploadRoute() {
+  // پیش‌فرض: همون مسیری که با دامنه‌ی فعلی هماهنگه؛ اگه کاربر قبلاً دستی انتخابی کرده بود، همونو نگه می‌داریم
+  let saved = null;
+  try { saved = localStorage.getItem("dehaatUploadRoute"); } catch (e) {}
+  const route = saved || (IS_GITHUB_HOST ? "github" : "cloudflare");
+  setUploadRoute(route);
+}
 
 // خطاهای شبکه‌ای (قطعی/invalid response) خیلی وقتا لحظه‌ای و گذرا هستن؛ به‌جای این‌که فوراً
 // خطا به کاربر نشون بدیم، یکی-دو بار خودکار (با یه مکثِ کوتاه) دوباره امتحان می‌کنیم.
@@ -5096,6 +5153,7 @@ function switchView(name, forceReload = false) {
     // تازه نمایان شده، پس یه فریم صبر می‌کنیم تا ابعادش قابل اندازه‌گیری باشه
     requestAnimationFrame(positionUploadModeIndicator);
     resumePostCooldownUI();
+    initUploadRoute();
   }
 }
 
@@ -5951,7 +6009,7 @@ async function submitPost() {
       appendUploadLog("همه‌ی تکه‌ها آپلود شد؛ در حال ثبتِ نهاییِ پست...");
     }
 
-    const { ok, status, data } = await uploadWithRetry(`${WORKER_URL}/api/post`, fd, (percent) => {
+    const { ok, status, data } = await uploadWithRetry(`${UPLOAD_WORKER_URL}/api/post`, fd, (percent) => {
       if (!fileToUpload) progressFill.style.width = `${percent}%`;
     });
     if (!ok) {
@@ -7677,7 +7735,7 @@ async function resumableUpload(file, kind, onProgress) {
       try {
         await waitForOnline();
         const res = await fetchWithTimeout(
-          `${WORKER_URL}/api/upload/status?uploadId=${encodeURIComponent(session.uploadId)}`,
+          `${UPLOAD_WORKER_URL}/api/upload/status?uploadId=${encodeURIComponent(session.uploadId)}`,
           { headers: { Authorization: `Bearer ${getToken()}` } },
           CHUNK_UPLOAD_TIMEOUT_MS
         );
@@ -7699,7 +7757,7 @@ async function resumableUpload(file, kind, onProgress) {
   }
 
   if (!session) {
-    const initRes = await fetch(`${WORKER_URL}/api/upload/init`, {
+    const initRes = await fetch(`${UPLOAD_WORKER_URL}/api/upload/init`, {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${getToken()}` },
       body: JSON.stringify({ kind, fileSize: file.size, mimeType: file.type, chunkSize: CHUNK_UPLOAD_SIZE }),
@@ -7739,7 +7797,7 @@ async function resumableUpload(file, kind, onProgress) {
         fd.append("chunkIndex", String(i));
         fd.append("chunk", blob, `part-${i}`);
         const res = await fetchWithTimeout(
-          `${WORKER_URL}/api/upload/chunk`,
+          `${UPLOAD_WORKER_URL}/api/upload/chunk`,
           { method: "POST", headers: { Authorization: `Bearer ${getToken()}` }, body: fd },
           CHUNK_UPLOAD_TIMEOUT_MS
         );
@@ -7776,7 +7834,7 @@ async function resumableUpload(file, kind, onProgress) {
     try {
       await waitForOnline();
       const completeRes = await fetchWithTimeout(
-        `${WORKER_URL}/api/upload/complete`,
+        `${UPLOAD_WORKER_URL}/api/upload/complete`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json", Authorization: `Bearer ${getToken()}` },
@@ -7807,7 +7865,7 @@ async function abortResumableUpload(file, kind) {
   clearChunkUploadSession(fp);
   if (!session) return;
   try {
-    await fetch(`${WORKER_URL}/api/upload/abort`, {
+    await fetch(`${UPLOAD_WORKER_URL}/api/upload/abort`, {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${getToken()}` },
       body: JSON.stringify({ uploadId: session.uploadId }),
