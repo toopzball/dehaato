@@ -1527,6 +1527,13 @@
   }
   .banner-preview.hidden { display: none; }
 
+  .avatar-preview-circle {
+    width: 84px; height: 84px; border-radius: 50%; overflow: hidden;
+    background-color: var(--card); border: 1px solid var(--border);
+    background-size: cover; background-position: center; background-repeat: no-repeat;
+  }
+  .avatar-preview-circle.hidden { display: none; }
+
   .profile-avatar-fade-row { display: flex; align-items: center; margin-top: -52px; padding: 0 20px; position: relative; z-index: 2; }
   .profile-avatar-fade-row .fade-line { flex: 1; height: 1px; background: var(--border); }
   .profile-avatar-fade-row .fade-line.start { background: linear-gradient(to left, var(--border), transparent); }
@@ -1707,6 +1714,82 @@
   .switch input:checked + .switch-slider { background: var(--accent); }
   .switch input:checked + .switch-slider::before { transform: translateX(-18px); }
   .switch input:disabled + .switch-slider { opacity: 0.5; cursor: not-allowed; }
+
+  /* ---------- زیرمنوی «تنظیمات ظاهری»: تم سایت / پس‌زمینه چت / تم سگ‌تونز / اسکین چت ---------- */
+  .appearance-hub-note {
+    font-size: 12.5px; color: var(--subtext); margin: 0 0 4px; line-height: 1.8;
+  }
+  .settings-item.soon { opacity: 0.72; }
+  .settings-item-soon-badge {
+    margin-inline-start: auto; font-size: 10.5px; color: var(--subtext);
+    background: var(--card2, var(--card)); border: 1px solid var(--border);
+    border-radius: 999px; padding: 2px 8px; flex-shrink: 0;
+  }
+  .settings-coming-soon-box {
+    text-align: center; padding: 40px 16px; color: var(--subtext);
+    background: var(--card); border: 1px solid var(--border); border-radius: 14px; font-size: 13.5px; line-height: 1.9;
+  }
+  .settings-coming-soon-box svg { width: 34px; height: 34px; color: var(--accent-hover); margin-bottom: 10px; }
+
+  /* ---------- پیش‌نمایشِ پس‌زمینه‌ی چتِ فعلی ---------- */
+  .chatbg-preview {
+    width: 100%; height: 150px; border-radius: 14px; overflow: hidden;
+    background-color: var(--card); border: 1px solid var(--border);
+    background-size: cover; background-position: center; background-repeat: no-repeat;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .chatbg-preview.empty { color: var(--subtext); font-size: 12.5px; }
+  .chatbg-actions-row { display: flex; gap: 10px; margin-top: 12px; }
+  .chatbg-actions-row .attach-btn { flex: 1; justify-content: center; }
+  .chatbg-remove-btn {
+    padding: 0 16px; border-radius: 12px; border: 1px solid var(--border); background: none;
+    color: var(--error); font-family: inherit; font-size: 13px; cursor: pointer;
+  }
+  .chatbg-remove-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  /* ---------- مودالِ کراپ عکسِ پس‌زمینه‌ی چت: تمام‌صفحه، قابِ قفل‌شده رویِ نسبتِ صفحه‌ی دیوایس ---------- */
+  .bgcrop-overlay {
+    position: fixed; inset: 0; background: #000; z-index: 9999;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+  }
+  .bgcrop-overlay.hidden { display: none; }
+  .bgcrop-canvas-wrap {
+    position: relative; overflow: hidden; touch-action: none; max-width: 100vw; max-height: calc(100vh - 150px);
+  }
+  .bgcrop-canvas-wrap canvas { display: block; cursor: grab; }
+  .bgcrop-canvas-wrap canvas:active { cursor: grabbing; }
+  .bgcrop-circle-guide {
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    border-radius: 50%; border: 2px solid #fff; box-shadow: 0 0 0 9999px rgba(0,0,0,0.55);
+    pointer-events: none;
+  }
+  .bgcrop-controls {
+    width: 100%; max-width: 420px; padding: 16px 20px calc(20px + env(safe-area-inset-bottom));
+    display: flex; flex-direction: column; gap: 14px;
+  }
+  .bgcrop-zoom-row { display: flex; align-items: center; gap: 10px; }
+  .bgcrop-zoom-row svg { width: 18px; height: 18px; color: #fff; flex-shrink: 0; }
+  .bgcrop-zoom-row input[type="range"] {
+    flex: 1; -webkit-appearance: none; appearance: none; height: 4px; border-radius: 2px;
+    background: rgba(255,255,255,0.25); outline: none;
+  }
+  .bgcrop-zoom-row input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 18px; height: 18px; border-radius: 50%; background: #fff; cursor: pointer;
+  }
+  .bgcrop-actions { display: flex; gap: 10px; }
+  .bgcrop-actions button {
+    flex: 1; height: 44px; border-radius: 12px; font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer;
+  }
+  .bgcrop-cancel-btn { background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.2); color: #fff; }
+  .bgcrop-confirm-btn { background: var(--accent-gradient); border: none; color: #fff; }
+  .bgcrop-confirm-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .bgcrop-title { color: #fff; font-size: 13px; text-align: center; padding: 14px 20px 0; opacity: 0.8; }
+
+  /* ---------- پس‌زمینه‌ی اعمال‌شده روی صفحه‌ی گفتگو ---------- */
+  .chat-conv-messages.has-custom-bg {
+    background-size: cover; background-position: center; background-repeat: no-repeat;
+    position: relative;
+  }
 
   /* ---------- لیستِ کاربرانِ مسدودشده (تنظیمات > حریم خصوصی) ---------- */
   .blocked-user-row {
@@ -4957,6 +5040,23 @@ function parseThemeValue(theme) {
 
 let currentTheme = normalizeThemeValue(localStorage.getItem("theme"));
 
+// ---------- پس‌زمینه‌ی چت: یه فایل‌آیدیِ مشترک برای همه‌ی چت‌ها/گروه‌های کاربر ----------
+let chatBgFileId = localStorage.getItem("chatBgFileId") || null;
+function applyChatBackground(fileId) {
+  chatBgFileId = fileId || null;
+  if (chatBgFileId) localStorage.setItem("chatBgFileId", chatBgFileId);
+  else localStorage.removeItem("chatBgFileId");
+  const el = document.getElementById("chatConvMessages");
+  if (!el) return;
+  if (chatBgFileId) {
+    el.style.backgroundImage = `url('${mediaUrl(chatBgFileId)}')`;
+    el.classList.add("has-custom-bg");
+  } else {
+    el.style.backgroundImage = "none";
+    el.classList.remove("has-custom-bg");
+  }
+}
+
 // ---------- چیدمانِ چتِ گروهی: «discord» (ریلِ آیکونیِ فعلی) یا «classic» (یه چت‌روم عادیِ فهرستی) ----------
 let chatLayoutMode = localStorage.getItem("chatLayoutMode") === "classic" ? "classic" : "discord";
 function applyChatLayoutMode(mode) {
@@ -5051,6 +5151,7 @@ function applyThemeAndAvatar(profile) {
       markActiveSwatch(currentTheme);
     }
     applyHeaderAvatar(getUsername() || "", profile.avatar_file_id);
+    applyChatBackground(profile.chat_bg_file_id || null);
   } else {
     markActiveSwatch(currentTheme);
   }
@@ -6713,6 +6814,7 @@ async function openChatConversation(conversationId) {
   renderChatGroupRail();
 
   document.getElementById("chatConvMessages").innerHTML = `<div class="chat-loading">در حال بارگذاری...</div>`;
+  applyChatBackground(chatBgFileId);
   document.getElementById("chatConversation").classList.add("open");
 
   const messagesEl = document.getElementById("chatConvMessages");
@@ -15823,6 +15925,7 @@ function renderSettingsProfileEdit() {
           <button onclick="clearAvatarFile()">×</button>
         </div>
       </div>
+      <div class="avatar-preview-circle hidden" id="avatarPreview"></div>
       <div class="composer-tools">
         <label class="attach-btn" id="bannerAttachLabel">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
@@ -15856,7 +15959,33 @@ const THEME_HUE_INFO = {
   fall: { name: "پاییز", desc: "بوی پرتقال و بادهای پاییزی", from: "#1C1310", to: "#E85D28" },
 };
 
+// ---------- مرحله: هابِ تنظیمات ظاهری (۴ زیرگزینه) ----------
 function renderSettingsAppearance() {
+  return settingsHeader("تنظیمات ظاهری", true) + `
+    <div style="display:flex; flex-direction:column; gap:10px;">
+      <button class="settings-item" onclick="goSettingsStage('appearance_theme')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="13.5" cy="6.5" r="0.5" fill="currentColor"/><circle cx="17.5" cy="10.5" r="0.5" fill="currentColor"/><circle cx="8.5" cy="7.5" r="0.5" fill="currentColor"/><circle cx="6.5" cy="12.5" r="0.5" fill="currentColor"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.9 0 1.5-.7 1.5-1.5 0-.4-.2-.8-.4-1.1-.3-.3-.4-.7-.4-1.1 0-.8.7-1.5 1.5-1.5H16c3.3 0 6-2.7 6-6 0-4.4-4.5-8-10-8z"/></svg>
+        تم سایت
+      </button>
+      <button class="settings-item" onclick="goSettingsStage('appearance_chatbg')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+        پس‌زمینه چت
+      </button>
+      <button class="settings-item soon" onclick="goSettingsStage('appearance_dogtones')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 5.2C8 4 4 4.5 4 8c0 3 3 4 3 6-2 0-4 1.5-4 4 3 2 7 1 9-2 2 3 6 4 9 2 0-2.5-2-4-4-4 0-2 3-3 3-6 0-3.5-4-4-6-2.8"/><path d="M9 15c0 3 1.5 5 3 5s3-2 3-5"/></svg>
+        تم سگ‌تونز
+        <span class="settings-item-soon-badge">بزودی</span>
+      </button>
+      <button class="settings-item soon" onclick="goSettingsStage('appearance_chatskin')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        اسکین چت
+        <span class="settings-item-soon-badge">بزودی</span>
+      </button>
+    </div>`;
+}
+
+// ---------- مرحله: تم سایت (انتخاب رنگ‌بندی + حالت روشن/تاریک) ----------
+function renderSettingsAppearanceTheme() {
   const rows = THEME_HUES.map((hue) => {
     const info = THEME_HUE_INFO[hue];
     return `
@@ -15866,7 +15995,7 @@ function renderSettingsAppearance() {
       </button>`;
   }).join("");
 
-  return settingsHeader("تنظیمات ظاهری", true) + `
+  return settingsHeader("تم سایت", true) + `
     <div class="theme-picker" style="margin-top:0; border-top:none; padding-top:0;">
       <div class="theme-picker-label">رنگ‌بندی اپ رو انتخاب کن</div>
       <div class="theme-hue-list">${rows}</div>
@@ -15888,13 +16017,52 @@ function renderSettingsAppearance() {
           <span class="switch-slider"></span>
         </label>
       </div>
-      <div class="settings-toggle-row" style="margin-top:10px;">
+    </div>`;
+}
+
+// ---------- مرحله: اسکین چت (فعلاً فقط چیدمانِ چتِ گروهی؛ بقیه‌ی اسکین‌ها بزودی) ----------
+function renderSettingsChatSkin() {
+  return settingsHeader("اسکین چت", true) + `
+    <div style="display:flex; flex-direction:column; gap:10px;">
+      <div class="settings-toggle-row">
         <span class="settings-toggle-title">چیدمانِ چتِ گروهی به‌سبکِ چت‌روم (به‌جای ریلِ آیکونیِ دیسکوردی)</span>
         <label class="switch">
           <input type="checkbox" id="chatLayoutToggleInput" onchange="onChatLayoutToggleChange()" />
           <span class="switch-slider"></span>
         </label>
       </div>
+      <div class="settings-coming-soon-box">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><br/>
+        اسکین‌های آماده‌ی چت به‌زودی اضافه می‌شن
+      </div>
+    </div>`;
+}
+
+// ---------- مرحله: تم سگ‌تونز (بزودی) ----------
+function renderSettingsDogTones() {
+  return settingsHeader("تم سگ‌تونز", true) + `
+    <div class="settings-coming-soon-box">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 5.2C8 4 4 4.5 4 8c0 3 3 4 3 6-2 0-4 1.5-4 4 3 2 7 1 9-2 2 3 6 4 9 2 0-2.5-2-4-4-4 0-2 3-3 3-6 0-3.5-4-4-6-2.8"/><path d="M9 15c0 3 1.5 5 3 5s3-2 3-5"/></svg><br/>
+      این تم به‌زودی اضافه می‌شه
+    </div>`;
+}
+
+// ---------- مرحله: پس‌زمینه‌ی چت (آپلود + کراپِ قفل‌شده روی نسبتِ صفحه‌ی دیوایس) ----------
+// یه پس‌زمینه‌ی مشترک برای همه‌ی چت‌ها و گروه‌های کاربره (نه جداجدا برای هر گفتگو).
+function renderSettingsChatBg() {
+  return settingsHeader("پس‌زمینه چت", true) + `
+    <div style="display:flex; flex-direction:column; gap:12px;">
+      <p class="appearance-hub-note">این پس‌زمینه برای همه‌ی چت‌ها و گروه‌هات یکسان اعمال می‌شه.</p>
+      <div class="chatbg-preview" id="chatBgPreview"></div>
+      <div class="chatbg-actions-row">
+        <label class="attach-btn" id="chatBgAttachLabel" style="flex:1; justify-content:center;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+          انتخاب عکس جدید
+          <input type="file" id="chatBgInput" accept="image/*" class="hidden" onchange="onChatBgFileChosen()" />
+        </label>
+        <button type="button" class="chatbg-remove-btn" id="chatBgRemoveBtn" onclick="removeChatBackground()">حذف</button>
+      </div>
+      <div class="error" id="chatBgError"></div>
     </div>`;
 }
 
@@ -16506,6 +16674,10 @@ function renderSettingsModal(direction = "none") {
   else if (stage === "password_current") html = renderSettingsPasswordCurrent();
   else if (stage === "password_new") html = renderSettingsPasswordNew();
   else if (stage === "appearance") html = renderSettingsAppearance();
+  else if (stage === "appearance_theme") html = renderSettingsAppearanceTheme();
+  else if (stage === "appearance_chatbg") html = renderSettingsChatBg();
+  else if (stage === "appearance_dogtones") html = renderSettingsDogTones();
+  else if (stage === "appearance_chatskin") html = renderSettingsChatSkin();
   else if (stage === "notifications") html = renderSettingsNotifications();
   else if (stage === "privacy") html = renderSettingsPrivacy();
   else if (stage === "referral") html = renderSettingsReferral();
@@ -16515,18 +16687,24 @@ function renderSettingsModal(direction = "none") {
   modal.innerHTML = `<div class="settings-modal-content ${animClass}">${html}</div>`;
 
   // هر مرحله ممکنه بعد از قرارگرفتن توی DOM نیاز به یه مقداردهی اولیه (فچ/وضعیتِ فعلی) داشته باشه
-  if (stage === "appearance") {
+  if (stage === "appearance_theme") {
     markActiveSwatch(currentTheme);
+  }
+  else if (stage === "appearance_chatskin") {
     const chatLayoutInput = document.getElementById("chatLayoutToggleInput");
     if (chatLayoutInput) chatLayoutInput.checked = chatLayoutMode === "classic";
+  }
+  else if (stage === "appearance_chatbg") {
+    refreshChatBgSettingsUI();
   }
   else if (stage === "profile_edit") {
     document.getElementById("avatarChip").classList.toggle("hidden", !selectedAvatarFile);
     document.getElementById("avatarAttachLabel").classList.toggle("hidden", !!selectedAvatarFile);
-    if (selectedAvatarFile) document.getElementById("avatarFileName").textContent = selectedAvatarFile.name;
+    if (selectedAvatarFile) document.getElementById("avatarFileName").textContent = "آواتار جدید (کراپ‌شده)";
+    updateAvatarPreview();
     document.getElementById("bannerChip").classList.toggle("hidden", !selectedBannerFile);
     document.getElementById("bannerAttachLabel").classList.toggle("hidden", !!selectedBannerFile);
-    if (selectedBannerFile) document.getElementById("bannerFileName").textContent = selectedBannerFile.name;
+    if (selectedBannerFile) document.getElementById("bannerFileName").textContent = "بنر جدید (کراپ‌شده)";
     updateBannerPreview();
   }
   else if (stage === "notifications") refreshNotificationSettingsUI();
@@ -16534,36 +16712,51 @@ function renderSettingsModal(direction = "none") {
   else if (stage === "referral") loadReferralSettings();
 }
 
-// ---------- تبدیل ابعاد عکسِ بنر به نسبتِ قابِ بنر ----------
-// به‌جای اینکه بذاریم موقع نمایش (background-size: cover) بخشی از بالا/پایین یا چپ/راستِ عکس بریده بشه،
-// همون لحظه‌ی انتخاب، عکس رو با کش اومدن/جمع‌شدن (بدون حفظ نسبتِ اصلیِ خودش) دقیقاً به نسبتِ قابِ بنر تبدیل می‌کنیم؛
-// این یعنی کل عکس همیشه دیده می‌شه، فقط ممکنه یه‌کم کشیده/فشرده به‌نظر برسه.
+// ---------- کراپِ عکسِ بنر: نسبتِ قابِ بنر (BANNER_TARGET_W / BANNER_TARGET_H) قفله؛ کاربر فقط زوم/جابه‌جا می‌کنه ----------
 const BANNER_TARGET_W = 1400;
 const BANNER_TARGET_H = 400;
-async function resizeImageToBannerRatio(file) {
-  try {
-    const bitmap = await createImageBitmap(file);
-    const canvas = document.createElement("canvas");
-    canvas.width = BANNER_TARGET_W;
-    canvas.height = BANNER_TARGET_H;
-    const ctx = canvas.getContext("2d");
-    ctx.drawImage(bitmap, 0, 0, bitmap.width, bitmap.height, 0, 0, BANNER_TARGET_W, BANNER_TARGET_H);
-    const outType = file.type === "image/png" ? "image/png" : "image/jpeg";
-    const blob = await new Promise((resolve) => canvas.toBlob(resolve, outType, 0.92));
-    if (!blob) return file; // اگه تبدیل جواب نداد، همون فایل اصلی رو برمی‌گردونیم تا کاربر گیر نکنه
-    const newName = file.name.replace(/\.(heic|heif)$/i, outType === "image/png" ? ".png" : ".jpg");
-    return new File([blob], newName, { type: outType, lastModified: Date.now() });
-  } catch (e) {
-    return file;
+
+let selectedAvatarPreviewUrl = null; // آدرس موقتِ blob برای پیش‌نمایشِ آواتارِ کراپ‌شده؛ باید بعداً revoke بشه
+
+function updateAvatarPreview() {
+  if (selectedAvatarPreviewUrl) {
+    URL.revokeObjectURL(selectedAvatarPreviewUrl);
+    selectedAvatarPreviewUrl = null;
+  }
+  const preview = document.getElementById("avatarPreview");
+  if (!preview) return;
+  if (selectedAvatarFile) {
+    selectedAvatarPreviewUrl = URL.createObjectURL(selectedAvatarFile);
+    preview.style.backgroundImage = `url('${selectedAvatarPreviewUrl}')`;
+    preview.classList.remove("hidden");
+  } else {
+    preview.style.backgroundImage = "none";
+    preview.classList.add("hidden");
   }
 }
 
 function onAvatarChosen() {
   const input = document.getElementById("avatarInput");
-  selectedAvatarFile = input.files[0] || null;
-  document.getElementById("avatarChip").classList.toggle("hidden", !selectedAvatarFile);
-  document.getElementById("avatarAttachLabel").classList.toggle("hidden", !!selectedAvatarFile);
-  if (selectedAvatarFile) document.getElementById("avatarFileName").textContent = selectedAvatarFile.name;
+  const rawFile = input.files[0] || null;
+  input.value = "";
+  if (!rawFile) return;
+  if (!rawFile.type.startsWith("image/")) {
+    toast("فقط فایل عکس مجازه", "error");
+    return;
+  }
+  openImageCropper(rawFile, {
+    aspectRatio: 1,
+    outputW: 512,
+    shape: "circle",
+    title: "آواتار رو بکش تا جابه‌جا بشه، با اسلایدر زوم کن",
+    onConfirm: (blob) => {
+      selectedAvatarFile = new File([blob], "avatar.jpg", { type: "image/jpeg", lastModified: Date.now() });
+      document.getElementById("avatarChip").classList.remove("hidden");
+      document.getElementById("avatarAttachLabel").classList.add("hidden");
+      document.getElementById("avatarFileName").textContent = "آواتار جدید (کراپ‌شده)";
+      updateAvatarPreview();
+    },
+  });
 }
 function clearAvatarFile() {
   selectedAvatarFile = null;
@@ -16571,6 +16764,7 @@ function clearAvatarFile() {
   if (input) input.value = "";
   document.getElementById("avatarChip")?.classList.add("hidden");
   document.getElementById("avatarAttachLabel")?.classList.remove("hidden");
+  updateAvatarPreview();
 }
 
 let selectedBannerFile = null;
@@ -16593,14 +16787,28 @@ function updateBannerPreview() {
   }
 }
 
-async function onBannerChosen() {
+function onBannerChosen() {
   const input = document.getElementById("bannerInput");
   const rawFile = input.files[0] || null;
-  selectedBannerFile = rawFile ? await resizeImageToBannerRatio(rawFile) : null;
-  document.getElementById("bannerChip").classList.toggle("hidden", !selectedBannerFile);
-  document.getElementById("bannerAttachLabel").classList.toggle("hidden", !!selectedBannerFile);
-  if (selectedBannerFile) document.getElementById("bannerFileName").textContent = selectedBannerFile.name;
-  updateBannerPreview();
+  input.value = "";
+  if (!rawFile) return;
+  if (!rawFile.type.startsWith("image/")) {
+    toast("فقط فایل عکس مجازه", "error");
+    return;
+  }
+  openImageCropper(rawFile, {
+    aspectRatio: BANNER_TARGET_W / BANNER_TARGET_H,
+    outputW: BANNER_TARGET_W,
+    shape: "rect",
+    title: "بنر رو بکش تا جابه‌جا بشه، با اسلایدر زوم کن",
+    onConfirm: (blob) => {
+      selectedBannerFile = new File([blob], "banner.jpg", { type: "image/jpeg", lastModified: Date.now() });
+      document.getElementById("bannerChip").classList.remove("hidden");
+      document.getElementById("bannerAttachLabel").classList.add("hidden");
+      document.getElementById("bannerFileName").textContent = "بنر جدید (کراپ‌شده)";
+      updateBannerPreview();
+    },
+  });
 }
 function clearBannerFile() {
   selectedBannerFile = null;
@@ -16638,6 +16846,235 @@ async function saveProfile() {
   } finally {
     btn.disabled = false;
     btn.textContent = "ذخیره پروفایل";
+  }
+}
+
+// ============ پس‌زمینه‌ی چت: انتخابِ عکس + کراپِ قفل‌شده روی نسبتِ صفحه‌ی دیوایس + آپلود ============
+
+// وضعیتِ فعلی رو تو صفحه‌ی «پس‌زمینه چت» نشون می‌ده (پیش‌نمایش + فعال/غیرفعالِ دکمه‌ی حذف)
+function refreshChatBgSettingsUI() {
+  const preview = document.getElementById("chatBgPreview");
+  const removeBtn = document.getElementById("chatBgRemoveBtn");
+  if (!preview) return;
+  if (chatBgFileId) {
+    preview.classList.remove("empty");
+    preview.style.backgroundImage = `url('${mediaUrl(chatBgFileId)}')`;
+    preview.textContent = "";
+    if (removeBtn) removeBtn.disabled = false;
+  } else {
+    preview.classList.add("empty");
+    preview.style.backgroundImage = "none";
+    preview.textContent = "هنوز پس‌زمینه‌ای انتخاب نکردی";
+    if (removeBtn) removeBtn.disabled = true;
+  }
+}
+
+function onChatBgFileChosen() {
+  const input = document.getElementById("chatBgInput");
+  const file = input.files[0] || null;
+  input.value = "";
+  if (!file) return;
+  if (!file.type.startsWith("image/")) {
+    toast("فقط فایل عکس مجازه", "error");
+    return;
+  }
+  openChatBgCropper(file);
+}
+
+// ---------- مودالِ کراپِ تمام‌صفحه (قابلِ استفاده برای پس‌زمینه‌ی چت، آواتار و بنر): نسبتِ قاب رو
+// بسته به کاربرد (نسبتِ صفحه‌ی دیوایس / مربع / نسبتِ بنر) قفل می‌کنه؛ کاربر فقط می‌تونه با اسلایدر
+// زوم کنه و با کشیدن (pan) عکس رو جابه‌جا کنه، نه نسبتِ قاب رو عوض کنه ----------
+let imgCropper = null;
+
+// opts: { aspectRatio (w/h), outputW, title, shape: 'rect'|'circle', onConfirm(blob) }
+async function openImageCropper(file, opts) {
+  const aspectRatio = opts.aspectRatio;
+  const outputW = opts.outputW;
+  const outputH = Math.round(outputW / aspectRatio);
+  const maxDisplayW = Math.min(window.innerWidth - 40, 380);
+  const maxDisplayH = window.innerHeight - 220;
+  let displayW = maxDisplayW;
+  let displayH = Math.round(displayW / aspectRatio);
+  if (displayH > maxDisplayH) {
+    displayH = maxDisplayH;
+    displayW = Math.round(displayH * aspectRatio);
+  }
+
+  const overlay = document.createElement("div");
+  overlay.className = "bgcrop-overlay";
+  overlay.id = "imgCropOverlay";
+  overlay.innerHTML = `
+    <div class="bgcrop-title">${escapeHtml(opts.title || "عکس رو بکش تا جابه‌جا بشه، با اسلایدر زوم کن")}</div>
+    <div class="bgcrop-canvas-wrap" style="width:${displayW}px; height:${displayH}px;">
+      <canvas id="imgCropCanvas" width="${outputW}" height="${outputH}" style="width:${displayW}px; height:${displayH}px;"></canvas>
+      ${opts.shape === "circle" ? `<div class="bgcrop-circle-guide" style="width:${Math.min(displayW, displayH)}px; height:${Math.min(displayW, displayH)}px;"></div>` : ""}
+    </div>
+    <div class="bgcrop-controls">
+      <div class="bgcrop-zoom-row">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+        <input type="range" id="imgCropZoom" min="1" max="3" step="0.01" value="1" />
+      </div>
+      <div class="bgcrop-actions">
+        <button type="button" class="bgcrop-cancel-btn" onclick="cancelImageCrop()">لغو</button>
+        <button type="button" class="bgcrop-confirm-btn" id="imgCropConfirmBtn" onclick="confirmImageCrop()">ذخیره</button>
+      </div>
+    </div>`;
+  document.body.appendChild(overlay);
+
+  const objectUrl = URL.createObjectURL(file);
+  const img = new Image();
+  img.src = objectUrl;
+  try {
+    await img.decode();
+  } catch (e) {
+    toast("این عکس قابل بارگذاری نیست", "error");
+    overlay.remove();
+    URL.revokeObjectURL(objectUrl);
+    return;
+  }
+
+  const baseScale = Math.max(outputW / img.width, outputH / img.height);
+  imgCropper = {
+    img, objectUrl, outputW, outputH, displayW, displayH, baseScale,
+    zoom: 1, offsetX: outputW / 2, offsetY: outputH / 2,
+    dragging: false, startX: 0, startY: 0, startOffsetX: 0, startOffsetY: 0,
+    onConfirm: opts.onConfirm,
+  };
+
+  const canvas = document.getElementById("imgCropCanvas");
+  drawImageCropper();
+
+  canvas.addEventListener("pointerdown", (e) => {
+    imgCropper.dragging = true;
+    imgCropper.startX = e.clientX;
+    imgCropper.startY = e.clientY;
+    imgCropper.startOffsetX = imgCropper.offsetX;
+    imgCropper.startOffsetY = imgCropper.offsetY;
+    canvas.setPointerCapture(e.pointerId);
+  });
+  canvas.addEventListener("pointermove", (e) => {
+    if (!imgCropper || !imgCropper.dragging) return;
+    const factor = imgCropper.outputW / imgCropper.displayW;
+    imgCropper.offsetX = imgCropper.startOffsetX + (e.clientX - imgCropper.startX) * factor;
+    imgCropper.offsetY = imgCropper.startOffsetY + (e.clientY - imgCropper.startY) * factor;
+    clampImageCropperOffsets();
+    drawImageCropper();
+  });
+  const endDrag = () => { if (imgCropper) imgCropper.dragging = false; };
+  canvas.addEventListener("pointerup", endDrag);
+  canvas.addEventListener("pointercancel", endDrag);
+
+  document.getElementById("imgCropZoom").addEventListener("input", (e) => {
+    if (!imgCropper) return;
+    imgCropper.zoom = parseFloat(e.target.value) || 1;
+    clampImageCropperOffsets();
+    drawImageCropper();
+  });
+}
+
+function clampImageCropperOffsets() {
+  const c = imgCropper;
+  if (!c) return;
+  const s = c.baseScale * c.zoom;
+  const dw = c.img.width * s;
+  const dh = c.img.height * s;
+  c.offsetX = Math.min(Math.max(c.offsetX, c.outputW - dw / 2), dw / 2);
+  c.offsetY = Math.min(Math.max(c.offsetY, c.outputH - dh / 2), dh / 2);
+}
+
+function drawImageCropper() {
+  const c = imgCropper;
+  if (!c) return;
+  const canvas = document.getElementById("imgCropCanvas");
+  if (!canvas) return;
+  const ctx = canvas.getContext("2d");
+  const s = c.baseScale * c.zoom;
+  const dw = c.img.width * s;
+  const dh = c.img.height * s;
+  ctx.clearRect(0, 0, c.outputW, c.outputH);
+  ctx.drawImage(c.img, c.offsetX - dw / 2, c.offsetY - dh / 2, dw, dh);
+}
+
+function closeImageCropper() {
+  const overlay = document.getElementById("imgCropOverlay");
+  if (overlay) overlay.remove();
+  if (imgCropper) URL.revokeObjectURL(imgCropper.objectUrl);
+  imgCropper = null;
+}
+
+function cancelImageCrop() {
+  closeImageCropper();
+}
+
+function confirmImageCrop() {
+  if (!imgCropper) return;
+  const canvas = document.getElementById("imgCropCanvas");
+  const btn = document.getElementById("imgCropConfirmBtn");
+  const onConfirm = imgCropper.onConfirm;
+  btn.disabled = true;
+  btn.textContent = "در حال ذخیره...";
+  canvas.toBlob((blob) => {
+    closeImageCropper();
+    if (blob && onConfirm) onConfirm(blob);
+  }, "image/jpeg", 0.9);
+}
+
+// ---------- پس‌زمینه‌ی چت: کراپ رو رویِ نسبتِ صفحه‌ی خودِ دیوایس قفل می‌کنه ----------
+function openChatBgCropper(file) {
+  const deviceRatio = window.innerWidth / window.innerHeight;
+  const outputW = Math.round(Math.min(Math.max(window.innerWidth * (window.devicePixelRatio || 1), 720), 1440));
+  openImageCropper(file, {
+    aspectRatio: deviceRatio,
+    outputW,
+    shape: "rect",
+    title: "عکس رو بکش تا جابه‌جا بشه، با اسلایدر زوم کن",
+    onConfirm: (blob) => uploadChatBackground(blob),
+  });
+}
+
+// ---------- آپلودِ عکسِ کراپ‌شده به سرور و اعمالِ فوریِ اون رویِ چت ----------
+async function uploadChatBackground(blob) {
+  const errEl = document.getElementById("chatBgError");
+  if (errEl) errEl.textContent = "";
+  const fd = new FormData();
+  fd.append("chat_bg", blob, "chat-bg.jpg");
+  try {
+    const { ok: res_ok, status: res_status, data } = await uploadWithRetry(`${WORKER_URL}/api/profile/chat-bg`, fd);
+    if (!res_ok) {
+      if (res_status === 401) { logout(); return; }
+      if (errEl) errEl.textContent = (data && data.error) || "آپلود پس‌زمینه ناموفق بود";
+      toast((data && data.error) || "آپلود پس‌زمینه ناموفق بود", "error");
+      return;
+    }
+    applyChatBackground(data.chat_bg_file_id);
+    refreshChatBgSettingsUI();
+    toast("پس‌زمینه‌ی چت ذخیره شد", "success");
+  } catch (e) {
+    if (errEl) errEl.textContent = "اتصال به سرور برقرار نشد";
+  }
+}
+
+async function removeChatBackground() {
+  if (!chatBgFileId) return;
+  const btn = document.getElementById("chatBgRemoveBtn");
+  if (btn) btn.disabled = true;
+  try {
+    const res = await fetch(`${WORKER_URL}/api/profile/chat-bg`, {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${getToken()}` },
+    });
+    if (!res.ok) {
+      if (res.status === 401) { logout(); return; }
+      toast("حذفِ پس‌زمینه ناموفق بود", "error");
+      if (btn) btn.disabled = false;
+      return;
+    }
+    applyChatBackground(null);
+    refreshChatBgSettingsUI();
+    toast("پس‌زمینه‌ی چت حذف شد", "success");
+  } catch (e) {
+    toast("اتصال به سرور برقرار نشد", "error");
+    if (btn) btn.disabled = false;
   }
 }
 
