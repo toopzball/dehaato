@@ -7573,12 +7573,18 @@ async function onChatAudioChosen(event) {
 let chatComposerAttachment = null;
 
 // ---------- آپلودِ استیج‌بندی‌شده/رزوم‌پذیر (به‌خاطرِ اینترنتِ کند/ناپایدار) ----------
-// فایل به چند تکه (پارت) تقسیم می‌شه و هر تکه جدا آپلود می‌شه؛ اگه یه تکه شکست بخوره فقط همون
-// تکه دوباره امتحان می‌شه، نه کلِ فایل. اگه بعد از چندبار تلاش هم نشد، آپلود موقتاً «مکث» می‌شه
-// ولی پیشرفتش گم نمی‌شه (رویِ localStorage هم نگه داشته می‌شه) — با زدنِ «دوباره امتحان کن»، یا
-// حتی بعد از رفرشِ کاملِ صفحه، دقیقاً از همون تکه‌ی ناتمام ادامه پیدا می‌کنه.
-const CHUNK_UPLOAD_SIZE = 700 * 1024; // ۷۰۰ کیلوبایت هر تکه (زیرِ سقفِ هرِ مقدارِ D1)
-const CHUNK_UPLOAD_MAX_RETRY_PER_PART = 4;
+// فایل به چند تکه (پارت) تقسیم می‌شه و چندتا تکه هم‌زمان (نه یکی‌یکی) آپلود می‌شن؛ اگه یه تکه
+// شکست بخوره فقط همون تکه دوباره امتحان می‌شه، نه کلِ فایل. اگه بعد از چندبار تلاش هم نشد، آپلود
+// موقتاً «مکث» می‌شه ولی پیشرفتش گم نمی‌شه (رویِ localStorage هم نگه داشته می‌شه) — با زدنِ «دوباره
+// امتحان کن»، یا حتی بعد از رفرشِ کاملِ صفحه، دقیقاً از همون تکه‌های ناتمام ادامه پیدا می‌کنه.
+//
+// اندازه‌ی هر تکه از ۷۰۰ کیلوبایت به ۱.۵ مگابایت افزایش پیدا کرد (هنوز خیلی زیرِ سقفِ ۲ مگابایتیِ
+// D1): با چانکِ بزرگ‌تر، یه فایلِ ۵۰ مگابایتی از ~۷۲ تکه به ~۳۴ تکه می‌رسه — یعنی تقریباً نصفِ
+// درخواست‌ها، و مهم‌تر، سمتِ سرور همیشه زیرِ سقفِ subrequestِ ورکر می‌مونه (جزئیاتش تویِ _worker.js).
+const CHUNK_UPLOAD_SIZE = 1536 * 1024; // ۱.۵ مگابایت هر تکه
+const CHUNK_UPLOAD_MAX_RETRY_PER_PART = 5;
+const CHUNK_UPLOAD_CONCURRENCY = 3; // چندتا تکه هم‌زمان آپلود بشه؛ نه خیلی کم (سریع) نه خیلی زیاد (فشار به موبایل/سرور)
+const CHUNK_UPLOAD_TIMEOUT_MS = 25000; // اگه یه درخواستِ تکه این‌قدر طول کشید و جواب نداد، بی‌خیالش می‌شیم و دوباره امتحان می‌کنیم
 
 function chunkUploadFingerprint(file, kind) {
   return `cu_${kind}_${file.name}_${file.size}_${file.lastModified}`;
@@ -7602,28 +7608,94 @@ function clearChunkUploadSession(fp) {
   } catch (e) {}
 }
 
+// ---------- fetch با محدودیتِ زمانی ----------
+// چرا: fetch به‌خودیِ‌خود هیچ‌وقت خودش «timeout» نمی‌شه؛ رویِ اینترنتِ خیلی ناپایدار، یه درخواست
+// می‌تونه برای مدتِ طولانی معلق بمونه بدونِ خطا و بدونِ جواب، و چون هیچ‌کدوم رخ نمی‌ده، منطقِ ری‌ترای
+// اصلاً فعال نمی‌شه و کاربر فقط رویِ یه اسپینر گیر می‌کنه. با AbortController، بعد از یه مدتِ مشخص
+// خودمون درخواست رو لغو می‌کنیم تا مثلِ یه شکستِ عادی مدیریت بشه و دوباره امتحان بشه.
+async function fetchWithTimeout(url, options, timeoutMs) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    return await fetch(url, { ...options, signal: controller.signal });
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+// ---------- صبرکردن تا اتصال برگرده ----------
+// اگه مرورگر می‌گه آفلاینیم، به‌جایِ اینکه بی‌فایده چندبار پشتِ‌سرِهم شکست بخوریم و کاربر رو با
+// پیغامِ خطا بمبارون کنیم، منتظرِ رویدادِ "online" می‌مونیم و خودکار ادامه می‌دیم.
+function waitForOnline() {
+  if (typeof navigator === "undefined" || navigator.onLine !== false) return Promise.resolve();
+  return new Promise((resolve) => {
+    const onOnline = () => { window.removeEventListener("online", onOnline); resolve(); };
+    window.addEventListener("online", onOnline);
+  });
+}
+
+// ---------- اجرای موازیِ محدود (concurrency pool) ----------
+// چندتا کارِ async رو هم‌زمان (تا سقفِ limit) اجرا می‌کنه، نه همه‌شون با هم (که رویِ موبایل/اینترنتِ
+// ضعیف خودش می‌تونه باعثِ ناپایداری بشه) و نه یکی‌یکی (که کنده). اگه یکی از کارها خطا بده، بقیه‌ی
+// کارهایی که همون لحظه در حالِ اجرا بودن اجازه دارن تمام بشن، ولی کارهای شروع‌نشده دیگه شروع نمی‌شن
+// و خطای اول به بیرون پرتاب می‌شه — دقیقاً همون رفتاری که برای «توقفِ زودهنگام روی خطا» لازمه.
+async function runWithConcurrency(items, limit, worker) {
+  let nextIndex = 0;
+  let firstError = null;
+  async function runNext() {
+    while (nextIndex < items.length) {
+      if (firstError) return;
+      const i = nextIndex++;
+      try {
+        await worker(items[i], i);
+      } catch (e) {
+        if (!firstError) firstError = e;
+        return;
+      }
+    }
+  }
+  const workers = Array.from({ length: Math.min(limit, items.length) }, () => runNext());
+  await Promise.all(workers);
+  if (firstError) throw firstError;
+}
+
 // روند: init (اگه جلسه‌ی قبلی رو localStorage بود، status می‌گیره تا ببینه سرور هنوز داره یا نه) →
-// تکه‌به‌تکه آپلود (با ری‌ترای) → وقتی همه‌ی تکه‌ها رسید، complete که فایل رو رویِ سرور می‌چسبونه
-// به هم و برای تلگرام می‌فرسته و fileId برمی‌گردونه.
+// چندتا تکه هم‌زمان آپلود (با ری‌ترای) → وقتی همه‌ی تکه‌ها رسید، complete که فایل رو رویِ سرور
+// می‌چسبونه به هم و برای تلگرام می‌فرسته و fileId برمی‌گردونه.
 async function resumableUpload(file, kind, onProgress) {
   const fp = chunkUploadFingerprint(file, kind);
   let session = loadChunkUploadSession(fp);
   let receivedChunks = [];
 
   if (session) {
-    try {
-      const res = await fetch(`${WORKER_URL}/api/upload/status?uploadId=${encodeURIComponent(session.uploadId)}`, {
-        headers: { Authorization: `Bearer ${getToken()}` },
-      });
-      if (res.ok) {
-        const data = await res.json();
-        receivedChunks = data.receivedChunks || [];
-      } else {
-        session = null; // جلسه رویِ سرور دیگه نیست (منقضی شده)؛ از اول شروع می‌کنیم
+    // چک‌کردنِ وضعیتِ جلسه‌ی قبلی: قبلاً فقط یه‌بار امتحان می‌شد و هر شکستی (حتی یه قطعیِ خیلی
+    // گذرا) باعث می‌شد کل جلسه دور ریخته بشه و از صفر شروع بشه، در حالی که رویِ سرور شاید هنوز
+    // کاملاً معتبر بود. حالا چندبار امتحان می‌کنیم، فقط وقتی سرور واقعاً می‌گه «پیدا نشد» (404)
+    // جلسه رو رها می‌کنیم.
+    let statusOk = false;
+    for (let attempt = 0; attempt < 3 && !statusOk; attempt++) {
+      try {
+        await waitForOnline();
+        const res = await fetchWithTimeout(
+          `${WORKER_URL}/api/upload/status?uploadId=${encodeURIComponent(session.uploadId)}`,
+          { headers: { Authorization: `Bearer ${getToken()}` } },
+          CHUNK_UPLOAD_TIMEOUT_MS
+        );
+        if (res.ok) {
+          const data = await res.json();
+          receivedChunks = data.receivedChunks || [];
+          statusOk = true;
+        } else if (res.status === 404) {
+          session = null; // جلسه رویِ سرور دیگه نیست (منقضی شده)؛ از اول شروع می‌کنیم
+          statusOk = true;
+        } else if (attempt < 2) {
+          await new Promise((r) => setTimeout(r, 500 * (attempt + 1)));
+        }
+      } catch (e) {
+        if (attempt < 2) await new Promise((r) => setTimeout(r, 500 * (attempt + 1)));
       }
-    } catch (e) {
-      session = null;
     }
+    if (!statusOk) session = null; // بعد از چندبار تلاشِ ناموفق، مطمئن نیستیم؛ ایمن‌ترین کار شروعِ دوباره‌ست
   }
 
   if (!session) {
@@ -7645,8 +7717,14 @@ async function resumableUpload(file, kind, onProgress) {
   };
   reportProgress();
 
+  const pendingIndices = [];
   for (let i = 0; i < session.totalChunks; i++) {
-    if (receivedSet.has(i)) continue;
+    if (!receivedSet.has(i)) pendingIndices.push(i);
+  }
+
+  // چندتا تکه هم‌زمان (نه یکی‌یکی) آپلود می‌شن — همینه که رویِ اینترنتِ نسبتاً سالم، سرعتِ آپلود رو
+  // به‌طورِ محسوسی بالا می‌بره، چون دیگه منتظرِ تمومِ‌شدنِ کاملِ یه تکه برای شروعِ تکه‌ی بعدی نمی‌مونیم.
+  await runWithConcurrency(pendingIndices, CHUNK_UPLOAD_CONCURRENCY, async (i) => {
     const start = i * session.chunkSize;
     const end = Math.min(file.size, start + session.chunkSize);
     const blob = file.slice(start, end);
@@ -7655,15 +7733,16 @@ async function resumableUpload(file, kind, onProgress) {
     let lastErr = null;
     for (let attempt = 0; attempt < CHUNK_UPLOAD_MAX_RETRY_PER_PART && !uploaded; attempt++) {
       try {
+        await waitForOnline();
         const fd = new FormData();
         fd.append("uploadId", session.uploadId);
         fd.append("chunkIndex", String(i));
         fd.append("chunk", blob, `part-${i}`);
-        const res = await fetch(`${WORKER_URL}/api/upload/chunk`, {
-          method: "POST",
-          headers: { Authorization: `Bearer ${getToken()}` },
-          body: fd,
-        });
+        const res = await fetchWithTimeout(
+          `${WORKER_URL}/api/upload/chunk`,
+          { method: "POST", headers: { Authorization: `Bearer ${getToken()}` }, body: fd },
+          CHUNK_UPLOAD_TIMEOUT_MS
+        );
         if (!res.ok) {
           const errData = await res.json().catch(() => ({}));
           throw new Error(errData.error || "آپلودِ این تکه ناموفق بود");
@@ -7672,7 +7751,10 @@ async function resumableUpload(file, kind, onProgress) {
       } catch (e) {
         lastErr = e;
         if (attempt < CHUNK_UPLOAD_MAX_RETRY_PER_PART - 1) {
-          await new Promise((r) => setTimeout(r, 600 * (attempt + 1)));
+          // بک‌آفِ نمایی + کمی نویزِ تصادفی (jitter)، تا اگه چندتا تکه هم‌زمان شکست خوردن، همه‌شون
+          // دقیقاً هم‌زمان دوباره امتحان نکنن و یه فشارِ ناگهانیِ دیگه به شبکه/سرور وارد نشه
+          const backoff = Math.min(8000, 500 * Math.pow(2, attempt)) + Math.random() * 300;
+          await new Promise((r) => setTimeout(r, backoff));
         }
       }
     }
@@ -7682,15 +7764,38 @@ async function resumableUpload(file, kind, onProgress) {
     }
     receivedSet.add(i);
     reportProgress();
-  }
-
-  const completeRes = await fetch(`${WORKER_URL}/api/upload/complete`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json", Authorization: `Bearer ${getToken()}` },
-    body: JSON.stringify({ uploadId: session.uploadId }),
   });
-  const completeData = await completeRes.json();
-  if (!completeRes.ok) throw new Error(completeData.error || "تکمیلِ آپلود ناموفق بود");
+
+  // مرحله‌ی «تکمیل» (چسبوندنِ تکه‌ها + فرستادن به تلگرام) می‌تونه برای فایل‌های بزرگ کمی طول
+  // بکشه؛ timeout بلندتری بهش می‌دیم و اگه خودِ درخواست (نه پاسخِ برنامه‌ای) شکست خورد، یه‌بار دیگه
+  // امتحان می‌کنیم — چون تکه‌ها رویِ سرور محفوظن (به‌جز اگه سرور صراحتاً بگه «پیدا نشد»)، این تلاشِ
+  // دوباره هیچ‌وقت باعثِ آپلودِ دوباره‌ی خودِ فایل نمی‌شه.
+  let completeData = null;
+  let completeErr = null;
+  for (let attempt = 0; attempt < 2 && !completeData; attempt++) {
+    try {
+      await waitForOnline();
+      const completeRes = await fetchWithTimeout(
+        `${WORKER_URL}/api/upload/complete`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${getToken()}` },
+          body: JSON.stringify({ uploadId: session.uploadId }),
+        },
+        90000
+      );
+      const data = await completeRes.json();
+      if (!completeRes.ok) {
+        completeErr = new Error(data.error || "تکمیلِ آپلود ناموفق بود");
+        break; // این یه خطای برنامه‌ای/معتبرِ سرورـه (نه یه قطعیِ شبکه)؛ دوباره امتحان‌کردنِ خودکار فایده‌ای نداره
+      }
+      completeData = data;
+    } catch (e) {
+      completeErr = e;
+      if (attempt === 0) await new Promise((r) => setTimeout(r, 1000));
+    }
+  }
+  if (!completeData) throw completeErr || new Error("تکمیلِ آپلود ناموفق بود");
 
   clearChunkUploadSession(fp);
   return { fileId: completeData.fileId, messageId: completeData.messageId || null };
