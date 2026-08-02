@@ -12,7 +12,17 @@ try {
 } catch (e) {}
 </script>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+<!-- این سه‌تا متا برای اینه که وقتی صفحه به‌صورت standalone/PWA یا داخل WebView باز می‌شه،
+     مرورگر رنگ نوار وضعیت رو با پس‌زمینه‌ی بنفشِ اپ یکی کنه و در حالت iOS نوار وضعیت رو
+     شفاف/overlay بذاره (خودِ محتوا زیرش تا لبه‌ی بالا کشیده می‌شه). این‌ها به‌تنهایی نوار
+     ناوبریِ اندروید رو مخفی نمی‌کنن؛ اون بخش (system bars) باید سمتِ کدِ نیتیوِ اپ با
+     WindowInsetsControllerCompat().hide(WindowInsets.Type.systemBars()) + enableEdgeToEdge()
+     تنظیم بشه، چون از داخل صفحه‌ی وب/WebView دسترسیِ مستقیم به اون لایه وجود نداره. -->
+<meta name="theme-color" content="#1A0A31" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 <title>دهات</title>
 <link rel="icon" type="image/png" href="favicon-dark.png" media="(prefers-color-scheme: light)" />
 <link rel="icon" type="image/png" href="favicon-light.png" media="(prefers-color-scheme: dark)" />
@@ -75,6 +85,10 @@ try {
     position: absolute; top: 50%; left: 50%; min-width: 100%; min-height: 100%;
     width: auto; height: auto; transform: translate(-50%, -50%) translateZ(0); object-fit: cover;
     will-change: transform; backface-visibility: hidden;
+    /* saturate/contrast/brightness رو مرورگر رویِ GPU اعمال می‌کنه (بر خلافِ فیلترهایی مثلِ
+       feConvolveMatrix که نرم‌افزاری و سنگینن)، پس همون bg.mp4 رنگ‌های پرتر و کنتراستِ بهتری
+       می‌گیره بدونِ اینکه لگی به فریم‌ریت اضافه بشه. */
+    filter: saturate(1.12) contrast(1.06) brightness(1.02);
   }
   .box { width: 100%; max-width: 380px; position: relative; z-index: 1; }
 
@@ -126,14 +140,14 @@ try {
     padding: 22px;
     animation: fadeInUp 0.6s ease 0.1s both;
     transition: box-shadow 0.3s ease;
-    backdrop-filter: blur(2px);
-    -webkit-backdrop-filter: blur(2px);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
   }
 
   .tabs {
     display: flex; gap: 4px; position: relative; overflow: hidden;
     background: transparent; border: 1px solid var(--border); border-radius: 999px; padding: 4px; margin-bottom: 18px;
-    backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(13px); -webkit-backdrop-filter: blur(13px);
   }
   .tabs-indicator {
     position: absolute; top: 4px; bottom: 4px; left: 0; width: 0;
@@ -155,8 +169,8 @@ try {
     background: transparent; border: 1px solid var(--border); border-radius: 999px;
     padding: 11px 18px; margin-bottom: 10px;
     transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease, background 0.2s ease;
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(13px);
+    -webkit-backdrop-filter: blur(13px);
   }
   input::placeholder { color: var(--subtext); }
   input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.25); transform: translateY(-1px); }
@@ -237,8 +251,8 @@ try {
     background: transparent; border: 1px solid var(--border); border-radius: 999px;
     padding: 12px 18px; cursor: pointer; user-select: none;
     transition: border-color 0.25s ease, box-shadow 0.25s ease, background 0.25s ease;
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(13px);
+    -webkit-backdrop-filter: blur(13px);
   }
   .captcha-trigger:hover { border-color: var(--accent); }
   .captcha-trigger.verified { border-color: var(--success); box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.16); cursor: default; animation: captchaRingPulse 0.7s ease-out; }
@@ -280,7 +294,7 @@ try {
   .captcha-modal {
     width: 100%; max-width: 320px; background: var(--card); border: 1px solid var(--border);
     border-radius: 14px; padding: 16px; transform: scale(0.92) translateY(10px);
-    transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1), height 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+    transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1), height 0.35s cubic-bezier(0.22, 1, 0.36, 1);
     position: relative; overflow: hidden;
   }
   @keyframes tickJump {
@@ -298,7 +312,7 @@ try {
     opacity: 0; pointer-events: none; z-index: 30;
   }
   .captcha-success-tick.show { opacity: 1; }
-  .captcha-success-tick.hiding { opacity: 0; transition: opacity 0.45s ease; }
+  .captcha-success-tick.hiding { opacity: 0; transition: opacity 0.22s ease; }
   .captcha-success-tick-card {
     width: 42%; aspect-ratio: 1 / 1; max-width: 130px; min-width: 84px;
     background: var(--card); border: 1px solid var(--border); border-radius: 18px;
@@ -308,16 +322,16 @@ try {
     transform: scale(0.7); opacity: 0;
   }
   .captcha-success-tick.show .captcha-success-tick-card {
-    animation: tickCardIn 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation: tickCardIn 0.24s cubic-bezier(0.22, 1, 0.36, 1) both;
   }
   .captcha-success-tick svg { width: 68%; height: 68%; opacity: 0; transform: scale(0.25); }
   .captcha-success-tick.show svg {
-    animation: tickJump 0.75s cubic-bezier(0.34, 1.56, 0.64, 1) 0.05s both;
+    animation: tickJump 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) 0.03s both;
   }
   .captcha-success-tick circle { fill: none; stroke: var(--success); stroke-width: 3; }
   .captcha-success-tick path {
     fill: none; stroke: var(--success); stroke-width: 4.5; stroke-linecap: round; stroke-linejoin: round;
-    stroke-dasharray: 34; stroke-dashoffset: 34; transition: stroke-dashoffset 0.4s ease 0.45s;
+    stroke-dasharray: 34; stroke-dashoffset: 34; transition: stroke-dashoffset 0.26s ease 0.16s;
   }
   .captcha-success-tick.show path { stroke-dashoffset: 0; }
   .captcha-modal-overlay.open .captcha-modal { transform: scale(1) translateY(0); }
@@ -527,7 +541,8 @@ try {
   }
 
   .sound-toggle {
-    position: fixed; top: 16px; left: 16px; width: 38px; height: 38px; border-radius: 50%;
+    position: fixed; top: calc(16px + env(safe-area-inset-top, 0px)); left: calc(16px + env(safe-area-inset-left, 0px));
+    width: 38px; height: 38px; border-radius: 50%;
     background: var(--surface); border: 1px solid var(--border); color: var(--subtext);
     display: flex; align-items: center; justify-content: center; cursor: pointer;
     z-index: 2; transition: transform 0.2s ease, color 0.2s ease, border-color 0.2s ease;
@@ -787,10 +802,24 @@ try {
     vid.addEventListener("ended", function () { vid.classList.remove("show"); }, { once: true });
   }
 
+  // تلاش برای فول‌اسکرینِ واقعیِ مرورگر (Fullscreen API) دقیقاً همون لحظه‌ای که کاربر روی
+  // درِ ورودی کلیک می‌کنه؛ چون این API فقط داخلِ یه ژستِ واقعیِ کاربر کار می‌کنه. تو مرورگرهایی
+  // که ازش پشتیبانی کنن (بیشترِ کروم/اندروید) هم نوارِ آدرس و هم نوارهای سیستمی مخفی می‌شن.
+  // داخلِ اپِ کیوسک (in-kiosk-app) این کار رو نمی‌کنیم چون اونجا از قبل با کدِ نیتیو edge-to-edge/
+  // مخفی‌بودنِ system bars مدیریت می‌شه و درخواستِ دوباره‌ی فول‌اسکرین از توی WebView بی‌فایده یا
+  // حتی باعثِ رفتارِ عجیب می‌شه.
+  function requestSiteFullscreen() {
+    if (document.documentElement.classList.contains("in-kiosk-app")) return;
+    var el = document.documentElement;
+    var req = el.requestFullscreen || el.webkitRequestFullscreen || el.msRequestFullscreen;
+    if (req) { try { req.call(el).catch(function () {}); } catch (e) {} }
+  }
+
   function openDoor() {
     gate.removeEventListener("click", openDoor);
     gate.removeEventListener("keydown", onGateKeydown);
     gate.classList.add("exploding");
+    requestSiteFullscreen();
     playExplosionVideo();
 
     // همین‌جا، تو دلِ کلیک واقعی کاربر، آهنگِ پس‌زمینه رو (اگه تا این لحظه src گرفته باشه) یه بار
@@ -822,7 +851,13 @@ try {
 </script>
 
 <div class="bg-anim">
-  <video class="bg-video" autoplay muted loop playsinline preload="auto">
+  <!-- کیفیتِ بصریِ همون bg.mp4 رو با یه فیلترِ سبکِ CSS (بدون بارِ اضافه‌ی دیکد) بالا می‌بریم:
+       کنتراست/اشباعِ رنگ کمی بیشتر می‌شه (تعریفش بالاتره، رویِ کلاسِ bg-video). چون این فیلترها
+       رویِ GPU اجرا می‌شن نه رویِ خودِ فایل، هیچ لگِ اضافه‌ای اضافه نمی‌کنن. poster هم یه فریمِ
+       سبکِ jpg رو همون لحظه‌ی اول نشون می‌ده تا تا وقتی ویدیو بافر می‌شه صفحه سیاه نزنه (این عکس
+       رو باید کنارِ bg.mp4 خودت اضافه کنی، یا اگه نمی‌خوایش همین یه خط poster رو حذف کن). -->
+  <video class="bg-video" autoplay muted loop playsinline preload="auto" poster="bg-poster.jpg"
+         disablePictureInPicture disableRemotePlayback>
     <source src="bg.mp4" type="video/mp4" />
   </video>
 </div>
@@ -1179,7 +1214,7 @@ function showCaptchaPanel(domIndex, animateHeight) {
     // بعدِ تمومِ انیمیشن، ارتفاع رو آزاد می‌کنیم (auto) تا اگه بعداً همون مرحله محتواش عوض شد
     // (مثلاً پیامِ خطا اومد)، جعبه دوباره قفلِ یه عددِ ثابت نمونه
     captchaModalEl.style.height = "";
-  }, 420);
+  }, 380);
 }
 
 function setCaptchaStepLabel(logicalStepNumber) {
@@ -1204,9 +1239,9 @@ function advanceAfterSuccess(fn) {
     captchaSuccessTickEl.classList.add("hiding");
     if (captchaModalEl) captchaModalEl.classList.remove("tick-showing");
     captchaStageTransitionTimeout = null;
-    setTimeout(() => { captchaSuccessTickEl.classList.remove("hiding"); }, 460);
+    setTimeout(() => { captchaSuccessTickEl.classList.remove("hiding"); }, 240);
     fn();
-  }, 950);
+  }, 520); // تیکِ سبز رو کوتاه‌تر نگه می‌داریم تا مرحله‌ی بعد زودتر بیاد (قبلاً ۹۵۰ میلی‌ثانیه بود)
 }
 
 function openCaptchaModal(controller) {
