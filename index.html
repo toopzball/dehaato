@@ -4458,7 +4458,9 @@ const WORKER_URL = IS_GITHUB_HOST ? WORKER_DIRECT_URL : WORKER_PAGES_PROXY_URL;
 // کلادفلر همیشه از آدرسِ کاملِ Pages استفاده می‌کنیم (نه مسیرِ نسبیِ خالی)، چون اگه کاربر از
 // GitHub Pages وارد شده باشه و این مسیر رو انتخاب کنه، یه مسیرِ نسبی به‌اشتباه به همون دامنه‌ی
 // GitHub اشاره می‌کرد (که پروکسی نداره) و بی‌صدا fail می‌شد.
-const UPLOAD_CLOUDFLARE_URL = "https://dehaat.aghey.faggott.fun";
+// وقتی کاربر همین الان روی خودِ دامنه‌ی پروکسیه، آدرسِ نسبی (هم‌مبدأ) استفاده می‌شه؛ فقط وقتی از
+// دامنه‌ی دیگه‌ای (مثلاً گیت‌هاب) باز شده و می‌خواد صراحتاً مسیرِ کلادفلر رو انتخاب کنه، آدرسِ کامل لازمه.
+const UPLOAD_CLOUDFLARE_URL = location.hostname === "dehaat.aghey.faggott.fun" ? "" : "https://dehaat.aghey.faggott.fun";
 let UPLOAD_WORKER_URL = WORKER_URL;
 
 function setUploadRoute(route) {
