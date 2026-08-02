@@ -695,6 +695,16 @@ try {
   <video id="splashVideo" preload="auto" playsinline webkit-playsinline></video>
 </div>
 <script>
+// ---------- تعیینِ خودکارِ آدرسِ ورکر بر اساسِ دامنه‌ای که کاربر باهاش وارد شده ----------
+// همون منطقِ index.html؛ چون login.html هم می‌تونه از پشتِ GitHub Pages (بدونِ پروکسی) یا
+// Cloudflare Pages (با پروکسی) سرو بشه، باید همینجا (خیلی زودتر از بقیه‌ی اسکریپت‌ها، چون
+// همین پایین‌تر برای گرفتنِ لیستِ اسپلش‌مدیا لازمش داریم) تعریفش کنیم.
+const WORKER_DIRECT_URL = "https://api-7x2.pages.dev";
+const WORKER_PAGES_PROXY_URL = "";
+const IS_GITHUB_HOST = /(^|\.)github\.io$/.test(location.hostname) || location.hostname === "dehaat.bbboi.ir";
+const WORKER_URL = IS_GITHUB_HOST ? WORKER_DIRECT_URL : WORKER_PAGES_PROXY_URL;
+</script>
+<script>
 // این اسکریپت عمداً بلافاصله بعد از خودِ در و اُوِرلی اومده، نه پایین فایل کنار بقیه‌ی اسکریپت‌ها،
 // چون باید همون لحظه که این المان‌ها تو DOM ساخته می‌شن گوش‌سپاری‌شون شروع بشه؛ صفحه‌ی اصلی
 // (فرم لاگین و بقیه‌ی المان‌ها) زیر این لایه‌ها در حال لود شدنه و کاربر چیزی جز در/ویدیو نمی‌بینه.
@@ -712,7 +722,7 @@ try {
   // داخلِ شبکه‌ی کلادفلر، نه از ایران، به گیت‌هاب وصل می‌شه) لیست و فایل‌ها رو می‌گیره و کش می‌کنه.
   // اگه این مرحله به هر دلیلی شکست بخوره (قطعیِ نت و...)، کاربر رو پشتِ صفحه‌ی سیاه نگه نمی‌داریم؛
   // مستقیم می‌ریم سراغِ فرمِ لاگین (بدون آهنگ).
-  var mediaReadyPromise = fetch("/api/splash-media/list")
+  var mediaReadyPromise = fetch(`${WORKER_URL}/api/splash-media/list`)
     .then(function (res) {
       if (!res.ok) throw new Error("splash media list error — status: " + res.status);
       return res.json();
@@ -724,12 +734,12 @@ try {
       if (audios.length) {
         var audioPick = audios[Math.floor(Math.random() * audios.length)];
         var bg = document.getElementById("bgMusic");
-        if (bg) bg.src = "/api/splash-media/file/" + encodeURIComponent(audioPick);
+        if (bg) bg.src = `${WORKER_URL}/api/splash-media/file/` + encodeURIComponent(audioPick);
       }
 
       if (!videos.length) throw new Error("no mp4 files found in login folder — data: " + JSON.stringify(data));
       var videoPick = videos[Math.floor(Math.random() * videos.length)];
-      video.src = "/api/splash-media/file/" + encodeURIComponent(videoPick);
+      video.src = `${WORKER_URL}/api/splash-media/file/` + encodeURIComponent(videoPick);
       video.load();
       return true;
     })
@@ -1052,7 +1062,8 @@ try {
 
 <script src="subtitle-words.html"></script>
 <script>
-const WORKER_URL = "";
+// WORKER_URL از قبل (بالای فایل) تعریف شده؛ اینجا دوباره تعریفش نمی‌کنیم چون const دوباره‌تعریف‌شده
+// با همین اسم توی یه صفحه، خطای SyntaxError می‌ده.
 
 // خطاهای شبکه‌ای (قطعی/invalid response) خیلی وقتا لحظه‌ای و گذرا هستن؛ به‌جای این‌که فوراً
 // خطا به کاربر نشون بدیم، یکی-دو بار خودکار (با یه مکثِ کوتاه) دوباره امتحان می‌کنیم.
