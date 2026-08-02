@@ -1061,6 +1061,7 @@
 
   /* ردیف متنی ساده برای پست‌های بدون رسانه */
   .text-entry {
+    position: relative;
     border-inline-start: 3px solid var(--border);
     padding-inline-start: 14px;
     margin-bottom: 18px;
@@ -1068,6 +1069,7 @@
 
   /* post card برای پست‌های مدیا (عکس/ویدیو/آهنگ/فایل) */
   .post-card {
+    position: relative;
     background: var(--card-gradient);
     border: 1px solid var(--border);
     border-radius: 12px;
@@ -1088,6 +1090,106 @@
   .post-card .entry-media.has-audio { padding: 8px 12px 0; }
   .post-card .entry-time { padding: 8px 12px 10px; }
   .post-card .entry-doc { margin: 8px 12px 0; }
+
+  /* ---------- قابِ اندازه‌محدودِ مدیای پست کارت (کمی بلندتر از مربع)؛ عکس/ویدیو با object-fit:cover
+     داخلش جا می‌شه، و دکمه‌ی فول‌اسکرینِ گوشه‌ی پایین‌راست برای دیدنِ فایلِ کاملِ (بی‌برش) همیشه در دسترسه ---------- */
+  .post-card .entry-media.entry-media-boxed {
+    aspect-ratio: 4 / 4.7;
+    border-radius: 8px;
+    overflow: hidden;
+    background: var(--surface);
+  }
+  .post-card .entry-media.entry-media-boxed img,
+  .post-card .entry-media.entry-media-boxed video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .post-card .entry-media.entry-media-boxed .video-player { width: 100%; height: 100%; }
+  .media-fullscreen-btn {
+    position: absolute; bottom: 10px; inset-inline-end: 10px; z-index: 4;
+    width: 32px; height: 32px; border-radius: 8px; border: none; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(0,0,0,0.5); color: #fff; backdrop-filter: blur(2px);
+  }
+  .media-fullscreen-btn svg { width: 17px; height: 17px; }
+  .media-fullscreen-btn:hover { background: rgba(0,0,0,0.7); }
+
+  .media-fullscreen-overlay {
+    position: fixed; inset: 0; z-index: 3000;
+    background: rgba(0,0,0,0.92);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .media-fullscreen-overlay img, .media-fullscreen-overlay video {
+    max-width: 94vw; max-height: 90vh; object-fit: contain; border-radius: 6px;
+  }
+  .media-fullscreen-close {
+    position: absolute; top: 16px; inset-inline-end: 16px;
+    width: 38px; height: 38px; border-radius: 50%; border: none; cursor: pointer;
+    background: rgba(255,255,255,0.15); color: #fff; font-size: 18px;
+  }
+
+  /* ---------- محو شدنِ متنِ بلندِ پست کارت بعد از ۳-۴ خط + دکمه‌ی «دیدن بیشتر» ---------- */
+  .entry-text-wrap { position: relative; }
+  .entry-text-wrap.has-more .entry-text {
+    max-height: 4.8em;
+    overflow: hidden;
+    -webkit-mask-image: linear-gradient(to bottom, #000 60%, transparent 100%);
+    mask-image: linear-gradient(to bottom, #000 60%, transparent 100%);
+  }
+  .entry-text-wrap.has-more.expanded .entry-text {
+    max-height: none;
+    -webkit-mask-image: none;
+    mask-image: none;
+  }
+  .entry-text-wrap.has-more.expanded .entry-text-more-btn { display: none; }
+  .entry-text-more-btn {
+    display: block; margin: 2px 12px 0; background: none; border: none;
+    color: var(--accent-hover); font-family: inherit; font-size: 12.5px; font-weight: 500;
+    cursor: pointer; padding: 2px 0;
+  }
+
+  /* ---------- منوی پاپ‌آپِ سه‌نقطه‌ی بالا-وسطِ کارتِ پست (ویرایش/پین/حذف) ---------- */
+  .post-more-wrap { position: absolute; top: 8px; left: 50%; transform: translateX(-50%); z-index: 6; }
+  .post-more-btn {
+    display: flex; align-items: center; justify-content: center;
+    width: 32px; height: 18px; border-radius: 9px; padding: 0; cursor: pointer;
+    background: var(--surface); border: 1px solid var(--border); color: var(--subtext);
+  }
+  .post-more-btn:hover { color: var(--text); border-color: var(--accent); }
+  .post-more-btn svg { width: 16px; height: 16px; }
+  .post-more-menu {
+    position: absolute; top: 22px; left: 50%; transform: translateX(-50%);
+    background: var(--card); border: 1px solid var(--border); border-radius: 10px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.28); padding: 4px; min-width: 132px; z-index: 7;
+  }
+  .post-more-menu.hidden { display: none; }
+  .post-menu-item {
+    display: flex; align-items: center; gap: 8px; width: 100%; padding: 8px 10px;
+    background: none; border: none; color: var(--text); font-family: inherit; font-size: 13px;
+    cursor: pointer; border-radius: 6px; text-align: start; white-space: nowrap;
+  }
+  .post-menu-item:hover { background: var(--surface); }
+  .post-menu-item.danger { color: var(--error); }
+  .post-menu-item svg { width: 15px; height: 15px; flex-shrink: 0; }
+
+  .edited-badge { font-size: 11px; color: var(--subtext); font-style: italic; }
+
+  /* ---------- فرمِ ویرایشِ درجاییِ پست ---------- */
+  .post-edit-form { padding: 6px 12px 0; }
+  .post-edit-form textarea {
+    width: 100%; min-height: 70px; resize: vertical; font-family: inherit; font-size: 15px;
+    background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+    color: var(--text); padding: 8px 10px; box-sizing: border-box;
+  }
+  .post-edit-actions { display: flex; gap: 8px; margin-top: 6px; }
+  .post-edit-save, .post-edit-cancel {
+    padding: 6px 14px; border-radius: 8px; border: none; cursor: pointer;
+    font-family: inherit; font-size: 12.5px; font-weight: 500;
+  }
+  .post-edit-save { background: var(--accent); color: #fff; }
+  .post-edit-save:hover { background: var(--accent-hover); }
+  .post-edit-cancel { background: var(--surface); color: var(--subtext); border: 1px solid var(--border); }
 
   /* عنوان کوتاه پست (حداکثر ۱۵ کاراکتر) کنار نام کاربر توی هدر پست نشون داده می‌شه، نه روی مدیا */
 
@@ -2186,6 +2288,23 @@
   .chat-bubble-text { white-space: pre-line; word-break: break-word; }
   .chat-bubble-image { max-width: 100%; border-radius: 10px; display: block; margin-bottom: 4px; }
   .chat-bubble-audio { width: 220px; max-width: 100%; margin-bottom: 4px; }
+  /* ---------- چت: کارتِ فایلِ عمومی (سند/زیپ/پی‌دی‌اف و...) ---------- */
+  .chat-file-card {
+    display: flex; align-items: center; gap: 10px; width: 220px; max-width: 100%;
+    padding: 8px 10px; border-radius: 10px; background: rgba(0,0,0,0.12); text-decoration: none;
+    color: inherit; margin-bottom: 4px;
+  }
+  .chat-file-card-icon {
+    width: 36px; height: 36px; border-radius: 8px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--accent, #6c5ce7); color: #fff;
+  }
+  .chat-file-card-icon svg { width: 19px; height: 19px; }
+  .chat-file-card-info { flex: 1; min-width: 0; }
+  .chat-file-card-name { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .chat-file-card-size { font-size: 11px; opacity: 0.75; margin-top: 2px; }
+  .chat-file-card-download { flex-shrink: 0; opacity: 0.8; }
+  .chat-file-card-download svg { width: 16px; height: 16px; }
   /* ---------- چت: پلیرِ اختصاصیِ پیامِ صوتی (به‌جای <audio controls> پیش‌فرضِ مرورگر) ---------- */
   .chat-audio-player {
     display: flex; align-items: center; gap: 10px;
@@ -2482,9 +2601,14 @@
     padding: 8px 14px; font-size: 13.5px; font-family: inherit; color: var(--text); max-height: 120px; line-height: 1.5;
     height: 34px; min-height: 34px; overflow-y: hidden; transition: height 0.12s ease;
   }
-  /* ---------- چت: نوارِ پیش‌نمایشِ فایلِ در حالِ آپلود (بالای کادرِ نوشتنِ پیام، مثلِ چت‌جی‌پی‌تی/کلود) ---------- */
+  /* ---------- چت: نوارِ پیش‌نمایشِ فایلِ در حالِ آپلود (بالای کادرِ نوشتنِ پیام، مثلِ چت‌جی‌پی‌تی/کلود) ----------
+     یه سیبلینگِ مستقلِ بالای chat-conv-composer‌ه (نه داخلش)، همون عرض رو داره (چون هر دو تویِ همون
+     ستونِ عمودیِ پنلِ چت‌ان)، و چون تویِ جریانِ عادیِ صفحه‌ست (نه position:absolute رویِ پیام‌ها)،
+     وقتی نمایان می‌شه فقط ناحیه‌ی پیام‌ها رو کمی جمع می‌کنه، نه اینکه روش سوار بشه. پیش از انتخابِ
+     فایل، display:none‌ه (کلاسِ show نداره) که فضایی اشغال نکنه. */
   .chat-upload-preview-bar {
-    display: none; align-items: center; gap: 8px; padding: 8px 12px 0;
+    display: none; align-items: center; gap: 8px; padding: 8px 12px; max-height: 76px; overflow-x: auto; overflow-y: hidden;
+    border-top: 1px solid var(--border); background: var(--surface); flex-shrink: 0;
   }
   .chat-upload-preview-bar.show { display: flex; }
   .chat-upload-chip {
@@ -2498,6 +2622,11 @@
     background: var(--accent, #6c5ce7); color: #fff;
   }
   .chat-upload-thumb-audio svg { width: 24px; height: 24px; }
+  .chat-upload-thumb-file {
+    display: flex; align-items: center; justify-content: center;
+    background: var(--card); color: var(--subtext);
+  }
+  .chat-upload-thumb-file svg { width: 24px; height: 24px; }
   .chat-upload-chip.failed { border-color: var(--error); opacity: 0.6; }
   .chat-upload-ring {
     position: absolute; inset: 0; margin: auto; width: 40px; height: 40px;
@@ -3996,6 +4125,7 @@
         </div>
         <button class="chat-reply-banner-cancel" onclick="cancelReplyToMessage()">انصراف</button>
       </div>
+      <div class="chat-upload-preview-bar" id="chatUploadPreviewBar"></div>
       <div class="chat-conv-composer" id="chatConvComposer">
         <div class="chat-mention-dropdown hidden" id="chatMentionDropdown"></div>
         <button class="chat-attach-btn" title="عکس یا فیلم" onclick="document.getElementById('chatImageInput').click()">
@@ -4006,6 +4136,10 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2M12 19v3"/></svg>
         </button>
         <input type="file" id="chatAudioInput" accept="audio/*" style="display:none" onchange="onChatAudioChosen(event)" />
+        <button class="chat-attach-btn" title="فایل" onclick="document.getElementById('chatFileInput').click()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M13 2v7h7"/></svg>
+        </button>
+        <input type="file" id="chatFileInput" style="display:none" onchange="onChatFileChosen(event)" />
         <button class="chat-attach-btn" title="استیکر" onclick="chatStickerClicked()">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
         </button>
@@ -6427,6 +6561,7 @@ function chatPreviewText(conv) {
   if (lm.msgType === "image") return prefix + "📷 عکس";
   if (lm.msgType === "video") return prefix + "🎬 فیلم";
   if (lm.msgType === "sticker") return prefix + "🙂 استیکر";
+  if (lm.msgType === "file") return prefix + "📎 فایل";
   return prefix + "🎙 پیامِ صوتی";
 }
 
@@ -6886,6 +7021,27 @@ function formatChatAudioTime(sec) {
   return `${m}:${String(s).padStart(2, "0")}`;
 }
 
+function buildChatFileCard(m) {
+  const name = m.fileName || "فایل";
+  const sizeText = formatFileSize(m.fileSize);
+  const href = mediaUrl(m.fileId);
+  return `
+    <a class="chat-file-card" href="${href}" target="_blank" rel="noopener" download="${escapeHtml(name)}" onclick="event.stopPropagation()">
+      <div class="chat-file-card-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M13 2v7h7"/>
+        </svg>
+      </div>
+      <div class="chat-file-card-info">
+        <div class="chat-file-card-name">${escapeHtml(name)}</div>
+        ${sizeText ? `<div class="chat-file-card-size">${sizeText}</div>` : ""}
+      </div>
+      <div class="chat-file-card-download">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="M7 10l5 5 5-5"/><path d="M5 21h14"/></svg>
+      </div>
+    </a>`;
+}
+
 function buildChatAudioPlayer(fileId, msgId, src) {
   const bars = chatAudioWaveformBars(msgId || fileId);
   const barsHtml = bars.map((h, i) => `<span class="cap-bar" style="--h:${h}%; --i:${i}"></span>`).join("");
@@ -7061,6 +7217,9 @@ function renderChatBubble(m, myUsername, prevMsg) {
   } else if (m.msgType === "audio") {
     bodyHtml = buildChatAudioPlayer(m.fileId, m.id, chatMediaSrc(m));
     if (m.text) bodyHtml += `<div class="chat-bubble-text">${renderChatTextWithMentions(m.text)}</div>`;
+  } else if (m.msgType === "file") {
+    bodyHtml = buildChatFileCard(m);
+    if (m.text) bodyHtml += `<div class="chat-bubble-text">${renderChatTextWithMentions(m.text)}</div>`;
   } else {
     bodyHtml = `<div class="chat-bubble-text">${renderChatTextWithMentions(m.text || "")}</div>`;
   }
@@ -7151,12 +7310,19 @@ function scrollToChatMessage(messageId) {
   }
 }
 
+function formatFileSize(bytes) {
+  if (!bytes || bytes <= 0) return "";
+  if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} کیلوبایت`;
+  return `${(bytes / 1024 / 1024).toFixed(1)} مگابایت`;
+}
+
 // متنِ کوتاهِ پیش‌نمایش برای انواعِ مختلفِ پیام (تو بنرِ ریپلای و تو حبابِ ریپلای‌شده استفاده می‌شه)
 function chatReplyPreviewText(m) {
   if (m.msgType === "image") return "📷 عکس";
   if (m.msgType === "video") return "🎬 فیلم";
   if (m.msgType === "audio") return "🎙 پیامِ صوتی";
   if (m.msgType === "sticker") return "استیکر";
+  if (m.msgType === "file") return `📎 ${m.fileName || "فایل"}`;
   return (m.text || "").slice(0, 60);
 }
 
@@ -7578,6 +7744,10 @@ async function sendChatMessage() {
     }
     const payload = { msgType: attachment.kind, fileId: attachment.fileId };
     if (text) payload.text = text;
+    if (attachment.kind === "file" && attachment.file) {
+      payload.fileName = attachment.file.name;
+      payload.fileSize = attachment.file.size;
+    }
     await submitChatMessage(payload, localPreviewUrl);
     try { URL.revokeObjectURL(localPreviewUrl); } catch (e) {}
   } else {
@@ -7619,6 +7789,8 @@ async function submitChatMessage(payload, localPreviewUrl) {
     msgType: payload.msgType,
     text: payload.text || null,
     fileId: payload.fileId || null,
+    fileName: payload.fileName || null,
+    fileSize: payload.fileSize || null,
     isExternal: false,
     createdAt: Date.now(),
     editedAt: null,
@@ -7683,6 +7855,19 @@ async function onChatAudioChosen(event) {
   event.target.value = "";
   if (!file || !chatState.active) return;
   stageChatAttachment(file, "audio");
+}
+
+// سقفِ حجمِ فایلِ عمومی (سند/زیپ/پی‌دی‌اف و...) تویِ چت؛ باید با CHAT_FILE_MAX_SIZE سمتِ ورکر هم‌خوان باشه
+const CHAT_FILE_MAX_SIZE = 20 * 1024 * 1024; // ۲۰ مگابایت
+async function onChatFileChosen(event) {
+  const file = event.target.files[0];
+  event.target.value = "";
+  if (!file || !chatState.active) return;
+  if (file.size > CHAT_FILE_MAX_SIZE) {
+    toast(`حجمِ فایل نباید بیشتر از ${Math.round(CHAT_FILE_MAX_SIZE / 1024 / 1024)} مگابایت باشه`, "error");
+    return;
+  }
+  stageChatAttachment(file, "file");
 }
 
 let chatComposerAttachment = null;
@@ -7925,7 +8110,7 @@ async function resumableUpload(file, kind, onProgress, signal) {
         {
           method: "POST",
           headers: { "Content-Type": "application/json", Authorization: `Bearer ${getToken()}` },
-          body: JSON.stringify({ uploadId: session.uploadId }),
+          body: JSON.stringify({ uploadId: session.uploadId, fileName: kind === "file" ? file.name : undefined }),
         },
         90000,
         signal
@@ -8048,6 +8233,12 @@ function renderChatAttachmentPreview() {
       ? `<img class="chat-upload-thumb" src="${a.previewUrl}" alt="" />`
       : a.kind === "video"
       ? `<video class="chat-upload-thumb" src="${a.previewUrl}" muted></video>`
+      : a.kind === "file"
+      ? `<div class="chat-upload-thumb chat-upload-thumb-file" title="${escapeHtml(a.file?.name || "")}">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M13 2v7h7"/>
+          </svg>
+        </div>`
       : `<div class="chat-upload-thumb chat-upload-thumb-audio" title="${escapeHtml(a.file?.name || "")}">
           <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M9 18V5l12-2v13" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
@@ -8067,6 +8258,8 @@ function renderChatAttachmentPreview() {
     ? "ناموفق؛ دوباره امتحان کن"
     : a.uploading
     ? `٪${a.progress || 0}${a.totalChunks ? ` · تکه‌ی ${a.doneChunks} از ${a.totalChunks}` : ""}`
+    : a.kind === "file"
+    ? escapeHtml(a.file?.name || "آماده‌ی ارسال")
     : "آماده‌ی ارسال";
   bar.innerHTML = `
     <div class="chat-upload-chip${stateClass}">
@@ -10881,6 +11074,8 @@ function stopVisualizerLoop() {
 }
 
 const PAGE_SIZE = 10;
+// از این تعداد کاراکتر به بعد، توضیحاتِ پست کارت (حدوداً بیشتر از ۳-۴ خط) محو می‌شه و دکمه‌ی «دیدن بیشتر» میاد
+const POST_CAPTION_FADE_THRESHOLD = 160;
 
 // ---------- آیکون‌های نوار اکشن پست ----------
 const ICON_ARROW_UP = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3z"/><path d="M7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>`;
@@ -10900,20 +11095,53 @@ const ICON_THUMB = ICON_ARROW_UP;
 const ICON_SEEK_BACK = `<svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="11 19 2 12 11 5 11 19"/><polygon points="22 19 13 12 22 5 22 19"/></svg>`;
 const ICON_SEEK_FWD = `<svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="13 19 22 12 13 5 13 19"/><polygon points="2 19 11 12 2 5 2 19"/></svg>`;
 const ICON_HISTORY = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v5h5"/><path d="M3.05 13A9 9 0 1 0 6 5.3L3 8"/><path d="M12 7v5l3 3"/></svg>`;
+const ICON_MORE_HORIZ = `<svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg>`;
+const ICON_PIN_MENU = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 17v5"/><path d="M9 3h6l1 6 2 2v2H6v-2l2-2z"/></svg>`;
+const ICON_MAXIMIZE = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></svg>`;
+
+// ---------- منوی پاپ‌آپِ سه‌نقطه‌ی پست کارت (ویرایش/پین/حذف) ----------
+// همیشه فقط یه منو در آن واحد باز می‌مونه؛ با کلیک بیرون از منو هم بسته می‌شه
+function togglePostMenu(event, safeId) {
+  event.stopPropagation();
+  const menu = document.getElementById(`postMenu-${safeId}`);
+  if (!menu) return;
+  const willOpen = menu.classList.contains("hidden");
+  document.querySelectorAll(".post-more-menu").forEach((m) => m.classList.add("hidden"));
+  if (willOpen) menu.classList.remove("hidden");
+}
+document.addEventListener("click", (evt) => {
+  if (evt.target.closest(".post-more-wrap")) return;
+  document.querySelectorAll(".post-more-menu").forEach((m) => m.classList.add("hidden"));
+});
 
 function renderPost(p, num, opts) {
   const hideText = !!(opts && opts.hideText);
   const initial = p.username ? p.username[0].toUpperCase() : "?";
   const hasMedia = (p.type === "photo" || p.type === "video" || p.type === "audio" || p.type === "document") && p.file_id;
-  const canDelete = p.username === getUsername() || isSuperAdmin;
+  const canEdit = p.username === getUsername();
+  const canDelete = canEdit || isSuperAdmin;
   const safeId = p.id.replace(/[^a-zA-Z0-9_]/g, "");
   const isPinned = !!p.pinned;
 
-  const deleteBtn = canDelete ? `<button class="delete-btn" onclick="deletePost('${p.id}','${safeId}')">حذف</button>` : "";
-  const pinBtn = isSuperAdmin
-    ? `<button class="pin-btn" id="pinBtn-${safeId}" onclick="togglePinPost('${p.id}','${safeId}',${isPinned})">${isPinned ? "برداشتنِ پین" : "پین"}</button>`
-    : "";
+  // ---------- منوی پاپ‌آپِ سه‌نقطه (به‌جای دکمه‌های جدا)؛ فقط اگه کاربر حداقل به یکی از سه گزینه دسترسی داره ساخته می‌شه ----------
+  const postMenuItems = [];
+  if (canEdit) {
+    postMenuItems.push(`<button type="button" class="post-menu-item" onclick="startEditPost(event,'${p.id}','${safeId}')">${ICON_EDIT}<span>ویرایش</span></button>`);
+  }
+  if (isSuperAdmin) {
+    postMenuItems.push(`<button type="button" class="post-menu-item" id="pinMenuBtn-${safeId}" onclick="togglePostMenu(event,'${safeId}'); togglePinPost('${p.id}','${safeId}',${isPinned})">${ICON_PIN_MENU}<span id="pinMenuLabel-${safeId}">${isPinned ? "برداشتنِ پین" : "پین کردن"}</span></button>`);
+  }
+  if (canDelete) {
+    postMenuItems.push(`<button type="button" class="post-menu-item danger" onclick="deletePost('${p.id}','${safeId}')">${ICON_TRASH}<span>حذف</span></button>`);
+  }
+  const postMoreHtml = postMenuItems.length ? `
+    <div class="post-more-wrap">
+      <button type="button" class="post-more-btn" onclick="togglePostMenu(event,'${safeId}')" title="گزینه‌ها" aria-label="گزینه‌ها">${ICON_MORE_HORIZ}</button>
+      <div class="post-more-menu hidden" id="postMenu-${safeId}">${postMenuItems.join("")}</div>
+    </div>` : "";
+
   const pinnedBadgeHtml = isPinned ? `<span class="pinned-badge" id="pinnedBadge-${safeId}">📌 پین‌شده</span>` : "";
+  const editedBadgeHtml = p.edited ? `<span class="edited-badge">ویرایش‌شده</span>` : "";
   const avatarHtml = p.avatar_file_id
     ? `<div class="avatar" style="overflow:hidden;"><img src="${mediaUrl(p.avatar_file_id)}" style="width:100%;height:100%;object-fit:cover;" /></div>`
     : `<div class="avatar" style="background:${avatarColor(p.username || "")}">${initial}</div>`;
@@ -10924,12 +11152,17 @@ function renderPost(p, num, opts) {
       <span class="entry-name username-link" onclick="openProfile('${jsAttr(p.username)}')">${escapeHtml(p.username)}</span>
       <div class="entry-meta">
         ${pinnedBadgeHtml}
+        ${editedBadgeHtml}
         ${titleHtml}
-        ${pinBtn}
-        ${deleteBtn}
       </div>
     </div>`;
-  const textHtml = (p.text && !hideText) ? `<div class="entry-text">${escapeHtml(p.text)}</div>` : "";
+  const isLongCaption = !!(p.text && p.text.length > POST_CAPTION_FADE_THRESHOLD);
+  const textHtml = (p.text && !hideText)
+    ? `<div class="entry-text-wrap${isLongCaption ? " has-more" : ""}" id="entryTextWrap-${safeId}">
+         <div class="entry-text" id="entryText-${safeId}">${escapeHtml(p.text)}</div>
+         ${isLongCaption ? `<button type="button" class="entry-text-more-btn" onclick="expandEntryText('${safeId}')">دیدن بیشتر</button>` : ""}
+       </div>`
+    : "";
   const tagsHtml = buildTagsChipsHtml(parsePostTags(p.tags));
   const timeHtml = `<div class="entry-time">${new Date(p.date).toLocaleString("fa-IR")}</div>`;
 
@@ -10974,21 +11207,131 @@ function renderPost(p, num, opts) {
     </div>`;
 
   if (!hasMedia) {
-    return `<div class="text-entry${isPinned ? " pinned-post" : ""}" id="post-${safeId}">${header}${textHtml}${tagsHtml}${timeHtml}${actionBar}${commentsBlock}</div>`;
+    return `<div class="text-entry${isPinned ? " pinned-post" : ""}" id="post-${safeId}">${postMoreHtml}${header}${textHtml}${tagsHtml}${timeHtml}${actionBar}${commentsBlock}</div>`;
   }
+
+  // دکمه‌ی فول‌اسکرینِ گوشه‌ی پایین-راستِ قابِ مدیا؛ چون قابِ عکس/ویدیو با object-fit:cover به یه نسبتِ ثابت
+  // بریده می‌شه، این دکمه همیشه برای دیدنِ فایلِ کامل (بدونِ برش) در دسترسه
+  const mediaFullscreenBtn = `<button type="button" class="media-fullscreen-btn" onclick="event.stopPropagation(); openMediaFullscreen('${mediaUrl(p.file_id)}','${p.type}')" title="نمایش کامل" aria-label="نمایش کامل">${ICON_MAXIMIZE}</button>`;
 
   let mediaHtml = "";
   if (p.type === "photo") {
-    mediaHtml = `<div class="entry-media"><img src="${mediaUrl(p.file_id)}" loading="lazy" /></div>`;
+    mediaHtml = `<div class="entry-media entry-media-boxed"><img src="${mediaUrl(p.file_id)}" loading="lazy" />${mediaFullscreenBtn}</div>`;
   } else if (p.type === "video") {
-    mediaHtml = `<div class="entry-media">${buildVideoPlayer(p.file_id, safeId)}</div>`;
+    mediaHtml = `<div class="entry-media entry-media-boxed">${buildVideoPlayer(p.file_id, safeId)}${mediaFullscreenBtn}</div>`;
   } else if (p.type === "audio") {
     mediaHtml = `<div class="entry-media has-audio">${buildAudioPlayer(p.file_id, safeId, p.audio_thumb, p.audio_title, p.audio_performer, p.id, p.audio_feeling)}</div>`;
   } else if (p.type === "document") {
     mediaHtml = `<div class="entry-doc">فایل پیوست — <a href="${mediaUrl(p.file_id)}" target="_blank">دانلود</a></div>`;
   }
 
-  return `<div class="post-card${isPinned ? " pinned-post" : ""}" id="post-${safeId}">${header}${mediaHtml}${textHtml}${tagsHtml}${timeHtml}<div class="comments-wrap">${actionBar}${commentsBlock}</div></div>`;
+  return `<div class="post-card${isPinned ? " pinned-post" : ""}" id="post-${safeId}">${postMoreHtml}${header}${mediaHtml}${textHtml}${tagsHtml}${timeHtml}<div class="comments-wrap">${actionBar}${commentsBlock}</div></div>`;
+}
+
+// ---------- نمایشِ تمام‌صفحه‌ی فایلِ کاملِ مدیا (بدونِ بریده‌شدن)، از رویِ دکمه‌ی گوشه‌ی قابِ مدیا ----------
+function openMediaFullscreen(url, type) {
+  closeMediaFullscreen();
+  const overlay = document.createElement("div");
+  overlay.className = "media-fullscreen-overlay";
+  overlay.id = "mediaFullscreenOverlay";
+  overlay.onclick = (e) => { if (e.target === overlay) closeMediaFullscreen(); };
+  const inner = type === "video"
+    ? `<video src="${url}" controls autoplay playsinline></video>`
+    : `<img src="${url}" />`;
+  overlay.innerHTML = `
+    <button type="button" class="media-fullscreen-close" onclick="closeMediaFullscreen()" aria-label="بستن">✕</button>
+    ${inner}`;
+  document.body.appendChild(overlay);
+  document.body.style.overflow = "hidden";
+}
+function closeMediaFullscreen() {
+  const overlay = document.getElementById("mediaFullscreenOverlay");
+  if (overlay) overlay.remove();
+  document.body.style.overflow = "";
+}
+
+// ---------- بازکردنِ کاملِ متنِ محوشده‌ی پست کارت (وقتی توضیحات بلندتر از حدِ نمایشه) ----------
+function expandEntryText(safeId) {
+  const wrap = document.getElementById(`entryTextWrap-${safeId}`);
+  if (wrap) wrap.classList.add("expanded");
+}
+
+// ---------- ویرایشِ پست (فقط صاحبِ پست): متن رو به یه فرمِ قابل‌ویرایش تبدیل می‌کنه ----------
+function startEditPost(event, postId, safeId) {
+  if (event) event.stopPropagation();
+  document.querySelectorAll(".post-more-menu").forEach((m) => m.classList.add("hidden"));
+  const wrap = document.getElementById(`entryTextWrap-${safeId}`);
+  const card = document.getElementById(`post-${safeId}`);
+  if (!card) return;
+  const currentTextEl = document.getElementById(`entryText-${safeId}`);
+  const currentText = currentTextEl ? currentTextEl.textContent : "";
+  const formHtml = `
+    <div class="post-edit-form" id="postEditForm-${safeId}">
+      <textarea id="postEditText-${safeId}" maxlength="2000" placeholder="متنِ پست...">${escapeHtml(currentText)}</textarea>
+      <div class="post-edit-actions">
+        <button type="button" class="post-edit-save" onclick="savePostEdit('${postId}','${safeId}')">ذخیره</button>
+        <button type="button" class="post-edit-cancel" onclick="cancelPostEdit('${safeId}')">انصراف</button>
+      </div>
+      <div class="error" id="postEditError-${safeId}"></div>
+    </div>`;
+  if (wrap) {
+    wrap.dataset.prevHtml = wrap.outerHTML;
+    wrap.outerHTML = formHtml;
+  } else {
+    // پستی که قبلاً متن نداشت: فرم رو بعدِ مدیا/هدر اضافه می‌کنیم
+    const anchor = card.querySelector(".entry-media, .entry-doc, .entry-top");
+    if (anchor) anchor.insertAdjacentHTML("afterend", formHtml);
+  }
+  const ta = document.getElementById(`postEditText-${safeId}`);
+  if (ta) { ta.focus(); ta.setSelectionRange(ta.value.length, ta.value.length); }
+}
+
+function cancelPostEdit(safeId) {
+  const form = document.getElementById(`postEditForm-${safeId}`);
+  if (!form) return;
+  if (form.dataset.prevHtml) {
+    form.outerHTML = form.dataset.prevHtml;
+  } else {
+    form.remove();
+  }
+}
+
+async function savePostEdit(postId, safeId) {
+  const ta = document.getElementById(`postEditText-${safeId}`);
+  const errEl = document.getElementById(`postEditError-${safeId}`);
+  if (!ta) return;
+  const text = ta.value.trim();
+  if (errEl) errEl.textContent = "";
+  try {
+    const res = await fetch(`${WORKER_URL}/api/post/edit`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Authorization": `Bearer ${getToken()}` },
+      body: JSON.stringify({ id: postId, text }),
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      if (res.status === 401) { logout(); return; }
+      if (errEl) errEl.textContent = data.error || "ویرایش با خطا مواجه شد";
+      return;
+    }
+    const form = document.getElementById(`postEditForm-${safeId}`);
+    const isLongCaption = text.length > POST_CAPTION_FADE_THRESHOLD;
+    const newWrapHtml = text
+      ? `<div class="entry-text-wrap${isLongCaption ? " has-more" : ""}" id="entryTextWrap-${safeId}">
+           <div class="entry-text" id="entryText-${safeId}">${escapeHtml(text)}</div>
+           ${isLongCaption ? `<button type="button" class="entry-text-more-btn" onclick="expandEntryText('${safeId}')">دیدن بیشتر</button>` : ""}
+         </div>`
+      : "";
+    if (form) form.outerHTML = newWrapHtml;
+    const card = document.getElementById(`post-${safeId}`);
+    const meta = card && card.querySelector(".entry-meta");
+    if (meta && !document.getElementById(`editedBadge-${safeId}`) && !meta.querySelector(".edited-badge")) {
+      meta.insertAdjacentHTML("beforeend", `<span class="edited-badge" id="editedBadge-${safeId}">ویرایش‌شده</span>`);
+    }
+    toast("پست ویرایش شد", "success");
+  } catch (e) {
+    if (errEl) errEl.textContent = "اتصال به سرور برقرار نشد";
+  }
 }
 
 // ================= بخش Deels =================
@@ -13225,6 +13568,9 @@ function renderAdminGroupMonitorBubble(m, prevMsg) {
   } else if (m.msgType === "audio") {
     bodyHtml = `<audio class="chat-bubble-audio" controls src="${mediaUrl(m.fileId)}"></audio>`;
     if (m.text) bodyHtml += `<div class="chat-bubble-text">${escapeHtml(m.text)}</div>`;
+  } else if (m.msgType === "file") {
+    bodyHtml = buildChatFileCard(m);
+    if (m.text) bodyHtml += `<div class="chat-bubble-text">${escapeHtml(m.text)}</div>`;
   } else {
     bodyHtml = `<div class="chat-bubble-text">${escapeHtml(m.text || "")}</div>`;
   }
@@ -13390,11 +13736,10 @@ async function togglePinPost(id, safeId, currentlyPinned) {
     // دفعه‌ی بعد که فید لود بشه خودش درست می‌شه (پین‌شده‌ها همیشه بالای همه‌ن)
     const card = document.getElementById(`post-${safeId}`);
     if (card) card.classList.toggle("pinned-post", nextPinned);
-    const btn = document.getElementById(`pinBtn-${safeId}`);
-    if (btn) {
-      btn.textContent = nextPinned ? "برداشتنِ پین" : "پین";
-      btn.setAttribute("onclick", `togglePinPost('${id}','${safeId}',${nextPinned})`);
-    }
+    const pinLabel = document.getElementById(`pinMenuLabel-${safeId}`);
+    const pinMenuBtn = document.getElementById(`pinMenuBtn-${safeId}`);
+    if (pinLabel) pinLabel.textContent = nextPinned ? "برداشتنِ پین" : "پین کردن";
+    if (pinMenuBtn) pinMenuBtn.setAttribute("onclick", `togglePostMenu(event,'${safeId}'); togglePinPost('${id}','${safeId}',${nextPinned})`);
     let badge = document.getElementById(`pinnedBadge-${safeId}`);
     if (nextPinned && !badge) {
       const meta = card && card.querySelector(".entry-meta");
