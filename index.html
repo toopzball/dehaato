@@ -774,6 +774,16 @@
   .upload-mode-btn.active { color: #fff; }
   .upload-mode-t { font-size: 15px; font-weight: 800; font-family: ui-monospace, Menlo, monospace; }
 
+  /* ---------- انتخابِ مسیرِ آپلود (گیت‌هاب/کلادفلر) ---------- */
+  .upload-route-row { display: flex; gap: 8px; margin-bottom: 10px; }
+  .upload-route-btn {
+    flex: 1; padding: 8px; border-radius: 10px; border: 1px solid var(--border);
+    background: transparent; color: var(--subtext); font-family: inherit; font-size: 13px; cursor: pointer;
+    transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+  }
+  .upload-route-btn:hover { border-color: var(--accent); color: var(--text); }
+  .upload-route-btn.active { background: var(--accent-gradient); color: #fff; border-color: transparent; }
+
   /* ---------- فرم آپلود: ترتیبِ کادرها با flex order عوض می‌شه (حالت رسانه/متن/موسیقی) ---------- */
   .upload-composer { display: flex; flex-direction: column; }
   .upload-composer .u-dropzone { order: 1; }
@@ -826,6 +836,101 @@
   .radio-visual-wrap input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--accent); flex-shrink: 0; margin: 0; }
   .radio-visual-wrap .radio-visual-label { font-size: 13px; color: var(--text); flex: 1; }
   .radio-visual-wrap .radio-visual-hint { font-size: 11px; color: var(--subtext); display: block; margin-top: 1px; }
+
+  /* ---------- تیک «نقاشی» زیرِ کادرِ متن + کادرِ پیش‌نمایشِ نقاشی ----------
+     فقط تو حالتِ «متن» دیده می‌شه (u-text-drawing)؛ همون قانونِ content-ready بقیه‌ی کادرها رو هم داره */
+  .upload-composer .u-text-drawing { display: none; }
+  .upload-composer.mode-text .u-text-drawing { order: 1.5; display: block; }
+  .upload-composer:not(.content-ready) .u-text-drawing { display: none !important; }
+
+  .drawing-toggle-wrap {
+    display: flex; align-items: center; gap: 10px;
+    background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+    padding: 10px 12px; margin-bottom: 4px; cursor: pointer; user-select: none;
+  }
+  .drawing-toggle-wrap input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--accent); flex-shrink: 0; margin: 0; }
+  .drawing-toggle-wrap .drawing-toggle-label { font-size: 13px; color: var(--text); flex: 1; }
+
+  /* کادرِ مربعیِ سفید که با انیمیشن زیرِ تیک باز/بسته می‌شه؛ کلیک روش محیطِ نقاشی رو باز می‌کنه */
+  .drawing-box-wrap {
+    max-height: 0; overflow: hidden; opacity: 0;
+    transition: max-height 0.32s cubic-bezier(0.34, 1.1, 0.64, 1), opacity 0.28s ease, margin-top 0.28s ease;
+    margin-top: 0;
+  }
+  .drawing-box-wrap.open { max-height: 320px; opacity: 1; margin-top: 8px; }
+  .drawing-box {
+    position: relative;
+    width: 100%; aspect-ratio: 4 / 3; max-height: 300px;
+    background: #FFFFFF; border-radius: 12px; border: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; overflow: hidden;
+  }
+  .drawing-box img { width: 100%; height: 100%; object-fit: contain; display: block; }
+  .drawing-box-empty { display: flex; flex-direction: column; align-items: center; gap: 6px; color: #9C93AE; pointer-events: none; }
+  .drawing-box-empty svg { width: 30px; height: 30px; opacity: 0.7; }
+  .drawing-box-empty span { font-size: 12.5px; }
+  .drawing-box-clear {
+    position: absolute; top: 6px; left: 6px; width: 26px; height: 26px; border-radius: 999px;
+    background: rgba(0,0,0,0.55); color: #fff; border: none; display: flex; align-items: center; justify-content: center;
+    cursor: pointer; font-size: 15px; line-height: 1;
+  }
+
+  /* ---------- محیطِ کاملِ نقاشی (مودالِ تمام‌صفحه) ---------- */
+  .drawing-studio-backdrop {
+    position: fixed; inset: 0; z-index: 9500; background: rgba(0,0,0,0.72);
+    display: flex; align-items: flex-end; justify-content: center;
+    opacity: 0; pointer-events: none; transition: opacity 0.22s ease;
+  }
+  .drawing-studio-backdrop.open { opacity: 1; pointer-events: auto; }
+  .drawing-studio {
+    width: 100%; max-width: 560px; max-height: 92vh; display: flex; flex-direction: column;
+    background: var(--surface); border-radius: 20px 20px 0 0; border: 1px solid var(--border); border-bottom: none;
+    padding: calc(10px + var(--safe-top, 0px)) 12px calc(12px + var(--safe-bottom, 0px));
+    transform: translateY(100%); transition: transform 0.26s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .drawing-studio-backdrop.open .drawing-studio { transform: translateY(0); }
+  .drawing-studio-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; padding: 0 4px; }
+  .drawing-studio-title { font-size: 14px; font-weight: 700; color: var(--text); }
+  .drawing-studio-close { background: none; border: none; color: var(--subtext); font-size: 20px; cursor: pointer; padding: 4px 8px; }
+  .drawing-canvas-wrap {
+    background: #FFFFFF; border-radius: 14px; overflow: hidden; flex: 1; min-height: 260px;
+    touch-action: none; position: relative; border: 1px solid var(--border);
+  }
+  .drawing-canvas-wrap canvas { display: block; width: 100%; height: 100%; touch-action: none; }
+  .drawing-toolbar { display: flex; flex-direction: column; gap: 10px; margin-top: 10px; }
+  .drawing-toolbar-row { display: flex; align-items: center; gap: 8px; }
+  .drawing-tool-btn {
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+    flex: 1; padding: 9px 4px; border-radius: 10px; border: 1px solid var(--border);
+    background: var(--card); color: var(--subtext); font-family: inherit; font-size: 12px; cursor: pointer;
+    transition: background 0.18s ease, color 0.18s ease, border-color 0.18s ease;
+  }
+  .drawing-tool-btn svg { width: 16px; height: 16px; }
+  .drawing-tool-btn.active { background: var(--accent-gradient); color: #fff; border-color: transparent; }
+  .drawing-size-row { display: flex; align-items: center; gap: 10px; }
+  .drawing-size-row input[type="range"] { flex: 1; accent-color: var(--accent); }
+  .drawing-size-preview { width: 30px; height: 30px; border-radius: 999px; background: var(--card); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .drawing-size-dot { border-radius: 999px; background: currentColor; }
+  .drawing-color-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .drawing-color-swatch {
+    width: 26px; height: 26px; border-radius: 999px; border: 2px solid var(--border); cursor: pointer; flex-shrink: 0; padding: 0;
+  }
+  .drawing-color-swatch.active { border-color: var(--text); box-shadow: 0 0 0 2px var(--accent); }
+  .drawing-color-custom {
+    width: 26px; height: 26px; border-radius: 999px; border: 2px solid var(--border); padding: 0; cursor: pointer; overflow: hidden; flex-shrink: 0;
+    background: conic-gradient(red, yellow, lime, cyan, blue, magenta, red);
+  }
+  .drawing-color-custom::-webkit-color-swatch-wrapper { padding: 0; }
+  .drawing-color-custom::-webkit-color-swatch { border: none; border-radius: 999px; }
+  .drawing-studio-actions { display: flex; gap: 8px; margin-top: 4px; }
+  .drawing-discard-btn {
+    flex: 1; padding: 11px; border-radius: 12px; border: 1px solid var(--border);
+    background: transparent; color: var(--error); font-family: inherit; font-size: 13.5px; font-weight: 600; cursor: pointer;
+  }
+  .drawing-save-btn {
+    flex: 2; padding: 11px; border-radius: 12px; border: none;
+    background: var(--accent-gradient); color: #fff; font-family: inherit; font-size: 13.5px; font-weight: 700; cursor: pointer;
+  }
 
   /* ---------- کادر آپلود رسانه (دورچین‌دار) ---------- */
   .media-dropzone {
@@ -1129,7 +1234,7 @@
     background: rgba(255,255,255,0.15); color: #fff; font-size: 18px;
   }
 
-  /* ---------- محو شدنِ متنِ بلندِ پست کارت بعد از ۳-۴ خط + دکمه‌ی «دیدن بیشتر» ---------- */
+  /* ---------- محو شدنِ متنِ بلندِ پست کارت بعد از ۳-۴ خط + دکمه‌ی «دیدن بیشتر»/«دیدن کمتر» ---------- */
   .entry-text-wrap { position: relative; }
   .entry-text-wrap.has-more .entry-text {
     max-height: 4.8em;
@@ -1142,24 +1247,19 @@
     -webkit-mask-image: none;
     mask-image: none;
   }
-  .entry-text-wrap.has-more.expanded .entry-text-more-btn { display: none; }
   .entry-text-more-btn {
     display: block; margin: 2px 12px 0; background: none; border: none;
     color: var(--accent-hover); font-family: inherit; font-size: 12.5px; font-weight: 500;
     cursor: pointer; padding: 2px 0;
   }
 
-  /* ---------- منوی پاپ‌آپِ سه‌نقطه‌ی بالا-وسطِ کارتِ پست (ویرایش/پین/حذف) ---------- */
-  .post-more-wrap { position: absolute; top: 8px; left: 50%; transform: translateX(-50%); z-index: 6; }
-  .post-more-btn {
-    display: flex; align-items: center; justify-content: center;
-    width: 32px; height: 18px; border-radius: 9px; padding: 0; cursor: pointer;
-    background: var(--surface); border: 1px solid var(--border); color: var(--subtext);
+  /* ---------- منوی پاپ‌آپِ سه‌نقطه‌ی پست (ویرایش/پین/دانلود/حذف) — تویِ نوارِ اکشن، جای دکمه‌ی دانلودِ قبلی ---------- */
+  .post-more-wrap.in-actionbar {
+    position: relative; flex: 1; min-width: 0;
   }
-  .post-more-btn:hover { color: var(--text); border-color: var(--accent); }
-  .post-more-btn svg { width: 16px; height: 16px; }
+  .post-more-wrap.in-actionbar .action-pill.more { width: 100%; }
   .post-more-menu {
-    position: absolute; top: 22px; left: 50%; transform: translateX(-50%);
+    position: absolute; bottom: calc(100% + 8px); left: 50%; transform: translateX(-50%);
     background: var(--card); border: 1px solid var(--border); border-radius: 10px;
     box-shadow: 0 8px 20px rgba(0,0,0,0.28); padding: 4px; min-width: 132px; z-index: 7;
   }
@@ -2009,20 +2109,26 @@
   .playlists-subtabs { display: flex; gap: 8px; margin-bottom: 12px; }
   .playlists-subtab-btn {
     flex: 1; padding: 8px 0; border-radius: 10px; border: 1px solid var(--border);
-    background: var(--card); color: var(--subtext); font-size: 13px; cursor: pointer;
+    background: var(--card); color: var(--subtext); font-family: inherit; font-size: 13px; cursor: pointer;
+    transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
   }
   .playlists-subtab-btn.active { background: var(--accent-gradient); color: #fff; border-color: transparent; }
   .playlist-create-btn {
     display: flex; align-items: center; justify-content: center; gap: 6px;
     width: 100%; padding: 10px; margin-bottom: 12px; border-radius: 12px; border: 1px dashed var(--border);
-    background: transparent; color: var(--accent); font-size: 13px; cursor: pointer;
+    background: transparent; color: var(--accent); font-family: inherit; font-size: 13px; cursor: pointer;
+    transition: background 0.2s ease, border-color 0.2s ease;
   }
+  .playlist-create-btn:hover { background: var(--surface); border-color: var(--accent); }
   .playlist-create-btn svg { width: 16px; height: 16px; }
   .playlist-card {
     display: flex; align-items: center; gap: 10px;
     background: var(--card-gradient); border: 1px solid var(--border); border-radius: 12px;
     padding: 10px 12px; margin-bottom: 8px; cursor: pointer;
+    transition: border-color 0.2s ease, transform 0.15s ease;
   }
+  .playlist-card:hover { border-color: var(--accent); }
+  .playlist-card:active { transform: scale(0.98); }
   .playlist-card-icon {
     width: 42px; height: 42px; border-radius: 10px; flex-shrink: 0;
     background: var(--accent-gradient); color: #fff; display: flex; align-items: center; justify-content: center;
@@ -2039,32 +2145,41 @@
   .playlist-detail-back {
     width: 34px; height: 34px; border-radius: 50%; border: 1px solid var(--border); background: var(--card);
     color: var(--text); display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0;
+    font-family: inherit; transition: border-color 0.2s ease, color 0.2s ease;
   }
+  .playlist-detail-back:hover { border-color: var(--accent); }
   .playlist-detail-back svg { width: 16px; height: 16px; }
   .playlist-detail-title { flex: 1; min-width: 0; font-size: 15px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .playlist-detail-actions { display: flex; gap: 6px; flex-shrink: 0; }
   .playlist-detail-action-btn {
     width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--border); background: var(--card);
     color: var(--subtext); display: flex; align-items: center; justify-content: center; cursor: pointer;
+    font-family: inherit; transition: border-color 0.2s ease, color 0.2s ease;
   }
+  .playlist-detail-action-btn:hover { border-color: var(--accent); color: var(--text); }
   .playlist-detail-action-btn svg { width: 15px; height: 15px; }
 
   .music-row-add-btn, .music-row-remove-btn {
     width: 30px; height: 30px; border-radius: 50%; border: 1px solid var(--border); background: var(--card);
     color: var(--subtext); display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0;
+    font-family: inherit; transition: border-color 0.2s ease, transform 0.15s ease;
   }
+  .music-row-add-btn:hover { border-color: var(--accent); }
   .music-row-remove-btn { border-color: var(--error); color: var(--error); background: transparent; }
+  .music-row-add-btn:active, .music-row-remove-btn:active { transform: scale(0.9); }
   .music-row-add-btn svg, .music-row-remove-btn svg { width: 14px; height: 14px; }
 
   /* لیستِ چک‌باکسیِ پلی‌لیست‌ها داخلِ مودالِ «افزودن به پلی‌لیست» */
   .playlist-modal-item {
     display: flex; align-items: center; gap: 10px; padding: 10px 4px; border-bottom: 1px solid var(--border);
-    cursor: pointer;
+    cursor: pointer; border-radius: 8px; transition: background 0.15s ease;
   }
+  .playlist-modal-item:hover { background: var(--card); }
   .playlist-modal-item:last-child { border-bottom: none; }
   .playlist-modal-item-check {
     width: 22px; height: 22px; border-radius: 6px; border: 1.5px solid var(--border); flex-shrink: 0;
     display: flex; align-items: center; justify-content: center; color: transparent;
+    transition: background 0.15s ease, border-color 0.15s ease;
   }
   .playlist-modal-item.checked .playlist-modal-item-check { background: var(--accent-gradient); border-color: transparent; color: #fff; }
   .playlist-modal-item-check svg { width: 13px; height: 13px; }
@@ -3036,6 +3151,7 @@
   .user-search-modal {
     background: var(--surface); border: 1px solid var(--border); border-radius: 18px 18px 0 0; width: 100%; max-width: 480px;
     max-height: 82vh; display: flex; flex-direction: column; padding-bottom: var(--safe-bottom);
+    animation: fadeInUp 0.2s ease;
   }
   .user-search-modal-header { padding: 16px 16px 10px; flex-shrink: 0; }
   .user-search-modal-title { font-size: 15px; font-weight: 700; color: var(--text); margin-bottom: 10px; }
@@ -3647,12 +3763,12 @@
      با یه انیمیشنِ فلیپِ ساده (فروریختن روی محورِ عمودی) شبیه‌سازی می‌شه. رنگ‌ها از متغیرهای خودِ تمِ
      فعال میان تا با هر تمی هماهنگ بمونه، فقط بافتِ چوب/کاغذ روی همون پالت پیاده شده. */
   .notebook-wrap {
-    display: flex; flex-direction: column; align-items: center; gap: 10px;
-    padding-bottom: 6px;
+    display: flex; flex-direction: column; align-items: center; gap: 8px;
+    padding-bottom: 6px; margin-top: -8px;
   }
   .notebook-book, .notebook-cover {
     width: 100%; max-width: 420px;
-    height: min(78vh, 700px); min-height: 420px;
+    height: min(64vh, 560px); min-height: 360px;
   }
   /* نگهدارنده‌ی دفتر: عمداً position:relative و بدونِ overflow، تا بوک‌مارکِ زیرِ دفتر (که یه‌کم از
      پایینِ لبه‌ی دفتر بیرون می‌زنه) به‌جای بریده‌شدن، واقعاً قابلِ دیدن باشه */
@@ -3898,6 +4014,46 @@
   .notebook-page-footer {
     flex-shrink: 0; padding-top: 8px; text-align: center; font-size: 11px; color: var(--subtext);
   }
+
+  /* ---------- تیکِ فیلترِ نمایش/مخفی‌کردنِ متن‌های نقاشی‌دار: بالای دفترِ بازشده ---------- */
+  .notebook-filter-row {
+    display: flex; align-items: center; justify-content: center; gap: 7px;
+    width: 100%; max-width: 420px;
+    max-height: 0; overflow: hidden; opacity: 0;
+    transition: max-height 0.25s ease, opacity 0.2s ease, margin-bottom 0.25s ease;
+  }
+  .notebook-filter-row.visible { max-height: 40px; opacity: 1; margin-bottom: 2px; }
+  .notebook-filter-label {
+    display: flex; align-items: center; gap: 6px; cursor: pointer; user-select: none;
+    background: var(--surface); border: 1px solid var(--border); border-radius: 999px;
+    padding: 5px 12px; font-size: 12px; color: var(--subtext);
+  }
+  .notebook-filter-label input[type="checkbox"] { width: 14px; height: 14px; accent-color: var(--accent); margin: 0; }
+
+  /* ---------- ترکیبِ اختصاصیِ «متن نقاشی»: چیدمانِ عمودی به‌جای ریل+متنِ کنارِ هم ----------
+     هدر → نقاشی → ریلِ افقیِ رای/لایک/کامنت/فول‌اسکرین → متن (تا ۵ خط، بعدش محو) */
+  .notebook-entry.has-drawing { display: flex; flex-direction: column; }
+  .notebook-entry-drawing-wrap {
+    flex-shrink: 0; width: 100%; max-height: 42%; margin-top: 5px;
+    border-radius: 10px; overflow: hidden; background: #FFFFFF; border: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .notebook-entry-drawing-img { width: 100%; height: 100%; max-height: 100%; object-fit: contain; display: block; }
+  .notebook-drawing-actions {
+    flex-shrink: 0; display: flex; align-items: center; justify-content: center; gap: 8px;
+    margin: 6px 0;
+  }
+  .notebook-drawing-actions .notebook-vote-pill { flex-direction: row; padding: 4px 8px; gap: 6px; }
+  .notebook-entry.has-drawing .notebook-entry-textwrap {
+    flex: 1; min-height: 0;
+    display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 5; overflow: hidden;
+  }
+  .notebook-full-text-drawing-img {
+    flex-shrink: 0; width: 100%; max-height: 260px; margin-top: 10px;
+    border-radius: 10px; overflow: hidden; background: #FFFFFF; border: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .notebook-full-text-drawing-img img { width: 100%; height: 100%; object-fit: contain; display: block; }
 </style>
 </head>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jsmediatags/3.9.5/jsmediatags.min.js" defer></script>
@@ -4015,6 +4171,13 @@
           <div class="notebook-cover-title">دفتر احوالات</div>
           <div class="notebook-cover-hint">برای باز کردن ضربه بزن</div>
         </div>
+      </div>
+      <!-- تیکِ فیلترِ نمایش/مخفی‌کردنِ متن‌های نقاشی‌دار؛ فقط وقتی دفتر بازه معنی داره -->
+      <div class="notebook-filter-row" id="notebookFilterRow">
+        <label class="notebook-filter-label" for="notebookHideDrawingsCheckbox">
+          <input type="checkbox" id="notebookHideDrawingsCheckbox" onchange="onNotebookFilterToggle()" />
+          مخفی‌کردنِ متن‌های نقاشی‌دار
+        </label>
       </div>
       <!-- خودِ دفتر: بعد از باز شدنِ جلد نمایان می‌شه. نگهدارنده‌ی دورش (notebook-book-holder) عمداً
            overflow نداره تا بوک‌مارکِ زیرِ دفتر بتونه واقعاً از زیرِ لبه‌ی دفتر بیرون بزنه، نه اینکه
@@ -4169,6 +4332,24 @@
         <span class="text-counter" id="textCounter">۰/۳۹۰</span>
       </div>
 
+      <!-- تیک «نقاشی» + کادرِ پیش‌نمایش/شروعِ نقاشی — فقط تو حالتِ متن -->
+      <div class="u-text-drawing">
+        <label class="drawing-toggle-wrap" for="drawingEnableCheckbox">
+          <input type="checkbox" id="drawingEnableCheckbox" onchange="onDrawingToggle()" />
+          <span class="drawing-toggle-label">نقاشی</span>
+        </label>
+        <div class="drawing-box-wrap" id="drawingBoxWrap">
+          <div class="drawing-box" id="drawingBox" onclick="openDrawingStudio()">
+            <div class="drawing-box-empty" id="drawingBoxEmpty">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/><path d="M2 2l7.586 7.586"/><circle cx="11" cy="11" r="2"/></svg>
+              <span>برای نقاشی‌کشیدن ضربه بزن</span>
+            </div>
+            <img id="drawingBoxImg" class="hidden" alt="نقاشی" />
+            <button type="button" class="drawing-box-clear hidden" id="drawingBoxClear" onclick="clearDrawing(event)" aria-label="حذف نقاشی">×</button>
+          </div>
+        </div>
+      </div>
+
       <!-- تگ‌ها (تزیینی، جدا از توضیحات) -->
       <div class="tags-input-wrap u-tags">
         <span class="tags-hash">#</span>
@@ -4176,23 +4357,10 @@
       </div>
 
       <!-- انتخابِ مسیرِ آپلود: مستقل از دامنه‌ای که کاربر فعلاً باهاش سایت رو باز کرده -->
-      <div class="upload-route-row u-submit" style="display:flex;gap:8px;margin-bottom:10px;">
-        <button type="button" id="uploadRouteGithub" onclick="setUploadRoute('github')"
-          style="flex:1;padding:8px;border-radius:10px;border:1px solid var(--border-color,#444);background:transparent;cursor:pointer;font-size:13px;">
-          آپلود با گیت‌هاب
-        </button>
-        <button type="button" id="uploadRouteCloudflare" onclick="setUploadRoute('cloudflare')"
-          style="flex:1;padding:8px;border-radius:10px;border:1px solid var(--border-color,#444);background:transparent;cursor:pointer;font-size:13px;">
-          آپلود با کلادفلر
-        </button>
+      <div class="upload-route-row u-submit">
+        <button type="button" class="upload-route-btn" id="uploadRouteGithub" onclick="setUploadRoute('github')">آپلود با گیت‌هاب</button>
+        <button type="button" class="upload-route-btn" id="uploadRouteCloudflare" onclick="setUploadRoute('cloudflare')">آپلود با کلادفلر</button>
       </div>
-      <style>
-        #uploadRouteGithub.active, #uploadRouteCloudflare.active {
-          background: var(--accent-color, #4a9eff);
-          color: #fff;
-          border-color: transparent;
-        }
-      </style>
 
       <!-- دکمه ارسال -->
       <div class="submit-row u-submit">
@@ -4214,6 +4382,46 @@
     <div class="upload-preview-wrap hidden" id="uploadPreviewWrap">
       <div class="upload-preview-label">پیش‌نمایش پست</div>
       <div class="post-card upload-preview-card" id="uploadPreviewCard"></div>
+    </div>
+  </div>
+
+  <!-- محیطِ کاملِ نقاشی: قلم/رنگ/سایز/پاک‌کن — روی کادرِ نقاشیِ زیرِ متن باز می‌شه -->
+  <div class="drawing-studio-backdrop" id="drawingStudioBackdrop">
+    <div class="drawing-studio" id="drawingStudio" role="dialog" aria-label="محیط نقاشی">
+      <div class="drawing-studio-head">
+        <span class="drawing-studio-title">نقاشی متن</span>
+        <button type="button" class="drawing-studio-close" onclick="closeDrawingStudio()" aria-label="بستن">×</button>
+      </div>
+      <div class="drawing-canvas-wrap" id="drawingCanvasWrap">
+        <canvas id="drawingCanvas"></canvas>
+      </div>
+      <div class="drawing-toolbar">
+        <div class="drawing-toolbar-row">
+          <button type="button" class="drawing-tool-btn active" id="toolPenBtn" onclick="setDrawingTool('pen')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/></svg>
+            قلم
+          </button>
+          <button type="button" class="drawing-tool-btn" id="toolMarkerBtn" onclick="setDrawingTool('marker')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8"/><path d="M12 3l7 7-6 6H7v-6z"/></svg>
+            ماژیک
+          </button>
+          <button type="button" class="drawing-tool-btn" id="toolEraserBtn" onclick="setDrawingTool('eraser')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 20H9L4 15a1.5 1.5 0 0 1 0-2.1l8-8a1.5 1.5 0 0 1 2.1 0l6 6a1.5 1.5 0 0 1 0 2.1L15 18"/></svg>
+            پاک‌کن
+          </button>
+        </div>
+        <div class="drawing-toolbar-row drawing-size-row">
+          <span class="drawing-size-preview" id="drawingSizePreview"><span class="drawing-size-dot" id="drawingSizeDot"></span></span>
+          <input type="range" id="drawingSizeSlider" min="1" max="40" value="4" oninput="onDrawingSizeInput(this.value)" />
+        </div>
+        <div class="drawing-toolbar-row drawing-color-row" id="drawingColorRow">
+          <input type="color" class="drawing-color-custom" id="drawingColorCustom" value="#8B5CF6" oninput="setDrawingColor(this.value)" />
+        </div>
+        <div class="drawing-studio-actions">
+          <button type="button" class="drawing-discard-btn" onclick="discardDrawing()">دور انداختن</button>
+          <button type="button" class="drawing-save-btn" onclick="saveDrawing()">ذخیره نقاشی</button>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -5453,6 +5661,11 @@ let playlistsPanelLoaded = { mine: false, public: false };
 
 function switchView(name, forceReload = false) {
   if (deelsState.loaded) flushDeelsSeenMarks();
+  // باگ قبلی: با سوییچِ تب (مثلاً از رسانه به متن)، ویدیویی که داشت پخش می‌شد متوقف نمی‌شد و
+  // پس‌زمینه (مخفی، ولی هنوز در حالِ پخش) صداش می‌اومد. اینجا با هر سوییچِ تب، همه‌ی ویدیوهای
+  // در حالِ پخشِ صفحه (چه تو کارتِ پست، چه دیلز) پاز می‌شن و اگه نمایِ فول‌اسکرینِ مدیا هم باز بود، بسته می‌شه
+  document.querySelectorAll("video").forEach((v) => { if (!v.paused) v.pause(); });
+  closeMediaFullscreen();
   document.body.classList.remove("profile-fullscreen-active");
   document.querySelectorAll(".view").forEach((el) => el.classList.add("hidden"));
   document.getElementById(`view-${name}`).classList.remove("hidden");
@@ -5534,6 +5747,198 @@ function followTopNavIndicator(durationMs = 420) {
 }
 
 window.addEventListener("resize", () => positionTopNavIndicator());
+
+// ================= ابزار نقاشی (زیرِ کادرِ متن، فقط تو حالتِ متن) =================
+// یه محیطِ نقاشیِ سبک با قلم/ماژیک/پاک‌کن که خروجی‌اش (PNG) به فرم‌دیتای ثبتِ پست اضافه می‌شه.
+const drawingState = {
+  tool: "pen",
+  color: "#8B5CF6",
+  sizes: { pen: 4, marker: 16, eraser: 20 },
+  ctx: null,
+  drawing: false,
+  lastX: 0,
+  lastY: 0,
+  savedDataUrl: null, // آخرین نسخه‌ی «ذخیره‌شده»؛ برای بازکردنِ دوباره‌ی محیط نقاشی از همینجا ادامه داده می‌شه
+  blob: null, // همون نسخه‌ی ذخیره‌شده، به‌شکلِ Blob برای ارسال به سرور
+  previewUrl: null,
+};
+
+function onDrawingToggle() {
+  const cb = document.getElementById("drawingEnableCheckbox");
+  const wrap = document.getElementById("drawingBoxWrap");
+  wrap.classList.toggle("open", !!cb.checked);
+}
+
+function drawingCanvasCtx() {
+  const canvas = document.getElementById("drawingCanvas");
+  const wrap = document.getElementById("drawingCanvasWrap");
+  const dpr = window.devicePixelRatio || 1;
+  const w = wrap.clientWidth || 300;
+  const h = wrap.clientHeight || 260;
+  canvas.width = Math.round(w * dpr);
+  canvas.height = Math.round(h * dpr);
+  canvas.style.width = w + "px";
+  canvas.style.height = h + "px";
+  const ctx = canvas.getContext("2d");
+  ctx.scale(dpr, dpr);
+  ctx.lineCap = "round";
+  ctx.lineJoin = "round";
+  return ctx;
+}
+
+function drawingCanvasPos(e, canvas) {
+  const rect = canvas.getBoundingClientRect();
+  return { x: e.clientX - rect.left, y: e.clientY - rect.top };
+}
+
+function drawingPointerDown(e) {
+  e.preventDefault();
+  const canvas = document.getElementById("drawingCanvas");
+  canvas.setPointerCapture(e.pointerId);
+  drawingState.drawing = true;
+  const { x, y } = drawingCanvasPos(e, canvas);
+  drawingState.lastX = x;
+  drawingState.lastY = y;
+  // یه ضربه‌ی تنها (بدون کشیدن) هم باید یه نقطه بذاره
+  drawingStroke(x, y, x + 0.01, y + 0.01);
+}
+
+function drawingPointerMove(e) {
+  if (!drawingState.drawing) return;
+  const canvas = document.getElementById("drawingCanvas");
+  const { x, y } = drawingCanvasPos(e, canvas);
+  drawingStroke(drawingState.lastX, drawingState.lastY, x, y);
+  drawingState.lastX = x;
+  drawingState.lastY = y;
+}
+
+function drawingPointerUp() {
+  drawingState.drawing = false;
+}
+
+function drawingStroke(x1, y1, x2, y2) {
+  const ctx = drawingState.ctx;
+  if (!ctx) return;
+  const tool = drawingState.tool;
+  ctx.globalCompositeOperation = tool === "eraser" ? "destination-out" : "source-over";
+  ctx.globalAlpha = tool === "marker" ? 0.55 : 1;
+  ctx.strokeStyle = tool === "eraser" ? "rgba(0,0,0,1)" : drawingState.color;
+  ctx.lineWidth = drawingState.sizes[tool];
+  ctx.beginPath();
+  ctx.moveTo(x1, y1);
+  ctx.lineTo(x2, y2);
+  ctx.stroke();
+}
+
+function setDrawingTool(tool) {
+  drawingState.tool = tool;
+  ["pen", "marker", "eraser"].forEach((t) => {
+    document.getElementById(`tool${t.charAt(0).toUpperCase()}${t.slice(1)}Btn`).classList.toggle("active", t === tool);
+  });
+  document.getElementById("drawingColorRow").classList.toggle("hidden", tool === "eraser");
+  document.getElementById("drawingSizeSlider").value = drawingState.sizes[tool];
+  updateDrawingSizePreview();
+}
+
+function onDrawingSizeInput(val) {
+  drawingState.sizes[drawingState.tool] = Number(val);
+  updateDrawingSizePreview();
+}
+
+function setDrawingColor(hex) {
+  drawingState.color = hex;
+  updateDrawingSizePreview();
+}
+
+function updateDrawingSizePreview() {
+  const dot = document.getElementById("drawingSizeDot");
+  const size = drawingState.sizes[drawingState.tool];
+  const displaySize = Math.max(3, Math.min(26, size));
+  dot.style.width = displaySize + "px";
+  dot.style.height = displaySize + "px";
+  dot.style.color = drawingState.tool === "eraser" ? "#B9B2C9" : drawingState.color;
+}
+
+function openDrawingStudio() {
+  document.getElementById("drawingStudioBackdrop").classList.add("open");
+  document.getElementById("drawingSizeSlider").value = drawingState.sizes[drawingState.tool];
+  setDrawingTool(drawingState.tool);
+  document.getElementById("drawingColorCustom").value = drawingState.color;
+
+  // اندازه‌ی کادرِ نقاشی فقط وقتی که واقعاً روی صفحه و قابلِ دیدنه درست محاسبه می‌شه؛ یه فریم صبر می‌کنیم
+  requestAnimationFrame(() => {
+    const ctx = drawingCanvasCtx();
+    drawingState.ctx = ctx;
+    const canvas = document.getElementById("drawingCanvas");
+    // پس‌زمینه‌ی سفید (برای وقتی که خروجی PNG روی زمینه‌های تیره‌ی سایت نمایش داده می‌شه)
+    ctx.save();
+    ctx.globalCompositeOperation = "source-over";
+    ctx.globalAlpha = 1;
+    ctx.fillStyle = "#FFFFFF";
+    ctx.fillRect(0, 0, canvas.clientWidth, canvas.clientHeight);
+    ctx.restore();
+    if (drawingState.savedDataUrl) {
+      const img = new Image();
+      img.onload = () => ctx.drawImage(img, 0, 0, canvas.clientWidth, canvas.clientHeight);
+      img.src = drawingState.savedDataUrl;
+    }
+    canvas.onpointerdown = drawingPointerDown;
+    canvas.onpointermove = drawingPointerMove;
+    canvas.onpointerup = drawingPointerUp;
+    canvas.onpointercancel = drawingPointerUp;
+    canvas.onpointerleave = drawingPointerUp;
+  });
+}
+
+function closeDrawingStudio() {
+  document.getElementById("drawingStudioBackdrop").classList.remove("open");
+  drawingState.drawing = false;
+}
+
+// «دور انداختن»: بستنِ محیط بدون ذخیره‌ی تغییراتِ جدید — آخرین نسخه‌ی ذخیره‌شده (اگه بوده) دست‌نخورده می‌مونه
+function discardDrawing() {
+  closeDrawingStudio();
+}
+
+function saveDrawing() {
+  const canvas = document.getElementById("drawingCanvas");
+  canvas.toBlob(
+    (blob) => {
+      if (!blob) return;
+      if (drawingState.previewUrl) URL.revokeObjectURL(drawingState.previewUrl);
+      drawingState.blob = blob;
+      drawingState.savedDataUrl = canvas.toDataURL("image/png");
+      drawingState.previewUrl = URL.createObjectURL(blob);
+      const img = document.getElementById("drawingBoxImg");
+      img.src = drawingState.previewUrl;
+      img.classList.remove("hidden");
+      document.getElementById("drawingBoxEmpty").classList.add("hidden");
+      document.getElementById("drawingBoxClear").classList.remove("hidden");
+      closeDrawingStudio();
+    },
+    "image/png",
+    0.92
+  );
+}
+
+function clearDrawing(event) {
+  if (event) event.stopPropagation();
+  if (drawingState.previewUrl) URL.revokeObjectURL(drawingState.previewUrl);
+  drawingState.blob = null;
+  drawingState.savedDataUrl = null;
+  drawingState.previewUrl = null;
+  document.getElementById("drawingBoxImg").classList.add("hidden");
+  document.getElementById("drawingBoxEmpty").classList.remove("hidden");
+  document.getElementById("drawingBoxClear").classList.add("hidden");
+}
+
+function resetDrawingState() {
+  clearDrawing(null);
+  const cb = document.getElementById("drawingEnableCheckbox");
+  if (cb) cb.checked = false;
+  const wrap = document.getElementById("drawingBoxWrap");
+  if (wrap) wrap.classList.remove("open");
+}
 
 let selectedFile = null;
 let selectedAudioMeta = { title: "", performer: "", coverBlob: null, duration: null };
@@ -6352,6 +6757,10 @@ async function submitPost() {
     && (selectedFile.type.startsWith("image/") || selectedFile.type.startsWith("video/"))) {
     fd.append("radio_visual", "1");
   }
+  const drawingEnableCheckbox = document.getElementById("drawingEnableCheckbox");
+  if (uploadMode === "text" && drawingEnableCheckbox && drawingEnableCheckbox.checked && drawingState.blob) {
+    fd.append("drawing", drawingState.blob, "drawing.png");
+  }
   btn.textContent = "در حال ارسال...";
   progressWrap.classList.remove("hidden");
   resetUploadProgressUI();
@@ -6447,6 +6856,7 @@ async function submitPost() {
     if (tagsEl) tagsEl.value = "";
     const radioVisualCheckboxReset = document.getElementById("radioVisualCheckbox");
     if (radioVisualCheckboxReset) radioVisualCheckboxReset.checked = false;
+    resetDrawingState();
     onTitleInput();
     onPostTextInput();
     clearFile();
@@ -11322,7 +11732,10 @@ function renderPost(p, num, opts) {
   const safeId = p.id.replace(/[^a-zA-Z0-9_]/g, "");
   const isPinned = !!p.pinned;
 
-  // ---------- منوی پاپ‌آپِ سه‌نقطه (به‌جای دکمه‌های جدا)؛ فقط اگه کاربر حداقل به یکی از سه گزینه دسترسی داره ساخته می‌شه ----------
+  // ---------- منوی پاپ‌آپِ سه‌نقطه (به‌جای دکمه‌های جدا)؛ فقط اگه کاربر حداقل به یکی از گزینه‌ها دسترسی داره ساخته می‌شه ----------
+  // این منو الان تویِ نوارِ اکشن (پایینِ کارت) جای دکمه‌ی دانلود می‌شینه، و خودِ دانلود هم یکی از گزینه‌های داخلِ لیستِ بازشونده‌ست
+  const downloadExtByType = { photo: "jpg", video: "mp4", audio: "mp3", document: "bin" };
+  const downloadExt = downloadExtByType[p.type];
   const postMenuItems = [];
   if (canEdit) {
     postMenuItems.push(`<button type="button" class="post-menu-item" onclick="startEditPost(event,'${p.id}','${safeId}')">${ICON_EDIT}<span>ویرایش</span></button>`);
@@ -11330,12 +11743,15 @@ function renderPost(p, num, opts) {
   if (isSuperAdmin) {
     postMenuItems.push(`<button type="button" class="post-menu-item" id="pinMenuBtn-${safeId}" onclick="togglePostMenu(event,'${safeId}'); togglePinPost('${p.id}','${safeId}',${isPinned})">${ICON_PIN_MENU}<span id="pinMenuLabel-${safeId}">${isPinned ? "برداشتنِ پین" : "پین کردن"}</span></button>`);
   }
+  if (hasMedia) {
+    postMenuItems.push(`<button type="button" class="post-menu-item" onclick="togglePostMenu(event,'${safeId}'); downloadPostMedia('${mediaUrl(p.file_id)}','${safeId}','${downloadExt}')">${ICON_DOWNLOAD}<span>دانلود</span></button>`);
+  }
   if (canDelete) {
     postMenuItems.push(`<button type="button" class="post-menu-item danger" onclick="deletePost('${p.id}','${safeId}')">${ICON_TRASH}<span>حذف</span></button>`);
   }
   const postMoreHtml = postMenuItems.length ? `
-    <div class="post-more-wrap">
-      <button type="button" class="post-more-btn" onclick="togglePostMenu(event,'${safeId}')" title="گزینه‌ها" aria-label="گزینه‌ها">${ICON_MORE_HORIZ}</button>
+    <div class="post-more-wrap in-actionbar">
+      <button type="button" class="action-pill more" onclick="togglePostMenu(event,'${safeId}')" title="گزینه‌ها" aria-label="گزینه‌ها">${ICON_MORE_HORIZ}</button>
       <div class="post-more-menu hidden" id="postMenu-${safeId}">${postMenuItems.join("")}</div>
     </div>` : "";
 
@@ -11359,7 +11775,7 @@ function renderPost(p, num, opts) {
   const textHtml = (p.text && !hideText)
     ? `<div class="entry-text-wrap${isLongCaption ? " has-more" : ""}" id="entryTextWrap-${safeId}">
          <div class="entry-text" id="entryText-${safeId}">${escapeHtml(p.text)}</div>
-         ${isLongCaption ? `<button type="button" class="entry-text-more-btn" onclick="expandEntryText('${safeId}')">دیدن بیشتر</button>` : ""}
+         ${isLongCaption ? `<button type="button" class="entry-text-more-btn" onclick="toggleEntryText('${safeId}')">دیدن بیشتر</button>` : ""}
        </div>`
     : "";
   const tagsHtml = buildTagsChipsHtml(parsePostTags(p.tags));
@@ -11370,12 +11786,6 @@ function renderPost(p, num, opts) {
   const userVote = p.userVote || null;
   const liked = !!p.liked;
   const likesCount = p.likes || 0;
-
-  const downloadExtByType = { photo: "jpg", video: "mp4", audio: "mp3", document: "bin" };
-  const downloadExt = downloadExtByType[p.type];
-  const downloadBtn = hasMedia
-    ? `<button class="action-pill download" onclick="downloadPostMedia('${mediaUrl(p.file_id)}','${safeId}','${downloadExt}')" title="دانلود" aria-label="دانلود">${ICON_DOWNLOAD}</button>`
-    : `<button class="action-pill download disabled" disabled title="فایلی برای دانلود نیست" aria-label="دانلود">${ICON_DOWNLOAD}</button>`;
 
   const actionBar = `
     <div class="action-bar">
@@ -11391,7 +11801,7 @@ function renderPost(p, num, opts) {
       <button class="action-pill comment" onclick="toggleComments('${p.id}','${safeId}')" title="کامنت‌ها" aria-label="کامنت‌ها">
         ${ICON_COMMENT}<span class="count" id="commentCount-${safeId}">${p.comment_count || 0}</span>
       </button>
-      ${downloadBtn}
+      ${postMoreHtml}
     </div>`;
 
   const commentsBlock = `
@@ -11406,12 +11816,12 @@ function renderPost(p, num, opts) {
     </div>`;
 
   if (!hasMedia) {
-    return `<div class="text-entry${isPinned ? " pinned-post" : ""}" id="post-${safeId}">${postMoreHtml}${header}${textHtml}${tagsHtml}${timeHtml}${actionBar}${commentsBlock}</div>`;
+    return `<div class="text-entry${isPinned ? " pinned-post" : ""}" id="post-${safeId}">${header}${textHtml}${tagsHtml}${timeHtml}${actionBar}${commentsBlock}</div>`;
   }
 
   // دکمه‌ی فول‌اسکرینِ گوشه‌ی پایین-راستِ قابِ مدیا؛ چون قابِ عکس/ویدیو با object-fit:cover به یه نسبتِ ثابت
   // بریده می‌شه، این دکمه همیشه برای دیدنِ فایلِ کامل (بدونِ برش) در دسترسه
-  const mediaFullscreenBtn = `<button type="button" class="media-fullscreen-btn" onclick="event.stopPropagation(); openMediaFullscreen('${mediaUrl(p.file_id)}','${p.type}')" title="نمایش کامل" aria-label="نمایش کامل">${ICON_MAXIMIZE}</button>`;
+  const mediaFullscreenBtn = `<button type="button" class="media-fullscreen-btn" onclick="event.stopPropagation(); openMediaFullscreen('${mediaUrl(p.file_id)}','${p.type}','${safeId}')" title="نمایش کامل" aria-label="نمایش کامل">${ICON_MAXIMIZE}</button>`;
 
   let mediaHtml = "";
   if (p.type === "photo") {
@@ -11424,12 +11834,24 @@ function renderPost(p, num, opts) {
     mediaHtml = `<div class="entry-doc">فایل پیوست — <a href="${mediaUrl(p.file_id)}" target="_blank">دانلود</a></div>`;
   }
 
-  return `<div class="post-card${isPinned ? " pinned-post" : ""}" id="post-${safeId}">${postMoreHtml}${header}${mediaHtml}${textHtml}${tagsHtml}${timeHtml}<div class="comments-wrap">${actionBar}${commentsBlock}</div></div>`;
+  return `<div class="post-card${isPinned ? " pinned-post" : ""}" id="post-${safeId}">${header}${mediaHtml}${textHtml}${tagsHtml}${timeHtml}<div class="comments-wrap">${actionBar}${commentsBlock}</div></div>`;
 }
 
 // ---------- نمایشِ تمام‌صفحه‌ی فایلِ کاملِ مدیا (بدونِ بریده‌شدن)، از رویِ دکمه‌ی گوشه‌ی قابِ مدیا ----------
-function openMediaFullscreen(url, type) {
+function openMediaFullscreen(url, type, safeId) {
   closeMediaFullscreen();
+  // باگ قبلی: چون این اورلی یه <video> کاملاً جدا با همون src می‌ساخت، اگه ویدیوی داخلِ کارت
+  // از قبل در حالِ پخش بود، هر دو تا هم‌زمان پخش می‌شدن و صداشون روی هم می‌افتاد. برای رفعش،
+  // اول ویدیوی داخلِ کارت رو پاز می‌کنیم و زمانِ فعلیِ پخشش رو می‌گیریم تا ویدیوی فول‌اسکرین
+  // از همون‌جا ادامه بده، نه از اول (که حسِ یه ویدیوی «دوم» رو می‌داد)
+  let startTime = 0;
+  if (type === "video" && safeId) {
+    const inlineVideo = document.getElementById(`videoEl-${safeId}`);
+    if (inlineVideo) {
+      startTime = inlineVideo.currentTime || 0;
+      inlineVideo.pause();
+    }
+  }
   const overlay = document.createElement("div");
   overlay.className = "media-fullscreen-overlay";
   overlay.id = "mediaFullscreenOverlay";
@@ -11442,17 +11864,30 @@ function openMediaFullscreen(url, type) {
     ${inner}`;
   document.body.appendChild(overlay);
   document.body.style.overflow = "hidden";
+  if (type === "video" && startTime > 0) {
+    const fsVideo = overlay.querySelector("video");
+    if (fsVideo) fsVideo.currentTime = startTime;
+  }
 }
 function closeMediaFullscreen() {
   const overlay = document.getElementById("mediaFullscreenOverlay");
-  if (overlay) overlay.remove();
+  if (overlay) {
+    // ویدیوی تویِ اورلی رو صریحاً پاز می‌کنیم؛ صرفِ remove کردنِ overlay از DOM تو بعضی مرورگرها
+    // کافی نیست و پخشِ صدا تا لحظاتی بعد از بسته‌شدنِ اورلی ادامه پیدا می‌کرد
+    const fsVideo = overlay.querySelector("video");
+    if (fsVideo) fsVideo.pause();
+    overlay.remove();
+  }
   document.body.style.overflow = "";
 }
 
 // ---------- بازکردنِ کاملِ متنِ محوشده‌ی پست کارت (وقتی توضیحات بلندتر از حدِ نمایشه) ----------
-function expandEntryText(safeId) {
+function toggleEntryText(safeId) {
   const wrap = document.getElementById(`entryTextWrap-${safeId}`);
-  if (wrap) wrap.classList.add("expanded");
+  if (!wrap) return;
+  const nowExpanded = wrap.classList.toggle("expanded");
+  const btn = wrap.querySelector(".entry-text-more-btn");
+  if (btn) btn.textContent = nowExpanded ? "دیدن کمتر" : "دیدن بیشتر";
 }
 
 // ---------- ویرایشِ پست (فقط صاحبِ پست): متن رو به یه فرمِ قابل‌ویرایش تبدیل می‌کنه ----------
@@ -11518,7 +11953,7 @@ async function savePostEdit(postId, safeId) {
     const newWrapHtml = text
       ? `<div class="entry-text-wrap${isLongCaption ? " has-more" : ""}" id="entryTextWrap-${safeId}">
            <div class="entry-text" id="entryText-${safeId}">${escapeHtml(text)}</div>
-           ${isLongCaption ? `<button type="button" class="entry-text-more-btn" onclick="expandEntryText('${safeId}')">دیدن بیشتر</button>` : ""}
+           ${isLongCaption ? `<button type="button" class="entry-text-more-btn" onclick="toggleEntryText('${safeId}')">دیدن بیشتر</button>` : ""}
          </div>`
       : "";
     if (form) form.outerHTML = newWrapHtml;
@@ -12342,10 +12777,14 @@ window.addEventListener("message", (event) => {
 });
 
 // ================= دفتر احوالات (تب متن‌ها) =================
-// هر صفحه‌ی دفتر دقیقاً ۳ متنه (pageSize=3 مستقیم از همون endpoint فیدِ متنی). صفحه‌ها تو یه کش نگه
-// داشته می‌شن تا برگشتن به عقب دوباره فچ نزنه؛ همیشه ۲ صفحه‌ی جلوتر از صفحه‌ی فعلی از قبل (بی‌سروصدا)
-// دانلود می‌شن تا ورق‌زدن حسِ آنی داشته باشه.
-const NOTEBOOK_PAGE_SIZE = 3;
+// چیدمانِ صفحاتِ دفتر دیگه ثابت (۳تا/صفحه) نیست: متن‌های معمولی ۲تا ۲تا جفت می‌شن، ولی هر «متن نقاشی»
+// همیشه تنها و مستقل تو صفحه‌ی خودش میاد (چیدمانش کاملاً فرق داره). برای همین یه بافرِ خام از سرور
+// می‌گیریم (batchهای NOTEBOOK_RAW_BATCH_SIZE تایی، به‌ترتیبِ تاریخ) و خودمون به‌صورتِ ترتیبی به «صفحه‌ی
+// دفتر»های واقعی تبدیلش می‌کنیم: هر متنِ نقاشی‌دار فوراً صفحه‌ی خودش رو می‌گیره؛ متن‌های بدونِ نقاشی تو یه
+// صفِ انتظار جمع می‌شن و هروقت ۲تا شدن یه صفحه می‌سازن — یعنی اگه یه متنِ نقاشی‌دار وسطِ دو تا متنِ عادی
+// بیاد، اون دو تای عادی (حتی اگه پشتِ‌سرِهم نبودن) بازم با هم تو یه صفحه جفت می‌شن و متنِ نقاشی‌دار
+// جدا صفحه‌ی خودش رو می‌گیره.
+const NOTEBOOK_RAW_BATCH_SIZE = 12;
 const NOTEBOOK_LONG_TEXT_THRESHOLD = 220; // متن‌های بلندتر از این، دکمه‌ی «نمایش کامل متن» می‌گیرن
 const notebookState = {
   opened: false,
@@ -12354,6 +12793,74 @@ const notebookState = {
   animating: false,
   expanded: null,  // { postId, safeId, post, mode: "comments" | "text" } وقتی متنِ کاملِ یه پست یا کامنت‌هاش باز شده، وگرنه null
 };
+
+// وضعیتِ بافرِ خام + صفحاتِ ساخته‌شده از روش؛ با تغییرِ فیلتر یا رفرشِ کامل از صفر ساخته می‌شه
+const notebookRaw = {
+  rawPage: 0,
+  rawHasMore: true,
+  builtPages: [],       // آرایه‌ی آرایه‌ها: builtPages[i] یعنی محتوایِ صفحه‌ی دفترِ شماره‌ی i+1
+  pendingSingle: null,  // یه متنِ بدونِ نقاشیِ تنها که هنوز جفتش پیدا نشده
+  hideDrawings: false,  // تیکِ «مخفی‌کردنِ متن‌های نقاشی‌دار»
+  fetching: null,       // پرامیسِ فچِ درحال‌انجام، تا دو تا فراخوانیِ هم‌زمان دوبار فچ نزنن
+};
+
+function notebookResetRawState() {
+  notebookRaw.rawPage = 0;
+  notebookRaw.rawHasMore = true;
+  notebookRaw.builtPages = [];
+  notebookRaw.pendingSingle = null;
+  notebookRaw.fetching = null;
+  notebookState.pages = {};
+}
+
+// یه batch از پست‌های خام (به‌ترتیبِ اومدنشون از سرور) رو به صفحاتِ ساخته‌شده اضافه می‌کنه
+function notebookProcessRawBatch(posts) {
+  (posts || []).forEach((p) => {
+    if (notebookRaw.hideDrawings && p.drawing_file_id) return; // کلاً حساب نمی‌شه، نه تنها مخفی
+    if (p.drawing_file_id) {
+      notebookRaw.builtPages.push([p]);
+    } else if (notebookRaw.pendingSingle) {
+      notebookRaw.builtPages.push([notebookRaw.pendingSingle, p]);
+      notebookRaw.pendingSingle = null;
+    } else {
+      notebookRaw.pendingSingle = p;
+    }
+  });
+}
+
+async function notebookFetchRawBatch() {
+  if (!notebookRaw.rawHasMore) return false;
+  if (notebookRaw.fetching) return notebookRaw.fetching;
+  notebookRaw.fetching = (async () => {
+    notebookRaw.rawPage += 1;
+    try {
+      const res = await fetch(`${WORKER_URL}/api/feed?filter=text&page=${notebookRaw.rawPage}&pageSize=${NOTEBOOK_RAW_BATCH_SIZE}`, {
+        headers: { "Authorization": `Bearer ${getToken()}` },
+      });
+      const data = await res.json();
+      notebookRaw.rawHasMore = !!data.hasMore;
+      notebookProcessRawBatch(data.posts || []);
+    } catch (e) {
+      notebookRaw.rawHasMore = false; // قطعیِ شبکه: فعلاً بیشتر تلاش نمی‌کنیم، دفعه‌ی بعد (رفرش/تعویضِ تب) دوباره امتحان می‌شه
+    } finally {
+      notebookRaw.fetching = null;
+    }
+    return true;
+  })();
+  return notebookRaw.fetching;
+}
+
+// مطمئن می‌شه که صفحه‌ی شماره‌ی pageNum ساخته شده؛ در صورتِ لزوم چندبار پشتِ‌سرِهم batchِ خام می‌گیره
+async function notebookEnsureBuiltPage(pageNum) {
+  while (notebookRaw.builtPages.length < pageNum && notebookRaw.rawHasMore) {
+    await notebookFetchRawBatch();
+  }
+  // اگه دیگه چیزی از سرور نمونده ولی یه متنِ تنهای بدونِ‌جفت هنوز تو صف مونده، همون آخرین صفحه رو تشکیل می‌ده
+  if (notebookRaw.builtPages.length < pageNum && !notebookRaw.rawHasMore && notebookRaw.pendingSingle) {
+    notebookRaw.builtPages.push([notebookRaw.pendingSingle]);
+    notebookRaw.pendingSingle = null;
+  }
+}
 
 function notebookPageHasMore(pageNum) {
   const entry = notebookState.pages[pageNum];
@@ -12366,16 +12873,28 @@ async function fetchNotebookPage(pageNum) {
   }
   notebookState.pages[pageNum] = "loading";
   try {
-    const res = await fetch(`${WORKER_URL}/api/feed?filter=text&page=${pageNum}&pageSize=${NOTEBOOK_PAGE_SIZE}`, {
-      headers: { "Authorization": `Bearer ${getToken()}` },
-    });
-    const data = await res.json();
-    const entry = { posts: data.posts || [], hasMore: !!data.hasMore };
+    await notebookEnsureBuiltPage(pageNum);
+    const posts = notebookRaw.builtPages[pageNum - 1] || [];
+    const hasMore = notebookRaw.builtPages.length > pageNum || notebookRaw.rawHasMore || !!notebookRaw.pendingSingle;
+    const entry = { posts, hasMore };
     notebookState.pages[pageNum] = entry;
     return entry;
   } catch (e) {
     notebookState.pages[pageNum] = { posts: [], hasMore: false, failed: true };
     return notebookState.pages[pageNum];
+  }
+}
+
+// تیکِ «مخفی‌کردنِ متن‌های نقاشی‌دار»: چون مرزِ صفحه‌ها کاملاً بسته به همین تنظیمه، با تغییرش باید کل
+// بافر و صفحاتِ ساخته‌شده از صفر بسازیم و برگردیم صفحه‌ی اول
+function onNotebookFilterToggle() {
+  const cb = document.getElementById("notebookHideDrawingsCheckbox");
+  notebookRaw.hideDrawings = !!(cb && cb.checked);
+  notebookResetRawState();
+  if (notebookState.opened) {
+    notebookState.currentPage = 1;
+    notebookState.expanded = null;
+    showNotebookPage(1, null);
   }
 }
 
@@ -12456,6 +12975,41 @@ function buildNotebookEntryInner(post) {
       <div class="notebook-entry-header-side end"><div class="notebook-entry-title-box${titleText ? "" : " empty"}">${titleText || "-"}</div></div>
     </div>`;
 
+  // جهتِ خودِ متن (راست‌چین برای فارسی، چپ‌چین برای انگلیسی) خودکار از روی محتوا تشخیص داده می‌شه؛
+  // همون جهت تعیین می‌کنه ریل کدوم سمت بشینه (dir-fa → چپ مثلِ کانسپتِ اول، dir-en → راست مثلِ کانسپتِ دوم)
+  const textDir = detectNotebookTextDir(post.text || "");
+  const isLongText = !!(post.text && post.text.length > NOTEBOOK_LONG_TEXT_THRESHOLD);
+  const actionsHtml = `${pinBtn}${deleteBtn}`;
+
+  // «متن نقاشی»: چیدمانِ کاملاً جدا — نقاشی زیرِ اطلاعاتِ کاربر، بعدش ریلِ افقیِ رای/لایک/کامنت/فول‌اسکرین
+  // بینِ عکس و متن، و خودِ متن حداکثر ۵ خط با محوشدنِ ملایم (برای دیدنِ کامل، همون دکمه‌ی فول‌اسکرینِ
+  // پایینِ عکس استفاده می‌شه که پایینش عکسِ نقاشی هم چسبیده می‌مونه)
+  if (post.drawing_file_id) {
+    const drawingImgHtml = `
+      <div class="notebook-entry-drawing-wrap">
+        <img class="notebook-entry-drawing-img" src="${mediaUrl(post.drawing_file_id)}" alt="نقاشی" loading="lazy" />
+      </div>`;
+    const drawingActionsHtml = `
+      <div class="notebook-drawing-actions">
+        <div class="notebook-pill notebook-vote-pill">
+          <button class="vote-btn up${userVote === "up" ? " active" : ""}" id="upBtn-${safeId}" onclick="voteOnPost('${post.id}','${safeId}','up')" title="آپ‌ووت" aria-label="آپ‌ووت">${ICON_ARROW_UP}</button>
+          <span class="count" id="voteScore-${safeId}">${score}</span>
+          <button class="vote-btn down${userVote === "down" ? " active" : ""}" id="downBtn-${safeId}" onclick="voteOnPost('${post.id}','${safeId}','down')" title="داون‌ووت" aria-label="داون‌ووت">${ICON_ARROW_DOWN}</button>
+        </div>
+        <button class="notebook-pill like${liked ? " active" : ""}" id="likeBtn-${safeId}" onclick="toggleLike('${post.id}','${safeId}')" title="سیو" aria-label="سیو">
+          ${ICON_HEART}<span class="count" id="likeCount-${safeId}">${likesCount}</span>
+        </button>
+        <button class="notebook-pill comment" onclick="expandNotebookComments('${post.id}','${safeId}')" title="کامنت‌ها" aria-label="کامنت‌ها">
+          ${ICON_COMMENT}<span class="count" id="commentCount-${safeId}">${post.comment_count || 0}</span>
+        </button>
+        <button type="button" class="notebook-fullscreen-btn" onclick="expandNotebookText('${post.id}','${safeId}')" title="نمایش کامل متن" aria-label="نمایش کامل متن">${ICON_FULLSCREEN}</button>
+      </div>`;
+    const drawingTextHtml = post.text
+      ? `<div class="notebook-entry-textwrap"><div class="entry-text" dir="${textDir}">${escapeHtml(post.text)}${actionsHtml ? ` ${actionsHtml}` : ""}</div></div>`
+      : (actionsHtml ? `<div class="notebook-entry-textwrap"><div class="entry-text">${actionsHtml}</div></div>` : `<div class="notebook-entry-textwrap"></div>`);
+    return `${header}${drawingImgHtml}${drawingActionsHtml}${drawingTextHtml}`;
+  }
+
   const rail = `
     <div class="notebook-entry-rail">
       <div class="notebook-pill notebook-vote-pill">
@@ -12474,14 +13028,9 @@ function buildNotebookEntryInner(post) {
       </div>
     </div>`;
 
-  // جهتِ خودِ متن (راست‌چین برای فارسی، چپ‌چین برای انگلیسی) خودکار از روی محتوا تشخیص داده می‌شه؛
-  // همون جهت تعیین می‌کنه ریل کدوم سمت بشینه (dir-fa → چپ مثلِ کانسپتِ اول، dir-en → راست مثلِ کانسپتِ دوم)
-  const textDir = detectNotebookTextDir(post.text || "");
-  const isLongText = !!(post.text && post.text.length > NOTEBOOK_LONG_TEXT_THRESHOLD);
   // متن داخلِ یه ناحیه‌ی جداگونه (notebook-entry-textwrap) قرار می‌گیره: اگه از فضای اختصاص‌یافته بزرگ‌تر بشه،
   // به‌جای اسکرول فقط همون ناحیه بریده (کلیپ) می‌شه و یه گرادیانتِ ملایمِ «ادامه داره» پایینش نشون داده می‌شه؛
   // برای دیدنِ کاملِ متن، دکمه‌ی فول‌اسکرینِ توی ریل همیشه در دسترسه
-  const actionsHtml = `${pinBtn}${deleteBtn}`;
   const textHtml = post.text
     ? `<div class="notebook-entry-textwrap${isLongText ? " has-more" : ""}"><div class="entry-text" dir="${textDir}">${escapeHtml(post.text)}${actionsHtml ? ` ${actionsHtml}` : ""}</div></div>`
     : (actionsHtml ? `<div class="notebook-entry-textwrap"><div class="entry-text">${actionsHtml}</div></div>` : `<div class="notebook-entry-textwrap"></div>`);
@@ -12505,7 +13054,10 @@ function buildNotebookCommentsBlock(postId, safeId) {
 }
 
 function renderNotebookEntry(post) {
-  return `<div class="notebook-entry${post.pinned ? " pinned-post" : ""}" data-post-id="${post.id}">${buildNotebookEntryInner(post)}</div>`;
+  const classes = ["notebook-entry"];
+  if (post.pinned) classes.push("pinned-post");
+  if (post.drawing_file_id) classes.push("has-drawing");
+  return `<div class="${classes.join(" ")}" data-post-id="${post.id}">${buildNotebookEntryInner(post)}</div>`;
 }
 
 const ICON_ARROW_BACK = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>`;
@@ -12545,10 +13097,14 @@ function renderNotebookPageDOM() {
   if (!pageEl) return;
   if (notebookState.expanded && notebookState.expanded.mode === "text") {
     const { post } = notebookState.expanded;
+    const fullTextDrawingHtml = post.drawing_file_id
+      ? `<div class="notebook-full-text-drawing-img"><img src="${mediaUrl(post.drawing_file_id)}" alt="نقاشی" /></div>`
+      : "";
     pageEl.innerHTML = `
       <div class="notebook-expanded">
         <button class="notebook-back-btn" onclick="collapseNotebookComments()">${ICON_ARROW_BACK}بازگشت</button>
         <div class="notebook-full-text" dir="${detectNotebookTextDir(post.text || "")}">${escapeHtml(post.text || "")}</div>
+        ${fullTextDrawingHtml}
       </div>`;
   } else if (notebookState.expanded) {
     const { postId, safeId, post } = notebookState.expanded;
@@ -12751,6 +13307,7 @@ function openNotebookCover() {
   const book = document.getElementById("notebookBook");
   cover.classList.add("opening");
   book.classList.remove("hidden");
+  document.getElementById("notebookFilterRow")?.classList.add("visible");
   showNotebookPage(1, null);
   setTimeout(() => {
     cover.classList.add("hidden-after-open");
@@ -12762,20 +13319,22 @@ function initNotebookView(forceReload) {
   const book = document.getElementById("notebookBook");
   if (!cover) return;
   if (forceReload) {
-    notebookState.pages = {};
+    notebookResetRawState();
   }
   if (!notebookState.opened) {
     cover.classList.remove("opening", "hidden-after-open");
     book.classList.add("hidden");
     document.getElementById("notebookHomeBtn")?.classList.remove("visible");
+    document.getElementById("notebookFilterRow")?.classList.remove("visible");
     return;
   }
+  document.getElementById("notebookFilterRow")?.classList.add("visible");
   // اگه قبلاً باز شده بود (مثلاً برگشتن به این تب)، همون صفحه رو (با دیتای تازه اگه رفرش‌شده) نشون بده
   showNotebookPage(notebookState.currentPage, null);
 }
 
 async function reloadNotebook() {
-  notebookState.pages = {};
+  notebookResetRawState();
   if (notebookState.opened) {
     showNotebookPage(notebookState.currentPage, null);
   }
