@@ -932,6 +932,23 @@
     background: var(--accent-gradient); color: #fff; font-family: inherit; font-size: 13.5px; font-weight: 700; cursor: pointer;
   }
 
+  /* ---------- دکمه‌های Undo/Redo (تویِ هدرِ محیطِ نقاشی) + پاک‌کردنِ کامل + شفافیت ---------- */
+  .drawing-studio-head-actions { display: flex; align-items: center; gap: 6px; }
+  .drawing-undo-redo-btn {
+    display: flex; align-items: center; justify-content: center;
+    width: 30px; height: 30px; border-radius: 9px; border: 1px solid var(--border);
+    background: var(--card); color: var(--subtext); cursor: pointer; padding: 0;
+  }
+  .drawing-undo-redo-btn svg { width: 16px; height: 16px; }
+  .drawing-undo-redo-btn:disabled { opacity: 0.35; cursor: default; }
+  .drawing-clear-btn {
+    flex-shrink: 0; padding: 9px 12px; border-radius: 10px; border: 1px solid var(--border);
+    background: var(--card); color: var(--error); font-family: inherit; font-size: 12px; cursor: pointer;
+  }
+  .drawing-opacity-row { display: flex; align-items: center; gap: 10px; }
+  .drawing-opacity-row input[type="range"] { flex: 1; accent-color: var(--accent); }
+  .drawing-opacity-row .drawing-size-preview { font-size: 10px; color: var(--subtext); border-radius: 8px; width: 34px; }
+
   /* ---------- کادر آپلود رسانه (دورچین‌دار) ---------- */
   .media-dropzone {
     position: relative; display: flex; align-items: center; justify-content: center;
@@ -1308,6 +1325,16 @@
   }
   .delete-btn { background: none; border: none; color: var(--error); font-size: 11px; cursor: pointer; font-family: inherit; padding: 0; text-decoration: underline; }
   .pin-btn { background: none; border: none; color: var(--accent-hover); font-size: 11px; cursor: pointer; font-family: inherit; padding: 0; text-decoration: underline; }
+  .edit-btn { background: none; border: none; color: var(--accent); font-size: 11px; cursor: pointer; font-family: inherit; padding: 0; text-decoration: underline; }
+
+  /* ---------- فرمِ ویرایشِ درجاییِ متن‌های دفتر ---------- */
+  .notebook-edit-wrap { padding: 4px 2px; }
+  .notebook-edit-textarea {
+    width: 100%; min-height: 90px; resize: vertical; font-family: inherit; font-size: 14px;
+    background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+    color: var(--text); padding: 8px 10px; box-sizing: border-box;
+  }
+  .notebook-edit-actions { display: flex; gap: 8px; margin-top: 6px; }
   .pinned-badge {
     display: inline-flex; align-items: center; gap: 3px;
     font-size: 11px; font-weight: 500; color: var(--accent-hover);
@@ -1704,7 +1731,7 @@
   .mode-capsule-btn svg { width: 18px; height: 18px; transition: color 0.2s; }
   .mode-capsule-btn.active { color: #fff; }
   /* دکمه‌ی «تنظیمات» تو صفحه‌ی پروفایلِ خود کاربر: کادر باریک دورچین‌دار */
-  .profile-settings-block { margin-top: 16px; }
+  .profile-settings-block { margin-top: 16px; display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; }
   .profile-settings-btn {
     display: inline-flex; align-items: center; justify-content: center; gap: 6px;
     margin: 0 auto; padding: 8px 18px; border-radius: 999px;
@@ -2466,6 +2493,9 @@
   .chat-item-info { min-width: 0; flex: 1; }
   .chat-item-name { font-size: 14.5px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .chat-item-name .chat-item-member-count { font-weight: 400; color: var(--subtext); font-size: 12px; margin-inline-start: 4px; }
+  .chat-item-name .chat-pinned-tag { width: 12px; height: 12px; margin-inline-start: 2px; }
+  .saved-messages-avatar { background: var(--accent-gradient) !important; }
+  .saved-messages-avatar svg { width: 22px; height: 22px; }
   .chat-item-preview { font-size: 12.5px; color: var(--subtext); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px; display: flex; align-items: center; gap: 3px; }
   .chat-unread-badge {
     background: var(--accent-gradient); color: #fff; font-size: 11px; font-weight: 700; min-width: 20px; height: 20px;
@@ -2570,6 +2600,22 @@
   .chat-file-card-size { font-size: 11px; opacity: 0.75; margin-top: 2px; }
   .chat-file-card-download { flex-shrink: 0; opacity: 0.8; }
   .chat-file-card-download svg { width: 16px; height: 16px; }
+  /* ---------- چت: کارتِ شورتکاتِ فوروارد یه پست (با زدنش، پست تو مودال باز می‌شه) ---------- */
+  .chat-post-shortcut-card {
+    display: flex; align-items: center; gap: 10px; width: 220px; max-width: 100%;
+    padding: 8px 10px; border-radius: 10px; background: rgba(0,0,0,0.12);
+    color: inherit; margin-bottom: 4px; cursor: pointer;
+  }
+  .chat-post-shortcut-card:hover { background: rgba(0,0,0,0.18); }
+  .chat-post-shortcut-icon {
+    width: 36px; height: 36px; border-radius: 8px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--accent, #6c5ce7); color: #fff;
+  }
+  .chat-post-shortcut-icon svg { width: 17px; height: 17px; }
+  .chat-post-shortcut-info { flex: 1; min-width: 0; }
+  .chat-post-shortcut-label { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .chat-post-shortcut-hint { font-size: 11px; opacity: 0.75; margin-top: 2px; }
   /* ---------- چت: پلیرِ اختصاصیِ پیامِ صوتی (به‌جای <audio controls> پیش‌فرضِ مرورگر) ---------- */
   .chat-audio-player {
     display: flex; align-items: center; gap: 10px;
@@ -3985,15 +4031,16 @@
   /* ردیفِ پایینِ ریل: پیلِ کامنت + دکمه‌ی مربعیِ فول‌اسکرین، کنارِ هم با فاصله‌ی خیلی کم */
   .notebook-entry-rail-row { display: flex; flex-direction: row; align-items: center; justify-content: center; gap: 2px; width: 100%; }
   .notebook-entry-rail-row .notebook-pill.comment { width: auto; padding: 4px 6px; }
-  .notebook-fullscreen-btn {
+  /* دکمه‌ی متنیِ «دیدن بیشتر/دیدن کمتر» که جای دکمه‌ی مربعیِ فول‌اسکرینِ قبلی نشسته؛ کارکردش عیناً همون
+     بازشدنِ کاملِ متنه (expandNotebookText)، فقط ظاهرش یه لینکِ متنیِ کوچیکه نه یه دکمه‌ی آیکونیِ مربعی */
+  .notebook-seemore-btn {
     flex-shrink: 0; display: flex; align-items: center; justify-content: center;
-    width: 21px; height: 21px; background: var(--surface); border: 1px solid var(--border);
-    border-radius: 7px; color: var(--subtext); cursor: pointer;
-    transition: color 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+    background: none; border: none; color: var(--accent-hover); font-family: inherit;
+    font-size: 11px; font-weight: 500; cursor: pointer; padding: 4px 6px; white-space: nowrap;
+    transition: color 0.15s ease;
   }
-  .notebook-fullscreen-btn:hover { color: var(--text); border-color: var(--accent); }
-  .notebook-fullscreen-btn:active { transform: scale(0.92); }
-  .notebook-fullscreen-btn svg { width: 11px; height: 11px; }
+  .notebook-seemore-btn:hover { color: var(--accent); }
+  .notebook-seemore-btn:active { transform: scale(0.95); }
 
 
   /* ---------- حالتِ بازشده‌ی کامنت‌ها: متنِ موردنظر بالای صفحه می‌شینه، کامنت‌ها جای دو متنِ دیگه رو پر می‌کنن ---------- */
@@ -4390,7 +4437,15 @@
     <div class="drawing-studio" id="drawingStudio" role="dialog" aria-label="محیط نقاشی">
       <div class="drawing-studio-head">
         <span class="drawing-studio-title">نقاشی متن</span>
-        <button type="button" class="drawing-studio-close" onclick="closeDrawingStudio()" aria-label="بستن">×</button>
+        <div class="drawing-studio-head-actions">
+          <button type="button" class="drawing-undo-redo-btn" id="drawingUndoBtn" onclick="undoDrawing()" title="واگرد" aria-label="واگرد" disabled>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10h10a5 5 0 0 1 0 10h-2"/><path d="M8 5 3 10l5 5"/></svg>
+          </button>
+          <button type="button" class="drawing-undo-redo-btn" id="drawingRedoBtn" onclick="redoDrawing()" title="ازنو" aria-label="ازنو" disabled>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10H11a5 5 0 0 0 0 10h2"/><path d="M16 5l5 5-5 5"/></svg>
+          </button>
+          <button type="button" class="drawing-studio-close" onclick="closeDrawingStudio()" aria-label="بستن">×</button>
+        </div>
       </div>
       <div class="drawing-canvas-wrap" id="drawingCanvasWrap">
         <canvas id="drawingCanvas"></canvas>
@@ -4410,11 +4465,40 @@
             پاک‌کن
           </button>
         </div>
+        <div class="drawing-toolbar-row">
+          <button type="button" class="drawing-tool-btn" id="toolLineBtn" onclick="setDrawingTool('line')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="19" x2="19" y2="5"/></svg>
+            خط
+          </button>
+          <button type="button" class="drawing-tool-btn" id="toolRectBtn" onclick="setDrawingTool('rect')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="6" width="16" height="12" rx="1.5"/></svg>
+            مستطیل
+          </button>
+          <button type="button" class="drawing-tool-btn" id="toolCircleBtn" onclick="setDrawingTool('circle')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8"/></svg>
+            دایره
+          </button>
+          <button type="button" class="drawing-clear-btn" onclick="clearAllDrawingCanvas()" title="پاک کردنِ کامل بوم" aria-label="پاک کردنِ کامل بوم">پاک کردنِ همه</button>
+        </div>
         <div class="drawing-toolbar-row drawing-size-row">
           <span class="drawing-size-preview" id="drawingSizePreview"><span class="drawing-size-dot" id="drawingSizeDot"></span></span>
           <input type="range" id="drawingSizeSlider" min="1" max="40" value="4" oninput="onDrawingSizeInput(this.value)" />
         </div>
+        <div class="drawing-toolbar-row drawing-opacity-row" id="drawingOpacityRow">
+          <span class="drawing-size-preview" id="drawingOpacityPreview">۱۰۰٪</span>
+          <input type="range" id="drawingOpacitySlider" min="10" max="100" value="100" oninput="onDrawingOpacityInput(this.value)" />
+        </div>
         <div class="drawing-toolbar-row drawing-color-row" id="drawingColorRow">
+          <button type="button" class="drawing-color-swatch active" style="background:#8B5CF6" onclick="setDrawingColor('#8B5CF6', this)"></button>
+          <button type="button" class="drawing-color-swatch" style="background:#EF4444" onclick="setDrawingColor('#EF4444', this)"></button>
+          <button type="button" class="drawing-color-swatch" style="background:#F97316" onclick="setDrawingColor('#F97316', this)"></button>
+          <button type="button" class="drawing-color-swatch" style="background:#EAB308" onclick="setDrawingColor('#EAB308', this)"></button>
+          <button type="button" class="drawing-color-swatch" style="background:#22C55E" onclick="setDrawingColor('#22C55E', this)"></button>
+          <button type="button" class="drawing-color-swatch" style="background:#06B6D4" onclick="setDrawingColor('#06B6D4', this)"></button>
+          <button type="button" class="drawing-color-swatch" style="background:#3B82F6" onclick="setDrawingColor('#3B82F6', this)"></button>
+          <button type="button" class="drawing-color-swatch" style="background:#EC4899" onclick="setDrawingColor('#EC4899', this)"></button>
+          <button type="button" class="drawing-color-swatch" style="background:#111827" onclick="setDrawingColor('#111827', this)"></button>
+          <button type="button" class="drawing-color-swatch" style="background:#FFFFFF" onclick="setDrawingColor('#FFFFFF', this)"></button>
           <input type="color" class="drawing-color-custom" id="drawingColorCustom" value="#8B5CF6" oninput="setDrawingColor(this.value)" />
         </div>
         <div class="drawing-studio-actions">
@@ -5753,15 +5837,24 @@ window.addEventListener("resize", () => positionTopNavIndicator());
 const drawingState = {
   tool: "pen",
   color: "#8B5CF6",
-  sizes: { pen: 4, marker: 16, eraser: 20 },
+  sizes: { pen: 4, marker: 16, eraser: 20, line: 4, rect: 4, circle: 4 },
+  opacities: { pen: 1, marker: 0.55, eraser: 1, line: 1, rect: 1, circle: 1 },
   ctx: null,
   drawing: false,
   lastX: 0,
   lastY: 0,
+  startX: 0,
+  startY: 0,
+  shapeSnapshot: null, // اسنپ‌شاتِ خام‌پیکسلِ بومی درست قبل از شروعِ کشیدنِ یه فرم (خط/مستطیل/دایره)، برای پیش‌نمایشِ زنده
+  history: [], // پشته‌یِ Undo/Redo: هر آیتم یه dataURL از وضعِ کاملِ بومه
+  historyIndex: -1,
   savedDataUrl: null, // آخرین نسخه‌ی «ذخیره‌شده»؛ برای بازکردنِ دوباره‌ی محیط نقاشی از همینجا ادامه داده می‌شه
   blob: null, // همون نسخه‌ی ذخیره‌شده، به‌شکلِ Blob برای ارسال به سرور
   previewUrl: null,
 };
+
+const DRAWING_SHAPE_TOOLS = ["line", "rect", "circle"];
+function isDrawingShapeTool(tool) { return DRAWING_SHAPE_TOOLS.includes(tool); }
 
 function onDrawingToggle() {
   const cb = document.getElementById("drawingEnableCheckbox");
@@ -5799,21 +5892,37 @@ function drawingPointerDown(e) {
   const { x, y } = drawingCanvasPos(e, canvas);
   drawingState.lastX = x;
   drawingState.lastY = y;
-  // یه ضربه‌ی تنها (بدون کشیدن) هم باید یه نقطه بذاره
-  drawingStroke(x, y, x + 0.01, y + 0.01);
+  drawingState.startX = x;
+  drawingState.startY = y;
+  if (isDrawingShapeTool(drawingState.tool)) {
+    // پیشِ کشیدنِ فرم، وضعِ فعلیِ بوم رو خام (پیکسل‌به‌پیکسل) اسنپ‌شات می‌گیریم؛ هر بار حینِ کشیدن
+    // اول همین اسنپ‌شات برمی‌گرده رو بوم، بعد فرمِ جدید روش پیش‌نمایش داده می‌شه (تا فرمِ نصفه‌کاره تکرار نشه)
+    drawingState.shapeSnapshot = drawingState.ctx.getImageData(0, 0, canvas.width, canvas.height);
+  } else {
+    // یه ضربه‌ی تنها (بدون کشیدن) هم باید یه نقطه بذاره
+    drawingStroke(x, y, x + 0.01, y + 0.01);
+  }
 }
 
 function drawingPointerMove(e) {
   if (!drawingState.drawing) return;
   const canvas = document.getElementById("drawingCanvas");
   const { x, y } = drawingCanvasPos(e, canvas);
-  drawingStroke(drawingState.lastX, drawingState.lastY, x, y);
-  drawingState.lastX = x;
-  drawingState.lastY = y;
+  if (isDrawingShapeTool(drawingState.tool)) {
+    drawShapePreview(x, y);
+  } else {
+    drawingStroke(drawingState.lastX, drawingState.lastY, x, y);
+    drawingState.lastX = x;
+    drawingState.lastY = y;
+  }
 }
 
 function drawingPointerUp() {
+  const wasDrawing = drawingState.drawing;
+  drawingState.shapeSnapshot = null;
   drawingState.drawing = false;
+  // هر ضربه‌قلم یا فرمِ کامل‌شده یه پله‌ی جدید تو تاریخچه‌ی Undo/Redo ثبت می‌کنه
+  if (wasDrawing) pushDrawingHistory();
 }
 
 function drawingStroke(x1, y1, x2, y2) {
@@ -5821,7 +5930,7 @@ function drawingStroke(x1, y1, x2, y2) {
   if (!ctx) return;
   const tool = drawingState.tool;
   ctx.globalCompositeOperation = tool === "eraser" ? "destination-out" : "source-over";
-  ctx.globalAlpha = tool === "marker" ? 0.55 : 1;
+  ctx.globalAlpha = drawingState.opacities[tool] ?? 1;
   ctx.strokeStyle = tool === "eraser" ? "rgba(0,0,0,1)" : drawingState.color;
   ctx.lineWidth = drawingState.sizes[tool];
   ctx.beginPath();
@@ -5830,14 +5939,50 @@ function drawingStroke(x1, y1, x2, y2) {
   ctx.stroke();
 }
 
+// پیش‌نمایشِ زنده‌ی ابزارهای شکل (خط/مستطیل/دایره): هر فریم اول اسنپ‌شاتِ قبل‌از-کشیدن برمی‌گرده،
+// بعد خودِ فرم از نقطه‌ی شروع تا موقعیتِ فعلیِ اشاره‌گر روش کشیده می‌شه
+function drawShapePreview(x2, y2) {
+  const ctx = drawingState.ctx;
+  const canvas = document.getElementById("drawingCanvas");
+  if (!ctx || !canvas || !drawingState.shapeSnapshot) return;
+  ctx.putImageData(drawingState.shapeSnapshot, 0, 0);
+  const tool = drawingState.tool;
+  ctx.save();
+  ctx.globalCompositeOperation = "source-over";
+  ctx.globalAlpha = drawingState.opacities[tool] ?? 1;
+  ctx.strokeStyle = drawingState.color;
+  ctx.lineWidth = drawingState.sizes[tool];
+  const { startX, startY } = drawingState;
+  ctx.beginPath();
+  if (tool === "line") {
+    ctx.moveTo(startX, startY);
+    ctx.lineTo(x2, y2);
+  } else if (tool === "rect") {
+    ctx.rect(Math.min(startX, x2), Math.min(startY, y2), Math.abs(x2 - startX), Math.abs(y2 - startY));
+  } else if (tool === "circle") {
+    const rx = Math.abs(x2 - startX) / 2;
+    const ry = Math.abs(y2 - startY) / 2;
+    const cx = Math.min(startX, x2) + rx;
+    const cy = Math.min(startY, y2) + ry;
+    ctx.ellipse(cx, cy, Math.max(rx, 0.01), Math.max(ry, 0.01), 0, 0, Math.PI * 2);
+  }
+  ctx.stroke();
+  ctx.restore();
+}
+
 function setDrawingTool(tool) {
   drawingState.tool = tool;
-  ["pen", "marker", "eraser"].forEach((t) => {
-    document.getElementById(`tool${t.charAt(0).toUpperCase()}${t.slice(1)}Btn`).classList.toggle("active", t === tool);
+  ["pen", "marker", "eraser", "line", "rect", "circle"].forEach((t) => {
+    const btn = document.getElementById(`tool${t.charAt(0).toUpperCase()}${t.slice(1)}Btn`);
+    if (btn) btn.classList.toggle("active", t === tool);
   });
   document.getElementById("drawingColorRow").classList.toggle("hidden", tool === "eraser");
+  document.getElementById("drawingOpacityRow").classList.toggle("hidden", tool === "eraser");
   document.getElementById("drawingSizeSlider").value = drawingState.sizes[tool];
+  const opacitySlider = document.getElementById("drawingOpacitySlider");
+  if (opacitySlider) opacitySlider.value = Math.round((drawingState.opacities[tool] ?? 1) * 100);
   updateDrawingSizePreview();
+  updateDrawingOpacityPreview();
 }
 
 function onDrawingSizeInput(val) {
@@ -5845,8 +5990,17 @@ function onDrawingSizeInput(val) {
   updateDrawingSizePreview();
 }
 
-function setDrawingColor(hex) {
+function onDrawingOpacityInput(val) {
+  drawingState.opacities[drawingState.tool] = Number(val) / 100;
+  updateDrawingOpacityPreview();
+}
+
+function setDrawingColor(hex, swatchEl) {
   drawingState.color = hex;
+  document.querySelectorAll(".drawing-color-swatch").forEach((el) => el.classList.remove("active"));
+  if (swatchEl) swatchEl.classList.add("active");
+  const customPicker = document.getElementById("drawingColorCustom");
+  if (customPicker) customPicker.value = hex;
   updateDrawingSizePreview();
 }
 
@@ -5857,6 +6011,76 @@ function updateDrawingSizePreview() {
   dot.style.width = displaySize + "px";
   dot.style.height = displaySize + "px";
   dot.style.color = drawingState.tool === "eraser" ? "#B9B2C9" : drawingState.color;
+}
+
+function updateDrawingOpacityPreview() {
+  const el = document.getElementById("drawingOpacityPreview");
+  if (!el) return;
+  const pct = Math.round((drawingState.opacities[drawingState.tool] ?? 1) * 100);
+  el.textContent = pct.toLocaleString("fa-IR") + "٪";
+}
+
+// ---------- Undo/Redo: پشته‌ی وضعیت‌های کاملِ بوم (dataURL) ----------
+function pushDrawingHistory() {
+  const canvas = document.getElementById("drawingCanvas");
+  if (!canvas) return;
+  const dataUrl = canvas.toDataURL("image/png");
+  // اگه از وسطِ تاریخچه (بعد از یه Undo) چیزِ تازه‌ای کشیده بشه، شاخه‌ی Redoی قبلی دور ریخته می‌شه
+  drawingState.history = drawingState.history.slice(0, drawingState.historyIndex + 1);
+  drawingState.history.push(dataUrl);
+  if (drawingState.history.length > 40) drawingState.history.shift();
+  drawingState.historyIndex = drawingState.history.length - 1;
+  updateDrawingUndoRedoButtons();
+}
+
+function applyDrawingHistoryState(dataUrl) {
+  const canvas = document.getElementById("drawingCanvas");
+  const ctx = drawingState.ctx;
+  if (!canvas || !ctx) return;
+  ctx.save();
+  ctx.globalCompositeOperation = "source-over";
+  ctx.globalAlpha = 1;
+  ctx.fillStyle = "#FFFFFF";
+  ctx.fillRect(0, 0, canvas.clientWidth, canvas.clientHeight);
+  ctx.restore();
+  const img = new Image();
+  img.onload = () => ctx.drawImage(img, 0, 0, canvas.clientWidth, canvas.clientHeight);
+  img.src = dataUrl;
+}
+
+function undoDrawing() {
+  if (drawingState.historyIndex <= 0) return;
+  drawingState.historyIndex--;
+  applyDrawingHistoryState(drawingState.history[drawingState.historyIndex]);
+  updateDrawingUndoRedoButtons();
+}
+
+function redoDrawing() {
+  if (drawingState.historyIndex >= drawingState.history.length - 1) return;
+  drawingState.historyIndex++;
+  applyDrawingHistoryState(drawingState.history[drawingState.historyIndex]);
+  updateDrawingUndoRedoButtons();
+}
+
+function updateDrawingUndoRedoButtons() {
+  const undoBtn = document.getElementById("drawingUndoBtn");
+  const redoBtn = document.getElementById("drawingRedoBtn");
+  if (undoBtn) undoBtn.disabled = drawingState.historyIndex <= 0;
+  if (redoBtn) redoBtn.disabled = drawingState.historyIndex >= drawingState.history.length - 1;
+}
+
+// «پاک کردنِ همه»: کلِ بوم رو سفید می‌کنه، اما خودش هم یه پله‌ی تاریخچه‌ست (با Undo برمی‌گرده)
+function clearAllDrawingCanvas() {
+  const canvas = document.getElementById("drawingCanvas");
+  const ctx = drawingState.ctx;
+  if (!canvas || !ctx) return;
+  ctx.save();
+  ctx.globalCompositeOperation = "source-over";
+  ctx.globalAlpha = 1;
+  ctx.fillStyle = "#FFFFFF";
+  ctx.fillRect(0, 0, canvas.clientWidth, canvas.clientHeight);
+  ctx.restore();
+  pushDrawingHistory();
 }
 
 function openDrawingStudio() {
@@ -5887,6 +6111,12 @@ function openDrawingStudio() {
     canvas.onpointerup = drawingPointerUp;
     canvas.onpointercancel = drawingPointerUp;
     canvas.onpointerleave = drawingPointerUp;
+
+    // تاریخچه‌ی Undo/Redo هر بار که محیط باز می‌شه از صفر شروع می‌شه؛ همون وضعِ اولیه (خالی یا نسخه‌ی
+    // قبلاً ذخیره‌شده) به‌عنوانِ نقطه‌ی مبنا (پله‌ی صفرِ تاریخچه) ثبت می‌شه
+    drawingState.history = [];
+    drawingState.historyIndex = -1;
+    pushDrawingHistory();
   });
 }
 
@@ -7022,6 +7252,14 @@ function avatarInnerHtml(avatarFileId, name) {
   return escapeHtml((name || "؟").trim().charAt(0).toUpperCase());
 }
 
+// آواتارِ مخصوصِ گفتگوی «پیام‌های ذخیره‌شده»: به‌جای حرفِ اول، همیشه آیکونِ بوکمارک
+const SAVED_MESSAGES_TITLE_FA = "پیام‌های ذخیره‌شده";
+const SAVED_MESSAGES_BOOKMARK_SVG =
+  `<svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M6 3a2 2 0 0 0-2 2v16l8-5 8 5V5a2 2 0 0 0-2-2H6z"/></svg>`;
+function isSavedMessagesConv(conv) {
+  return !!conv && conv.type === "saved";
+}
+
 // ---------- چت: حالت کلی ----------
 // چون سرویسِ ما WebSocket/Durable Object نداره (فقط دشبورد کلادفلر بدون CLI)، «آنی‌بودن» با پولینگِ
 // سبک هر ۲.۵ ثانیه شبیه‌سازی می‌شه؛ فقط وقتی صفحه‌ی مکالمه بازه و تب مرورگر هم فعاله
@@ -7064,7 +7302,9 @@ async function loadChatConversationsList() {
     const res = await fetch(`${WORKER_URL}/api/chat/list`, { headers: { Authorization: `Bearer ${getToken()}` } });
     const data = await res.json();
     if (!res.ok) return;
-    chatState.conversations.direct = (data.conversations || []).filter((c) => c.type === "direct");
+    // پیام‌های ذخیره‌شده (type: "saved") هم تو همین تبِ چت‌های خصوصی نشون داده می‌شه؛ سرور همیشه
+    // اول از همه برمی‌گردوندش (پین‌شده)، این‌جا هم همون ترتیب حفظ می‌شه
+    chatState.conversations.direct = (data.conversations || []).filter((c) => c.type === "direct" || c.type === "saved");
     chatState.conversations.group = (data.conversations || []).filter((c) => c.type === "group");
     chatState.loaded = true;
     renderChatList("direct");
@@ -7163,6 +7403,7 @@ function chatPreviewText(conv) {
   if (lm.msgType === "video") return prefix + "🎬 فیلم";
   if (lm.msgType === "sticker") return prefix + "🙂 استیکر";
   if (lm.msgType === "file") return prefix + "📎 فایل";
+  if (lm.msgType === "post_shortcut") return prefix + `🔗 ${lm.text || "پست"}`;
   return prefix + "🎙 پیامِ صوتی";
 }
 
@@ -7176,17 +7417,22 @@ function renderChatList(type) {
   }
   el.innerHTML = items
     .map((c) => {
-      const displayName = escapeHtml(c.title || "کاربر حذف‌شده");
+      const saved = isSavedMessagesConv(c);
+      const displayName = escapeHtml(saved ? SAVED_MESSAGES_TITLE_FA : (c.title || "کاربر حذف‌شده"));
       const color = avatarColor(c.title || c.id);
       const badge = c.unreadCount > 0 ? `<span class="chat-unread-badge">${c.unreadCount > 99 ? "۹۹+" : c.unreadCount}</span>` : "";
+      const avatarInner = saved ? SAVED_MESSAGES_BOOKMARK_SVG : avatarInnerHtml(c.avatarFileId, c.title);
+      const pinTag = saved
+        ? `<svg class="chat-pinned-tag" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M16 3l5 5-4 4 1 5-5-3-5 3 1-5-4-4 5-5 3 1z"/></svg>`
+        : "";
       return `
-      <div class="chat-list-item" onclick="openChatConversation('${c.id}')">
+      <div class="chat-list-item${saved ? " saved-messages-item" : ""}" onclick="openChatConversation('${c.id}')">
         <div class="chat-avatar-wrap${c.online ? " online" : ""}">
-          <div class="chat-avatar" style="background:${color}">${avatarInnerHtml(c.avatarFileId, c.title)}</div>
+          <div class="chat-avatar${saved ? " saved-messages-avatar" : ""}" style="background:${saved ? "" : color}">${avatarInner}</div>
           <span class="chat-online-dot"></span>
         </div>
         <div class="chat-item-info">
-          <div class="chat-item-name">${displayName}</div>
+          <div class="chat-item-name">${displayName} ${pinTag}</div>
           <div class="chat-item-preview">${escapeHtml(chatPreviewText(c))}</div>
         </div>
         ${badge}
@@ -7240,8 +7486,17 @@ async function openChatConversation(conversationId) {
 }
 
 function updateChatConvHeader(conv) {
-  document.getElementById("chatConvTitle").textContent = conv.title || "گفتگو";
   const avatarEl = document.getElementById("chatConvAvatar");
+  if (isSavedMessagesConv(conv)) {
+    document.getElementById("chatConvTitle").textContent = SAVED_MESSAGES_TITLE_FA;
+    avatarEl.style.background = "";
+    avatarEl.classList.add("saved-messages-avatar");
+    avatarEl.innerHTML = SAVED_MESSAGES_BOOKMARK_SVG;
+    updateChatConvSubtitle();
+    return;
+  }
+  avatarEl.classList.remove("saved-messages-avatar");
+  document.getElementById("chatConvTitle").textContent = conv.title || "گفتگو";
   if (conv.type === "direct") {
     avatarEl.style.background = avatarColor(conv.title || conv.id);
     avatarEl.innerHTML = avatarInnerHtml(conv.avatarFileId, conv.title);
@@ -7256,6 +7511,11 @@ function updateChatConvSubtitle() {
   const conv = chatState.active;
   const el = document.getElementById("chatConvSubtitle");
   if (!conv || !el) return;
+  if (isSavedMessagesConv(conv)) {
+    el.textContent = "فقط برای خودت";
+    el.classList.remove("online");
+    return;
+  }
   if (conv.type === "direct") {
     const presence = chatState.otherPresence;
     if (presence && presence.online) {
@@ -7277,6 +7537,7 @@ function updateChatConvSubtitle() {
 function onChatHeaderClick() {
   const conv = chatState.active;
   if (!conv) return;
+  if (isSavedMessagesConv(conv)) return;
   if (conv.type === "direct") {
     if (conv.otherUsername) openProfile(conv.otherUsername);
   } else {
@@ -7473,32 +7734,52 @@ async function jumpToChatSearchResult(messageId, createdAt) {
   } catch (e) {}
 }
 
-// ---------- چت: فوروارد پیام به یک یا چند مکالمه‌ی دیگه ----------
-let chatForwardState = { messageId: null, selected: new Set() };
+// ---------- چت: فوروارد پیام (یا شورتکاتِ یه پست) به یک یا چند مکالمه‌ی دیگه ----------
+// همون پنجره‌ی انتخابِ مقصد (chatForwardBackdrop) بینِ دو حالت مشترکه: mode «message» (فورواردِ یه پیامِ
+// داخلِ یه چت) و mode «post» (فرستادنِ شورتکاتِ یه پست از فید/دفتر به یه چت یا گروه)
+let chatForwardState = { mode: "message", messageId: null, postId: null, postLabel: null, selected: new Set() };
 
-function openChatForwardPicker(messageId) {
-  if (!chatState.active) return;
-  chatForwardState = { messageId, selected: new Set() };
+function renderChatForwardTargetList(excludeConversationId) {
   const all = [...(chatState.conversations.direct || []), ...(chatState.conversations.group || [])].filter(
-    (c) => c.id !== chatState.active.id
+    (c) => c.id !== excludeConversationId
   );
   const listEl = document.getElementById("chatForwardList");
   if (all.length === 0) {
     listEl.innerHTML = `<div class="chat-search-empty">گفتگوی دیگه‌ای نداری</div>`;
-  } else {
-    listEl.innerHTML = all
-      .map((c) => {
-        const color = avatarColor(c.title || c.id);
-        return `
+    return;
+  }
+  listEl.innerHTML = all
+    .map((c) => {
+      const saved = isSavedMessagesConv(c);
+      const name = saved ? SAVED_MESSAGES_TITLE_FA : (c.title || "");
+      const color = avatarColor(c.title || c.id);
+      const avatarInner = saved ? SAVED_MESSAGES_BOOKMARK_SVG : avatarInnerHtml(c.avatarFileId, c.title);
+      return `
       <div class="chat-forward-item" onclick="toggleChatForwardTarget('${c.id}')" id="chatForwardItem-${c.id}">
-        <div class="chat-avatar" style="background:${color}">${avatarInnerHtml(c.avatarFileId, c.title)}</div>
-        <span class="chat-forward-item-name">${escapeHtml(c.title || "")}</span>
+        <div class="chat-avatar${saved ? " saved-messages-avatar" : ""}" style="background:${saved ? "" : color}">${avatarInner}</div>
+        <span class="chat-forward-item-name">${escapeHtml(name)}</span>
         <span class="chat-forward-item-check"></span>
       </div>`;
-      })
-      .join("");
-  }
+    })
+    .join("");
+}
+
+function openChatForwardPicker(messageId) {
+  if (!chatState.active) return;
+  chatForwardState = { mode: "message", messageId, postId: null, postLabel: null, selected: new Set() };
+  renderChatForwardTargetList(chatState.active.id);
   document.getElementById("chatForwardSendBtn").disabled = true;
+  document.getElementById("chatForwardSendBtn").textContent = "ارسال";
+  document.getElementById("chatForwardBackdrop").classList.add("open");
+}
+
+// ---------- فوروارد کردنِ شورتکاتِ یه پست (از منوی سه‌نقطه‌ی هر پست) به یه چت یا گروه ----------
+async function openPostForwardPicker(postId, postLabel) {
+  if (!chatState.loaded) await loadChatConversationsList();
+  chatForwardState = { mode: "post", messageId: null, postId, postLabel, selected: new Set() };
+  renderChatForwardTargetList(null);
+  document.getElementById("chatForwardSendBtn").disabled = true;
+  document.getElementById("chatForwardSendBtn").textContent = "ارسال";
   document.getElementById("chatForwardBackdrop").classList.add("open");
 }
 
@@ -7520,7 +7801,9 @@ function toggleChatForwardTarget(conversationId) {
 }
 
 async function sendChatForward() {
-  if (!chatForwardState.messageId || chatForwardState.selected.size === 0 || !chatState.active) return;
+  if (chatForwardState.selected.size === 0) return;
+  if (chatForwardState.mode === "post") return sendPostShortcutForward();
+  if (!chatForwardState.messageId || !chatState.active) return;
   const btn = document.getElementById("chatForwardSendBtn");
   btn.disabled = true;
   try {
@@ -7541,6 +7824,37 @@ async function sendChatForward() {
     toast(e.message || "فوروارد ناموفق بود", "error");
     btn.disabled = false;
   }
+}
+
+// ---------- ارسالِ شورتکاتِ یه پست (بعدِ انتخابِ مقصدها تو همون پنجره‌ی فوروارد) ----------
+async function sendPostShortcutForward() {
+  if (!chatForwardState.postId || chatForwardState.selected.size === 0) return;
+  const btn = document.getElementById("chatForwardSendBtn");
+  btn.disabled = true;
+  const targets = [...chatForwardState.selected];
+  let okCount = 0;
+  for (const conversationId of targets) {
+    try {
+      const res = await fetch(`${WORKER_URL}/api/chat/send`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${getToken()}` },
+        body: JSON.stringify({
+          conversationId,
+          msgType: "post_shortcut",
+          postId: chatForwardState.postId,
+          text: chatForwardState.postLabel || "پست",
+        }),
+      });
+      if (res.ok) okCount++;
+    } catch (e) {}
+  }
+  if (okCount === 0) {
+    toast("ارسال ناموفق بود", "error");
+    btn.disabled = false;
+    return;
+  }
+  closeChatForwardPicker();
+  toast(okCount === targets.length ? "پست فرستاده شد" : `پست به ${okCount} مورد فرستاده شد`, "success");
 }
 
 // ---------- چت: بارگذاریِ اولیه و صفحه‌بندیِ رو-به-بالای پیام‌های قدیمی‌تر (اسکرول به بالا) ----------
@@ -7822,6 +8136,14 @@ function renderChatBubble(m, myUsername, prevMsg) {
   } else if (m.msgType === "file") {
     bodyHtml = buildChatFileCard(m);
     if (m.text) bodyHtml += `<div class="chat-bubble-text">${renderChatTextWithMentions(m.text)}</div>`;
+  } else if (m.msgType === "post_shortcut") {
+    bodyHtml = `<div class="chat-post-shortcut-card" onclick="event.stopPropagation(); openPostModal('${jsAttr(m.fileId)}')">
+      <span class="chat-post-shortcut-icon">${ICON_SEND}</span>
+      <div class="chat-post-shortcut-info">
+        <div class="chat-post-shortcut-label">${escapeHtml(m.text || "پست")}</div>
+        <div class="chat-post-shortcut-hint">برای دیدنِ پست بزن</div>
+      </div>
+    </div>`;
   } else {
     bodyHtml = `<div class="chat-bubble-text">${renderChatTextWithMentions(m.text || "")}</div>`;
   }
@@ -7925,6 +8247,7 @@ function chatReplyPreviewText(m) {
   if (m.msgType === "audio") return "🎙 پیامِ صوتی";
   if (m.msgType === "sticker") return "استیکر";
   if (m.msgType === "file") return `📎 ${m.fileName || "فایل"}`;
+  if (m.msgType === "post_shortcut") return `🔗 ${m.text || "پست"}`;
   return (m.text || "").slice(0, 60);
 }
 
@@ -11708,6 +12031,14 @@ const ICON_MORE_HORIZ = `<svg viewBox="0 0 24 24" fill="currentColor" stroke="no
 const ICON_PIN_MENU = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 17v5"/><path d="M9 3h6l1 6 2 2v2H6v-2l2-2z"/></svg>`;
 const ICON_MAXIMIZE = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></svg>`;
 
+// ---------- برچسبِ کوتاهِ شورتکاتِ فوروارد یه پست: اول عنوان، وگرنه یه خط از توضیحات، وگرنه یه برچسبِ عمومی ----------
+function postShortcutLabel(p) {
+  if (p.title) return String(p.title).trim().slice(0, 60);
+  if (p.text) return String(p.text).trim().split("\n")[0].slice(0, 60);
+  const typeLabels = { photo: "📷 عکس", video: "🎬 فیلم", audio: "🎙 آهنگ", document: "📎 فایل" };
+  return typeLabels[p.type] || "یک پست";
+}
+
 // ---------- منوی پاپ‌آپِ سه‌نقطه‌ی پست کارت (ویرایش/پین/حذف) ----------
 // همیشه فقط یه منو در آن واحد باز می‌مونه؛ با کلیک بیرون از منو هم بسته می‌شه
 function togglePostMenu(event, safeId) {
@@ -11737,6 +12068,7 @@ function renderPost(p, num, opts) {
   const downloadExtByType = { photo: "jpg", video: "mp4", audio: "mp3", document: "bin" };
   const downloadExt = downloadExtByType[p.type];
   const postMenuItems = [];
+  postMenuItems.push(`<button type="button" class="post-menu-item" onclick="togglePostMenu(event,'${safeId}'); openPostForwardPicker('${p.id}','${jsAttr(postShortcutLabel(p))}')">${ICON_SEND}<span>فوروارد پست</span></button>`);
   if (canEdit) {
     postMenuItems.push(`<button type="button" class="post-menu-item" onclick="startEditPost(event,'${p.id}','${safeId}')">${ICON_EDIT}<span>ویرایش</span></button>`);
   }
@@ -12979,7 +13311,10 @@ function buildNotebookEntryInner(post) {
   // همون جهت تعیین می‌کنه ریل کدوم سمت بشینه (dir-fa → چپ مثلِ کانسپتِ اول، dir-en → راست مثلِ کانسپتِ دوم)
   const textDir = detectNotebookTextDir(post.text || "");
   const isLongText = !!(post.text && post.text.length > NOTEBOOK_LONG_TEXT_THRESHOLD);
-  const actionsHtml = `${pinBtn}${deleteBtn}`;
+  // دکمه‌ی ویرایش: فقط صاحبِ متن می‌بینتش؛ ظاهرش مثلِ پین/حذفِ کنارش یه لینکِ متنیِ کوچیکه
+  const canEditText = post.username === getUsername();
+  const editBtn = canEditText ? `<button class="edit-btn" onclick="startEditNotebookText('${post.id}','${safeId}')">ویرایش</button>` : "";
+  const actionsHtml = `${editBtn}${pinBtn}${deleteBtn}`;
 
   // «متن نقاشی»: چیدمانِ کاملاً جدا — نقاشی زیرِ اطلاعاتِ کاربر، بعدش ریلِ افقیِ رای/لایک/کامنت/فول‌اسکرین
   // بینِ عکس و متن، و خودِ متن حداکثر ۵ خط با محوشدنِ ملایم (برای دیدنِ کامل، همون دکمه‌ی فول‌اسکرینِ
@@ -13002,11 +13337,11 @@ function buildNotebookEntryInner(post) {
         <button class="notebook-pill comment" onclick="expandNotebookComments('${post.id}','${safeId}')" title="کامنت‌ها" aria-label="کامنت‌ها">
           ${ICON_COMMENT}<span class="count" id="commentCount-${safeId}">${post.comment_count || 0}</span>
         </button>
-        <button type="button" class="notebook-fullscreen-btn" onclick="expandNotebookText('${post.id}','${safeId}')" title="نمایش کامل متن" aria-label="نمایش کامل متن">${ICON_FULLSCREEN}</button>
+        <button type="button" class="notebook-seemore-btn" onclick="expandNotebookText('${post.id}','${safeId}')" title="دیدن بیشتر" aria-label="دیدن بیشتر">دیدن بیشتر</button>
       </div>`;
     const drawingTextHtml = post.text
-      ? `<div class="notebook-entry-textwrap"><div class="entry-text" dir="${textDir}">${escapeHtml(post.text)}${actionsHtml ? ` ${actionsHtml}` : ""}</div></div>`
-      : (actionsHtml ? `<div class="notebook-entry-textwrap"><div class="entry-text">${actionsHtml}</div></div>` : `<div class="notebook-entry-textwrap"></div>`);
+      ? `<div class="notebook-entry-textwrap" id="notebookTextWrap-${safeId}"><div class="entry-text" dir="${textDir}">${escapeHtml(post.text)}${actionsHtml ? ` ${actionsHtml}` : ""}</div></div>`
+      : (actionsHtml ? `<div class="notebook-entry-textwrap" id="notebookTextWrap-${safeId}"><div class="entry-text">${actionsHtml}</div></div>` : `<div class="notebook-entry-textwrap" id="notebookTextWrap-${safeId}"></div>`);
     return `${header}${drawingImgHtml}${drawingActionsHtml}${drawingTextHtml}`;
   }
 
@@ -13024,7 +13359,7 @@ function buildNotebookEntryInner(post) {
         <button class="notebook-pill comment" onclick="expandNotebookComments('${post.id}','${safeId}')" title="کامنت‌ها" aria-label="کامنت‌ها">
           ${ICON_COMMENT}<span class="count" id="commentCount-${safeId}">${post.comment_count || 0}</span>
         </button>
-        <button type="button" class="notebook-fullscreen-btn" onclick="expandNotebookText('${post.id}','${safeId}')" title="نمایش کامل متن" aria-label="نمایش کامل متن">${ICON_FULLSCREEN}</button>
+        <button type="button" class="notebook-seemore-btn" onclick="expandNotebookText('${post.id}','${safeId}')" title="دیدن بیشتر" aria-label="دیدن بیشتر">دیدن بیشتر</button>
       </div>
     </div>`;
 
@@ -13032,8 +13367,8 @@ function buildNotebookEntryInner(post) {
   // به‌جای اسکرول فقط همون ناحیه بریده (کلیپ) می‌شه و یه گرادیانتِ ملایمِ «ادامه داره» پایینش نشون داده می‌شه؛
   // برای دیدنِ کاملِ متن، دکمه‌ی فول‌اسکرینِ توی ریل همیشه در دسترسه
   const textHtml = post.text
-    ? `<div class="notebook-entry-textwrap${isLongText ? " has-more" : ""}"><div class="entry-text" dir="${textDir}">${escapeHtml(post.text)}${actionsHtml ? ` ${actionsHtml}` : ""}</div></div>`
-    : (actionsHtml ? `<div class="notebook-entry-textwrap"><div class="entry-text">${actionsHtml}</div></div>` : `<div class="notebook-entry-textwrap"></div>`);
+    ? `<div class="notebook-entry-textwrap${isLongText ? " has-more" : ""}" id="notebookTextWrap-${safeId}"><div class="entry-text" dir="${textDir}">${escapeHtml(post.text)}${actionsHtml ? ` ${actionsHtml}` : ""}</div></div>`
+    : (actionsHtml ? `<div class="notebook-entry-textwrap" id="notebookTextWrap-${safeId}"><div class="entry-text">${actionsHtml}</div></div>` : `<div class="notebook-entry-textwrap" id="notebookTextWrap-${safeId}"></div>`);
 
   const body = `<div class="notebook-entry-body dir-${textDir === "rtl" ? "fa" : "en"}">${rail}${textHtml}</div>`;
 
@@ -13058,6 +13393,70 @@ function renderNotebookEntry(post) {
   if (post.pinned) classes.push("pinned-post");
   if (post.drawing_file_id) classes.push("has-drawing");
   return `<div class="${classes.join(" ")}" data-post-id="${post.id}">${buildNotebookEntryInner(post)}</div>`;
+}
+
+// ---------- ویرایشِ درجاییِ متن‌های دفتر (فقط صاحبِ متن): همون منطقِ ویرایشِ پستِ کارت، تطبیق‌داده‌شده
+// با ساختارِ ویژه‌ی دفتر (هدر/ریل جدا از خودِ متن)؛ در حالتِ بازشده (mode: text/comments) هم کار می‌کنه ----------
+function startEditNotebookText(postId, safeId) {
+  const entry = notebookState.pages[notebookState.currentPage];
+  if (!entry || entry === "loading") return;
+  const post = entry.posts.find((p) => p.id === postId);
+  if (!post) return;
+  const wrap = document.getElementById(`notebookTextWrap-${safeId}`);
+  if (!wrap) return;
+  wrap.dataset.prevHtml = wrap.outerHTML;
+  wrap.outerHTML = `
+    <div class="notebook-entry-textwrap notebook-edit-wrap" id="notebookTextWrap-${safeId}">
+      <textarea class="notebook-edit-textarea" id="notebookEditText-${safeId}" maxlength="4000" placeholder="متنِ دفتر...">${escapeHtml(post.text || "")}</textarea>
+      <div class="notebook-edit-actions">
+        <button type="button" class="post-edit-save" onclick="saveNotebookTextEdit('${postId}','${safeId}')">ذخیره</button>
+        <button type="button" class="post-edit-cancel" onclick="cancelEditNotebookText('${safeId}')">انصراف</button>
+      </div>
+      <div class="error" id="notebookEditError-${safeId}"></div>
+    </div>`;
+  const ta = document.getElementById(`notebookEditText-${safeId}`);
+  if (ta) { ta.focus(); ta.setSelectionRange(ta.value.length, ta.value.length); }
+}
+
+function cancelEditNotebookText(safeId) {
+  const wrap = document.getElementById(`notebookTextWrap-${safeId}`);
+  if (!wrap || !wrap.dataset.prevHtml) return;
+  wrap.outerHTML = wrap.dataset.prevHtml;
+}
+
+async function saveNotebookTextEdit(postId, safeId) {
+  const ta = document.getElementById(`notebookEditText-${safeId}`);
+  const errEl = document.getElementById(`notebookEditError-${safeId}`);
+  if (!ta) return;
+  const text = ta.value.trim();
+  if (errEl) errEl.textContent = "";
+  try {
+    const res = await fetch(`${WORKER_URL}/api/post/edit`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Authorization": `Bearer ${getToken()}` },
+      body: JSON.stringify({ id: postId, text }),
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      if (res.status === 401) { logout(); return; }
+      if (errEl) errEl.textContent = data.error || "ویرایش با خطا مواجه شد";
+      return;
+    }
+    // به‌روزرسانیِ کشِ محلیِ صفحه‌ی دفتر تا رفتنِ بعدی به این صفحه هم متنِ تازه رو نشون بده
+    const entry = notebookState.pages[notebookState.currentPage];
+    const cachedPost = entry && entry !== "loading" ? entry.posts.find((p) => p.id === postId) : null;
+    if (cachedPost) { cachedPost.text = text; cachedPost.edited = true; }
+    if (notebookState.expanded && notebookState.expanded.postId === postId) {
+      notebookState.expanded.post.text = text;
+      notebookState.expanded.post.edited = true;
+      renderNotebookPageDOM();
+      return;
+    }
+    const cardEl = document.querySelector(`.notebook-entry[data-post-id="${postId}"]`);
+    if (cardEl && cachedPost) cardEl.outerHTML = renderNotebookEntry(cachedPost);
+  } catch (e) {
+    if (errEl) errEl.textContent = "خطا در اتصال";
+  }
 }
 
 const ICON_ARROW_BACK = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>`;
@@ -13102,7 +13501,7 @@ function renderNotebookPageDOM() {
       : "";
     pageEl.innerHTML = `
       <div class="notebook-expanded">
-        <button class="notebook-back-btn" onclick="collapseNotebookComments()">${ICON_ARROW_BACK}بازگشت</button>
+        <button class="notebook-back-btn" onclick="collapseNotebookComments()">${ICON_ARROW_BACK}دیدن کمتر</button>
         <div class="notebook-full-text" dir="${detectNotebookTextDir(post.text || "")}">${escapeHtml(post.text || "")}</div>
         ${fullTextDrawingHtml}
       </div>`;
@@ -14688,6 +15087,14 @@ function renderAdminGroupMonitorBubble(m, prevMsg) {
   } else if (m.msgType === "file") {
     bodyHtml = buildChatFileCard(m);
     if (m.text) bodyHtml += `<div class="chat-bubble-text">${escapeHtml(m.text)}</div>`;
+  } else if (m.msgType === "post_shortcut") {
+    bodyHtml = `<div class="chat-post-shortcut-card" onclick="event.stopPropagation(); openPostModal('${jsAttr(m.fileId)}')">
+      <span class="chat-post-shortcut-icon">${ICON_SEND}</span>
+      <div class="chat-post-shortcut-info">
+        <div class="chat-post-shortcut-label">${escapeHtml(m.text || "پست")}</div>
+        <div class="chat-post-shortcut-hint">برای دیدنِ پست بزن</div>
+      </div>
+    </div>`;
   } else {
     bodyHtml = `<div class="chat-bubble-text">${escapeHtml(m.text || "")}</div>`;
   }
