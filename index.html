@@ -3419,23 +3419,7 @@
   .radio-overlay-close svg, .radio-overlay-stop svg { width: 17px; height: 17px; }
   .radio-overlay-iframe { flex: 1; width: 100%; height: 100%; border: none; }
 
-  /* ---------- محضر: خواستگاری، همینجا تو یه صفحه‌ی تمام‌صفحه که رویِ خودِ سایت باز می‌شه ---------- */
-  .mahzar-overlay {
-    position: fixed; inset: 0; z-index: 950; background: var(--bg); display: flex; flex-direction: column;
-  }
-  .mahzar-overlay.hidden { display: none; }
-  .mahzar-topbar {
-    display: flex; align-items: center; gap: 10px; padding: calc(12px + var(--safe-top)) 14px 12px;
-    border-bottom: 1px solid var(--border); flex-shrink: 0;
-  }
-  .mahzar-back-btn {
-    background: var(--surface); border: 1px solid var(--border); border-radius: 10px; width: 36px; height: 36px;
-    display: flex; align-items: center; justify-content: center; color: var(--text); cursor: pointer; flex-shrink: 0;
-  }
-  .mahzar-back-btn svg { width: 18px; height: 18px; }
-  .mahzar-title { font-size: 16px; font-weight: 700; flex: 1; }
-  .mahzar-body { flex: 1; overflow-y: auto; padding: 14px; padding-bottom: calc(14px + var(--safe-bottom)); }
-
+  /* ---------- محضر: خواستگاری، به‌صورتِ یه صفحه‌ی معمولی مثلِ بقیه‌ی .view ها (نه اورلیِ شناور) ---------- */
   .mahzar-card {
     background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 14px;
   }
@@ -4900,6 +4884,16 @@
     <div id="notificationsList"></div>
   </div>
 
+  <!-- محضر: صفحه‌ی جداگانه (نه اورلی) مثلِ بقیه‌ی صفحات؛ یه روترِ ساده‌ی داخلی بینِ سه حالت
+       جابه‌جا می‌شه: خانه‌ی محضر (لیستِ خواستگاری/درخواست‌ها)، فرمِ خواستگاری، و لیستِ درخواست‌های رسیده -->
+  <div id="view-mahzar" class="view hidden">
+    <button class="back-link" onclick="mahzarBack()">← بازگشت</button>
+    <div class="feed-header">
+      <span id="mahzarTitle">محضر</span>
+    </div>
+    <div id="mahzarBody"></div>
+  </div>
+
   <!-- پنل مدیریت (فقط برای مالک سایت) -->
   <div id="view-admin" class="view hidden">
     <div class="surface-card">
@@ -5183,18 +5177,6 @@
     </button>
   </div>
   <iframe id="radioFrame" class="radio-overlay-iframe" src="about:blank" allow="autoplay" title="رادیونمای دهات"></iframe>
-</div>
-
-<!-- محضر: صفحه‌ی تمام‌صفحه‌ای که با یه روتر ساده‌ی داخلی بینِ سه حالت جابه‌جا می‌شه: خانه‌ی محضر
-     (لیستِ خواستگاری/درخواست‌ها)، فرمِ خواستگاری، و لیستِ درخواست‌های رسیده -->
-<div class="mahzar-overlay hidden" id="mahzarOverlay">
-  <div class="mahzar-topbar">
-    <button class="mahzar-back-btn" id="mahzarBackBtn" onclick="mahzarBack()" aria-label="برگشت">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-    </button>
-    <div class="mahzar-title" id="mahzarTitle">محضر</div>
-  </div>
-  <div class="mahzar-body" id="mahzarBody"></div>
 </div>
 
 <script>
@@ -7589,8 +7571,7 @@ function renderChatGroupRail() {
         const badge = c.unreadCount > 0 ? `<span class="chat-unread-badge">${c.unreadCount > 99 ? "۹۹+" : c.unreadCount}</span>` : "";
         return `
         <div class="chat-list-item${isActive ? " active" : ""}" onclick="openChatConversation('${c.id}')">
-          <div class="chat-avatar-wrap">
-            <div class="chat-avatar" style="background:${color}">${avatarInnerHtml(c.avatarFileId, c.title)}</div>
+          <div class="chat-avatar-wrap"><div class="chat-avatar" style="background:${color}">${avatarInnerHtml(c.avatarFileId, c.title)}</div>
           </div>
           <div class="chat-item-info">
             <div class="chat-item-name">${displayName}</div>
@@ -13255,12 +13236,18 @@ const MAHZAR_ICON_PROPOSE = `<svg viewBox="0 0 24 24" fill="none" stroke="curren
 const MAHZAR_ICON_REQUESTS = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>`;
 
 function openMahzarOverlay() {
-  document.getElementById("mahzarOverlay")?.classList.remove("hidden");
+  const currentVisible = document.querySelector(".view:not(.hidden)");
+  if (currentVisible && currentVisible.id !== "view-profile" && currentVisible.id !== "view-notifications" && currentVisible.id !== "view-mahzar") {
+    lastView = currentVisible.id.replace("view-", "");
+  }
+  document.body.classList.remove("profile-fullscreen-active");
+  document.querySelectorAll(".view").forEach((el) => el.classList.add("hidden"));
+  document.getElementById("view-mahzar").classList.remove("hidden");
   mahzarShowHome();
 }
 
 function closeMahzarOverlay() {
-  document.getElementById("mahzarOverlay")?.classList.add("hidden");
+  switchView(lastView);
 }
 
 function mahzarBack() {
@@ -16758,7 +16745,6 @@ function openPostFromNotification(idx) {
   const n = notifCache[idx];
   if (!n) return;
   if (n.type === "marriage_request" || n.type === "marriage_accept") {
-    switchView("media");
     openMahzarOverlay();
     if (n.type === "marriage_request") mahzarShowRequests();
     else mahzarShowPropose();
