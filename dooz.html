@@ -448,9 +448,14 @@
 /* ============================================================
    ۱) تنظیمات و احرازِ هویت
    ============================================================ */
-const WORKER_DIRECT_URL = "https://api-7x2.pages.dev"; // همیشه مستقیم؛ چون Originِ مرورگر (دامنه‌ی سایتِ اصلی) توی ALLOWED_ORIGINS ورکره
-const API_BASE = WORKER_DIRECT_URL;
-const WS_BASE = WORKER_DIRECT_URL.replace(/^http/, "ws");
+const WORKER_DIRECT_URL = "https://api-7x2.pages.dev"; // بک‌اندِ اصلیِ سایت؛ فقط برای مدیا/آواتار همینجا استفاده می‌شه
+const API_BASE = "deh-games.alipviv8698.workers.dev";
+
+// وُرکرِ جداگانه‌ی بازی‌ها (چون Cloudflare Pages نمی‌تونه Durable Object میزبانی کنه).
+// بعد از دیپلویِ games-worker، آدرسِ واقعیش رو (از داشبوردِ Cloudflare، زیرِ اسمِ پروژه‌ی
+// dehaat-games) اینجا جایگزین کن — چیزی شبیهِ https://dehaat-games.<یوزرنیمت>.workers.dev
+const DOOZ_API_BASE = "https://dehaat-games.YOUR-SUBDOMAIN.workers.dev";
+const DOOZ_WS_BASE = DOOZ_API_BASE.replace(/^http/, "ws");
 
 function getToken() { try { return localStorage.getItem("token"); } catch (e) { return null; } }
 function getUsername() { try { return localStorage.getItem("username"); } catch (e) { return null; } }
@@ -493,7 +498,8 @@ function avatarNode(fileId, username) {
 async function api(path, opts) {
   opts = opts || {};
   const headers = Object.assign({ "Content-Type": "application/json", "Authorization": "Bearer " + (getToken() || "") }, opts.headers || {});
-  const res = await fetch(API_BASE + path, Object.assign({}, opts, { headers }));
+  const base = path.startsWith("/api/dooz") ? DOOZ_API_BASE : API_BASE;
+  const res = await fetch(base + path, Object.assign({}, opts, { headers }));
   let data = null;
   try { data = await res.json(); } catch (e) {}
   if (!res.ok) throw new Error((data && data.error) || "خطا در ارتباط با سرور");
@@ -841,7 +847,7 @@ function connectRoom(code, isHost) {
   myCurrentCode = code;
   if (ws) { try { ws.close(); } catch (e) {} ws = null; }
 
-  const url = `${WS_BASE}/api/dooz/ws?code=${encodeURIComponent(code)}&token=${encodeURIComponent(getToken() || "")}`;
+  const url = `${DOOZ_WS_BASE}/api/dooz/ws?code=${encodeURIComponent(code)}&token=${encodeURIComponent(getToken() || "")}`;
   ws = new WebSocket(url);
 
   ws.addEventListener("open", () => {
