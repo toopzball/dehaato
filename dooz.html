@@ -1,0 +1,1096 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>دوز | دهات</title>
+<script>
+// ---------- سینکِ تمِ سایتِ اصلی، قبل از هر رندری ----------
+// چون این فایل همیشه باید داخلِ آی‌فریمِ هم‌مبدأِ سایتِ اصلی باز بشه، می‌تونیم مستقیماً به
+// document والد دسترسی داشته باشیم (کراس-اوریجین نیست) و همون data-theme/data-bg رو کپی کنیم؛
+// این‌جوری نیازی نیست کل پالتِ رنگیِ تم‌ها رو اینجا هم دوباره تعریف کنیم و اگه تمِ جدیدی به
+// سایت اضافه بشه، این صفحه خودکار باهاش هماهنگ می‌مونه. اگه به هر دلیلی (کاربر مستقیم این فایل
+// رو باز کرده) دسترسی به والد نبود، از localStorage خودِ همین صفحه (که چون هم‌مبدأست مشترکه) fallback می‌کنیم.
+(function () {
+  try {
+    var pdoc = window.parent && window.parent !== window ? window.parent.document : null;
+    var theme, bg;
+    if (pdoc) {
+      var proot = pdoc.documentElement;
+      theme = proot.getAttribute("data-theme");
+      bg = proot.getAttribute("data-bg");
+    }
+    if (!theme) {
+      var LEGACY_MAP = { purple: "purple-dark", dark: "walnut-dark", red: "red-dark", blue: "blue-dark", teal: "pure-dark", emerald: "emerald-dark" };
+      var t = localStorage.getItem("theme") || "purple-dark";
+      if (LEGACY_MAP[t]) t = LEGACY_MAP[t];
+      var parts = t.split("-");
+      theme = parts[0] + "-" + parts[1];
+      bg = parts[2] === "bg" ? "on" : "off";
+    }
+    document.documentElement.setAttribute("data-theme", theme);
+    document.documentElement.setAttribute("data-bg", bg || "off");
+  } catch (e) {}
+})();
+</script>
+<style>
+  @font-face {
+    font-family: 'Vazirmatn';
+    font-style: normal; font-weight: 400; font-display: swap;
+    src: url('/fonts/Vazirmatn-Regular.woff2') format('woff2');
+  }
+  @font-face {
+    font-family: 'Vazirmatn';
+    font-style: normal; font-weight: 700; font-display: swap;
+    src: url('/fonts/Vazirmatn-Bold.woff2') format('woff2');
+  }
+  @font-face {
+    font-family: 'Vazirmatn';
+    font-style: normal; font-weight: 800; font-display: swap;
+    src: url('/fonts/Vazirmatn-ExtraBold.woff2') format('woff2');
+  }
+
+  /* پیش‌فرض (اگه سینک با والد شکست بخوره) همون پالتِ بنفشِ اصلیِ سایته */
+  :root {
+    --primary: #1A0A31; --surface: #241243; --card: #2D1856;
+    --accent: #8B5CF6; --accent-hover: #A78BFA; --text: #FFFFFF; --subtext: #C9C4D8;
+    --border: #3D2A64; --success: #22C55E; --error: #EF4444; --radius: 16px;
+    --accent-gradient: linear-gradient(135deg, var(--accent), var(--accent-hover));
+    --card-gradient: linear-gradient(160deg, var(--card), var(--surface));
+  }
+
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; padding: 0; height: 100%; }
+  body {
+    background: var(--primary);
+    color: var(--text);
+    font-family: 'Vazirmatn', -apple-system, BlinkMacSystemFont, "Segoe UI", Tahoma, sans-serif;
+    overflow: hidden;
+    position: relative;
+    min-height: 100vh;
+    display: flex;
+    align-items: stretch;
+    justify-content: center;
+  }
+
+  /* ---------- بلاب‌های تزئینیِ شناور ته‌زمینه ---------- */
+  .bg-blobs { position: fixed; inset: 0; overflow: hidden; z-index: 0; pointer-events: none; }
+  .blob { position: absolute; border-radius: 50%; filter: blur(46px); opacity: .35; background: var(--accent-gradient); }
+  .blob.b1 { width: 220px; height: 220px; top: -60px; right: -50px; animation: floatA 13s ease-in-out infinite; }
+  .blob.b2 { width: 180px; height: 180px; bottom: -40px; left: -50px; animation: floatB 16s ease-in-out infinite; }
+  .blob.b3 { width: 130px; height: 130px; bottom: 30%; right: 10%; opacity: .2; animation: floatA 10s ease-in-out infinite reverse; }
+  @keyframes floatA { 0%,100%{ transform: translate(0,0) scale(1);} 50%{ transform: translate(-18px,20px) scale(1.08);} }
+  @keyframes floatB { 0%,100%{ transform: translate(0,0) scale(1);} 50%{ transform: translate(20px,-16px) scale(0.94);} }
+
+  .app { position: relative; z-index: 1; width: 100%; max-width: 480px; height: 100vh; display: flex; flex-direction: column; }
+
+  .screen { flex: 1; display: none; flex-direction: column; min-height: 0; padding: 14px 14px calc(14px + env(safe-area-inset-bottom, 0px)); animation: fadeIn .25s ease; }
+  .screen.active { display: flex; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px);} to { opacity: 1; transform: translateY(0);} }
+
+  h1, h2, h3 { margin: 0; font-family: 'Vazirmatn'; }
+  p { margin: 0; }
+  button { font-family: 'Vazirmatn'; cursor: pointer; border: none; }
+
+  /* ---------- هدر مشترک ---------- */
+  .topline { display: flex; align-items: center; justify-content: space-between; padding: 4px 2px 12px; flex-shrink: 0; }
+  .topline .brand { display: flex; align-items: center; gap: 8px; font-weight: 800; font-size: 15px; }
+  .topline .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent-gradient); }
+  .me-chip { display: flex; align-items: center; gap: 6px; background: var(--card); border: 1px solid var(--border); border-radius: 999px; padding: 3px 10px 3px 3px; }
+  .me-chip img, .avatar-fallback { width: 22px; height: 22px; border-radius: 50%; object-fit: cover; background: var(--accent-gradient); display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; flex-shrink: 0; }
+  .me-chip span { font-size: 12px; color: var(--subtext); }
+
+  /* ---------- بلاک/لودینگ ---------- */
+  .center-msg { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 14px; padding: 30px; }
+  .center-msg .icon { width: 56px; height: 56px; opacity: .85; }
+  .center-msg h2 { font-size: 16px; }
+  .center-msg p { color: var(--subtext); font-size: 13px; line-height: 1.9; }
+  .spinner { width: 30px; height: 30px; border-radius: 50%; border: 3px solid var(--border); border-top-color: var(--accent); animation: spin 0.8s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .btn-back-site { margin-top: 4px; background: var(--accent-gradient); color: #fff; font-size: 13px; font-weight: 700; padding: 10px 20px; border-radius: 12px; }
+
+  /* ---------- کارت عمومی ---------- */
+  .card { background: var(--card-gradient); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px; }
+
+  /* ---------- مرحله‌ی نقاشیِ مهره ---------- */
+  .setup-title { font-size: 17px; font-weight: 800; margin-bottom: 4px; }
+  .setup-sub { color: var(--subtext); font-size: 12.5px; line-height: 1.8; margin-bottom: 14px; }
+  .piece-canvas-wrap {
+    width: 168px; height: 168px; margin: 0 auto 14px; border-radius: 20px; border: 2px dashed var(--border);
+    background:
+      linear-gradient(45deg, rgba(255,255,255,.04) 25%, transparent 25%, transparent 75%, rgba(255,255,255,.04) 75%) 0 0/16px 16px,
+      linear-gradient(45deg, rgba(255,255,255,.04) 25%, transparent 25%, transparent 75%, rgba(255,255,255,.04) 75%) 8px 8px/16px 16px,
+      var(--surface);
+    position: relative; overflow: hidden; touch-action: none;
+  }
+  .piece-canvas-wrap canvas { width: 100%; height: 100%; display: block; touch-action: none; }
+  .piece-guide { position: absolute; inset: 0; pointer-events: none; opacity: .18; display: flex; align-items: center; justify-content: center; font-size: 78px; font-weight: 800; color: var(--text); }
+  .piece-toolbar { display: flex; flex-direction: column; gap: 10px; }
+  .ptb-row { display: flex; align-items: center; gap: 8px; }
+  .ptb-btn { width: 36px; height: 36px; border-radius: 10px; background: var(--surface); border: 1px solid var(--border); color: var(--subtext); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .ptb-btn.active { background: var(--accent-gradient); color: #fff; border-color: transparent; }
+  .ptb-btn:disabled { opacity: .35; }
+  .ptb-btn svg { width: 16px; height: 16px; }
+  .ptb-row input[type="range"] { flex: 1; accent-color: var(--accent); }
+  .ptb-size-preview { width: 28px; height: 28px; border-radius: 999px; background: var(--surface); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .ptb-size-dot { border-radius: 999px; background: currentColor; }
+  .ptb-colors { display: flex; gap: 7px; flex-wrap: wrap; }
+  .ptb-swatch { width: 24px; height: 24px; border-radius: 999px; border: 2px solid transparent; flex-shrink: 0; }
+  .ptb-swatch.active { border-color: var(--text); box-shadow: 0 0 0 2px var(--accent); }
+  .setup-actions { margin-top: 16px; display: flex; gap: 10px; }
+  .btn-primary { flex: 1; background: var(--accent-gradient); color: #fff; font-weight: 800; font-size: 14px; padding: 13px; border-radius: 14px; box-shadow: 0 8px 20px -8px var(--accent); }
+  .btn-primary:disabled { opacity: .45; box-shadow: none; }
+  .btn-ghost { background: var(--surface); border: 1px solid var(--border); color: var(--text); font-size: 13px; padding: 13px 16px; border-radius: 14px; }
+
+  /* ---------- لابی ---------- */
+  .lobby-tabs { display: flex; gap: 6px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 4px; margin-bottom: 12px; flex-shrink: 0; }
+  .lobby-tab { flex: 1; text-align: center; padding: 9px 4px; border-radius: 9px; font-size: 12.5px; color: var(--subtext); font-weight: 700; background: transparent; }
+  .lobby-tab.active { background: var(--accent-gradient); color: #fff; }
+  .lobby-panels { flex: 1; overflow-y: auto; min-height: 0; }
+  .lobby-panel { display: none; flex-direction: column; gap: 10px; }
+  .lobby-panel.active { display: flex; }
+
+  .room-row { display: flex; align-items: center; gap: 10px; background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 10px 12px; }
+  .room-row img, .room-row .avatar-fallback { width: 34px; height: 34px; }
+  .room-row .rr-name { font-size: 13px; font-weight: 700; flex: 1; }
+  .room-row .rr-sub { font-size: 11px; color: var(--subtext); }
+  .room-row .btn-join { background: var(--accent-gradient); color: #fff; font-size: 12px; font-weight: 700; padding: 8px 14px; border-radius: 10px; flex-shrink: 0; }
+  .empty-hint { text-align: center; color: var(--subtext); font-size: 12.5px; padding: 30px 10px; line-height: 1.9; }
+
+  .field-label { font-size: 12px; color: var(--subtext); margin-bottom: 6px; display: block; }
+  .field-input { width: 100%; background: var(--surface); border: 1px solid var(--border); color: var(--text); border-radius: 12px; padding: 12px 14px; font-size: 14px; font-family: 'Vazirmatn'; text-align: center; letter-spacing: 1px; }
+  .field-input:focus { outline: none; border-color: var(--accent); }
+
+  .quick-actions { display: flex; flex-direction: column; gap: 10px; }
+  .quick-card { display: flex; align-items: center; gap: 12px; background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 14px; }
+  .quick-card .qc-icon { width: 40px; height: 40px; border-radius: 12px; background: var(--accent-gradient); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .quick-card .qc-icon svg { width: 20px; height: 20px; color: #fff; }
+  .quick-card .qc-text { flex: 1; }
+  .quick-card .qc-title { font-size: 13.5px; font-weight: 700; }
+  .quick-card .qc-sub { font-size: 11px; color: var(--subtext); margin-top: 2px; }
+  .quick-card .qc-arrow { color: var(--subtext); }
+
+  .visibility-toggle { display: flex; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 4px; }
+  .visibility-toggle button { flex: 1; padding: 9px; border-radius: 9px; font-size: 12.5px; font-weight: 700; color: var(--subtext); background: transparent; }
+  .visibility-toggle button.active { background: var(--accent-gradient); color: #fff; }
+
+  /* ---------- اتاقِ انتظار ---------- */
+  .waiting-code { text-align: center; margin: 10px 0 16px; }
+  .waiting-code .wc-label { font-size: 12px; color: var(--subtext); margin-bottom: 8px; }
+  .waiting-code .wc-code { font-size: 30px; font-weight: 800; letter-spacing: 6px; color: var(--accent-hover); }
+  .waiting-copy-btn { margin-top: 10px; background: var(--surface); border: 1px solid var(--border); color: var(--text); font-size: 12px; padding: 8px 16px; border-radius: 10px; }
+  .waiting-anim { display: flex; align-items: center; justify-content: center; gap: 6px; margin: 14px 0; }
+  .waiting-anim span { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); animation: bounceDot 1.2s infinite ease-in-out; }
+  .waiting-anim span:nth-child(2) { animation-delay: .15s; }
+  .waiting-anim span:nth-child(3) { animation-delay: .3s; }
+  @keyframes bounceDot { 0%,80%,100%{ transform: translateY(0); opacity:.4; } 40%{ transform: translateY(-8px); opacity:1; } }
+
+  /* ---------- صفحه‌ی بازی ---------- */
+  .game-top { flex-shrink: 0; margin-bottom: 12px; }
+  .timer-bar-wrap { height: 5px; border-radius: 999px; background: var(--surface); overflow: hidden; margin-bottom: 12px; }
+  .timer-bar { height: 100%; background: var(--accent-gradient); width: 100%; transition: width 0.2s linear; }
+  .timer-bar.urgent { background: var(--error); }
+
+  .players-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .player-chip { display: flex; align-items: center; gap: 8px; padding: 7px 10px 7px 7px; border-radius: 999px; background: var(--card); border: 1px solid var(--border); transition: box-shadow .2s, border-color .2s; max-width: 44%; }
+  .player-chip.turn { border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 30%, transparent); }
+  .player-chip .pc-avatar-wrap { position: relative; flex-shrink: 0; }
+  .player-chip img, .player-chip .avatar-fallback { width: 30px; height: 30px; }
+  .player-chip.turn .pc-avatar-wrap::after { content: ""; position: absolute; inset: -3px; border-radius: 50%; border: 2px solid var(--accent); animation: pulseRing 1.4s infinite; }
+  @keyframes pulseRing { 0%{ transform: scale(.9); opacity: 1;} 100%{ transform: scale(1.4); opacity: 0;} }
+  .player-chip .pc-info { min-width: 0; }
+  .player-chip .pc-name { font-size: 11.5px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 90px; }
+  .player-chip .pc-status { font-size: 9.5px; color: var(--subtext); }
+  .player-chip.disconnected { opacity: .5; }
+  .vs-mid { display: flex; flex-direction: column; align-items: center; font-size: 10px; color: var(--subtext); font-weight: 700; flex-shrink: 0; }
+  .vs-mid .round-no { font-size: 9px; margin-top: 2px; opacity: .8; }
+
+  .board-wrap { flex: 1; display: flex; align-items: center; justify-content: center; min-height: 0; padding: 10px 0; }
+  .board { width: min(78vw, 320px); height: min(78vw, 320px); display: grid; grid-template-columns: repeat(3,1fr); grid-template-rows: repeat(3,1fr); gap: 8px; }
+  .cell { background: var(--card); border: 1px solid var(--border); border-radius: 14px; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; }
+  .cell.clickable { cursor: pointer; }
+  .cell.clickable:active { transform: scale(0.96); }
+  .cell img { width: 68%; height: 68%; object-fit: contain; animation: piecePop .32s cubic-bezier(.34,1.56,.64,1); }
+  @keyframes piecePop { 0%{ transform: scale(0) rotate(-14deg); opacity: 0; } 70%{ transform: scale(1.14) rotate(4deg); opacity: 1; } 100%{ transform: scale(1) rotate(0); } }
+  .cell.win-cell { background: color-mix(in srgb, var(--accent) 22%, var(--card)); animation: winGlow 1s ease-in-out infinite; }
+  @keyframes winGlow { 0%,100%{ box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 50%, transparent); } 50%{ box-shadow: 0 0 0 6px color-mix(in srgb, var(--accent) 0%, transparent); } }
+
+  .round-toast { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%) scale(.9); background: var(--card); border: 1px solid var(--border); padding: 14px 26px; border-radius: 16px; font-size: 14px; font-weight: 800; opacity: 0; pointer-events: none; transition: opacity .25s, transform .25s; z-index: 5; text-align: center; }
+  .round-toast.show { opacity: 1; transform: translate(-50%,-50%) scale(1); }
+
+  .score-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-shrink: 0; margin-top: 8px; }
+  .score-chip { display: flex; align-items: center; gap: 8px; background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 8px 12px; flex: 1; }
+  .score-chip .sc-piece { width: 26px; height: 26px; border-radius: 8px; background: var(--surface); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .score-chip .sc-piece img { width: 100%; height: 100%; object-fit: contain; }
+  .score-chip .sc-dots { display: flex; gap: 4px; margin-right: auto; }
+  .score-chip .sc-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border); }
+  .score-chip .sc-dot.filled { background: var(--accent-gradient); }
+  .score-chip.right { flex-direction: row-reverse; }
+  .score-chip.right .sc-dots { margin-right: 0; margin-left: auto; }
+
+  .leave-fab { position: absolute; top: 10px; left: 10px; width: 34px; height: 34px; border-radius: 50%; background: var(--card); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; color: var(--subtext); z-index: 4; }
+  .leave-fab svg { width: 16px; height: 16px; }
+
+  /* ---------- مودال پایانِ مسابقه ---------- */
+  .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,.55); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 20; opacity: 0; pointer-events: none; transition: opacity .25s; }
+  .modal-backdrop.open { opacity: 1; pointer-events: auto; }
+  .modal-box { background: var(--card-gradient); border: 1px solid var(--border); border-radius: 22px; padding: 26px 22px; width: min(84vw, 320px); text-align: center; transform: scale(.85) translateY(10px); transition: transform .25s; }
+  .modal-backdrop.open .modal-box { transform: scale(1) translateY(0); }
+  .modal-box .trophy { font-size: 46px; margin-bottom: 6px; display: block; }
+  .modal-box h3 { font-size: 17px; margin-bottom: 4px; }
+  .modal-box p { color: var(--subtext); font-size: 12.5px; margin-bottom: 18px; }
+  .modal-actions { display: flex; gap: 10px; }
+
+  /* ---------- تُست خطا ---------- */
+  .toast-err { position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%) translateY(20px); background: var(--error); color: #fff; font-size: 12.5px; font-weight: 700; padding: 10px 18px; border-radius: 12px; opacity: 0; pointer-events: none; transition: all .25s; z-index: 30; white-space: nowrap; }
+  .toast-err.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  /* ---------- کنفتی ---------- */
+  #confettiCanvas { position: fixed; inset: 0; pointer-events: none; z-index: 25; }
+</style>
+</head>
+<body>
+
+<div class="bg-blobs"><div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div></div>
+<canvas id="confettiCanvas"></canvas>
+
+<div class="app">
+
+  <!-- ===== صفحه‌ی بلاک (خارج از آی‌فریم/بدون توکن) ===== -->
+  <div class="screen" id="screenBlock">
+    <div class="center-msg">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M9 9l6 6M15 9l-6 6"/></svg>
+      <h2 id="blockTitle">این صفحه جدا باز نمی‌شه</h2>
+      <p id="blockText">بازیِ دوز فقط از داخلِ سایتِ دهات در دسترسه. برگرد به سایت و از قسمتِ بازی‌ها واردش شو.</p>
+      <a class="btn-back-site" href="/">برگشت به دهات</a>
+    </div>
+  </div>
+
+  <!-- ===== لودینگ ===== -->
+  <div class="screen active" id="screenLoading">
+    <div class="center-msg">
+      <div class="spinner"></div>
+      <p>در حال آماده‌سازی دوز...</p>
+    </div>
+  </div>
+
+  <!-- ===== مرحله‌ی طراحیِ مهره ===== -->
+  <div class="screen" id="screenSetup">
+    <div class="topline">
+      <div class="brand"><span class="dot"></span> دوز</div>
+      <div class="me-chip" id="meChip"></div>
+    </div>
+    <div class="card">
+      <div class="setup-title">مهره‌ات رو نقاشی کن 🎨</div>
+      <div class="setup-sub">هر چی می‌خوای بکش؛ همینه که تو جدولِ بازی جای مهره‌ت می‌شینه. بعداً هم می‌تونی عوضش کنی.</div>
+
+      <div class="piece-canvas-wrap" id="pieceCanvasWrap">
+        <canvas id="pieceCanvas" width="336" height="336"></canvas>
+        <div class="piece-guide" id="pieceGuide">✎</div>
+      </div>
+
+      <div class="piece-toolbar">
+        <div class="ptb-row">
+          <button class="ptb-btn active" id="toolPen" title="قلم">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+          </button>
+          <button class="ptb-btn" id="toolEraser" title="پاک‌کن">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 20H8l-6-6a2 2 0 0 1 0-2.8L12.6 2.6a2 2 0 0 1 2.8 0l5.6 5.6a2 2 0 0 1 0 2.8L13 19"/></svg>
+          </button>
+          <button class="ptb-btn" id="toolUndo" title="واگرد">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7v6h6"/><path d="M3 13a9 9 0 1 0 3-7.7L3 8"/></svg>
+          </button>
+          <button class="ptb-btn" id="toolRedo" title="ازنو">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 7v6h-6"/><path d="M21 13a9 9 0 1 1-3-7.7L21 8"/></svg>
+          </button>
+          <button class="ptb-btn" id="toolClear" title="پاک کردنِ همه">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4h8v2M6 6l1 14h10l1-14"/></svg>
+          </button>
+        </div>
+        <div class="ptb-row">
+          <div class="ptb-size-preview"><div class="ptb-size-dot" id="sizeDot" style="width:6px;height:6px;"></div></div>
+          <input type="range" id="sizeRange" min="2" max="26" value="8" />
+        </div>
+        <div class="ptb-colors" id="colorRow"></div>
+      </div>
+    </div>
+
+    <div class="setup-actions">
+      <button class="btn-ghost" id="btnSkipDefault">مهره‌ی پیش‌فرض</button>
+      <button class="btn-primary" id="btnSavePiece" disabled>ثبتِ مهره و ادامه ←</button>
+    </div>
+  </div>
+
+  <!-- ===== لابی ===== -->
+  <div class="screen" id="screenLobby">
+    <div class="topline">
+      <div class="brand"><span class="dot"></span> دوز</div>
+      <div class="me-chip" id="meChip2"></div>
+    </div>
+
+    <div class="lobby-tabs">
+      <button class="lobby-tab active" data-tab="quick">سریع</button>
+      <button class="lobby-tab" data-tab="public">روم‌های باز</button>
+      <button class="lobby-tab" data-tab="invite">دعوت دوست</button>
+      <button class="lobby-tab" data-tab="code">کد دارم</button>
+    </div>
+
+    <div class="lobby-panels">
+      <div class="lobby-panel active" data-panel="quick">
+        <div class="quick-actions">
+          <button class="quick-card" id="btnCreatePublic">
+            <div class="qc-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+            <div class="qc-text"><div class="qc-title">یه روم عمومی بزن</div><div class="qc-sub">هر کسی از لابی می‌تونه بیاد توش</div></div>
+            <span class="qc-arrow">‹</span>
+          </button>
+          <button class="quick-card" id="btnCreatePrivate">
+            <div class="qc-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="10" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div>
+            <div class="qc-text"><div class="qc-title">یه روم خصوصی بزن</div><div class="qc-sub">فقط با کد یا دعوت می‌شه واردش شد</div></div>
+            <span class="qc-arrow">‹</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="lobby-panel" data-panel="public">
+        <div id="publicList"></div>
+      </div>
+
+      <div class="lobby-panel" data-panel="invite">
+        <label class="field-label">یوزرنیمِ دوستت رو بنویس</label>
+        <input class="field-input" id="inviteInput" placeholder="مثلاً: aghey" style="text-align:right; letter-spacing:0;" />
+        <button class="btn-primary" id="btnSendInvite" style="margin-top:10px">دعوتش کن</button>
+      </div>
+
+      <div class="lobby-panel" data-panel="code">
+        <label class="field-label">کدِ رومو وارد کن</label>
+        <input class="field-input" id="codeInput" placeholder="مثلاً: A3F9K2" maxlength="8" />
+        <button class="btn-primary" id="btnJoinCode" style="margin-top:10px">ورود به روم</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== اتاقِ انتظار ===== -->
+  <div class="screen" id="screenWaiting">
+    <div class="topline">
+      <div class="brand"><span class="dot"></span> دوز</div>
+      <button class="btn-ghost" id="btnLeaveWaiting" style="padding:7px 12px; font-size:12px;">خروج</button>
+    </div>
+    <div class="card" style="flex:1; display:flex; flex-direction:column; justify-content:center;">
+      <div class="waiting-code">
+        <div class="wc-label">کدِ روم — بفرستش برای دوستت</div>
+        <div class="wc-code" id="waitingCode">------</div>
+        <button class="waiting-copy-btn" id="btnCopyCode">کپیِ کد</button>
+      </div>
+      <div class="waiting-anim"><span></span><span></span><span></span></div>
+      <p style="text-align:center; color:var(--subtext); font-size:12.5px;">منتظرِ ورودِ حریف...</p>
+      <div id="visibilityBox" style="margin-top:18px; display:none;">
+        <div class="field-label" style="text-align:center;">نوعِ روم</div>
+        <div class="visibility-toggle">
+          <button data-v="public" id="vPublic">عمومی</button>
+          <button data-v="private" id="vPrivate">خصوصی</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== صفحه‌ی بازی ===== -->
+  <div class="screen" id="screenGame" style="position:relative;">
+    <button class="leave-fab" id="btnLeaveGame" title="ترکِ بازی">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg>
+    </button>
+    <div class="game-top">
+      <div class="timer-bar-wrap"><div class="timer-bar" id="timerBar"></div></div>
+      <div class="players-row">
+        <div class="player-chip" id="chipP1">
+          <div class="pc-avatar-wrap"><div class="avatar-fallback">?</div></div>
+          <div class="pc-info"><div class="pc-name">—</div><div class="pc-status">—</div></div>
+        </div>
+        <div class="vs-mid">VS<div class="round-no" id="roundNo">دور ۱</div></div>
+        <div class="player-chip" id="chipP2" style="flex-direction: row-reverse;">
+          <div class="pc-avatar-wrap"><div class="avatar-fallback">?</div></div>
+          <div class="pc-info" style="text-align:right;"><div class="pc-name">—</div><div class="pc-status">—</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="board-wrap">
+      <div class="board" id="board"></div>
+      <div class="round-toast" id="roundToast"></div>
+    </div>
+
+    <div class="score-row">
+      <div class="score-chip" id="scoreP1"><div class="sc-piece"></div><div class="sc-dots"><div class="sc-dot"></div><div class="sc-dot"></div><div class="sc-dot"></div></div></div>
+      <div class="score-chip right" id="scoreP2"><div class="sc-piece"></div><div class="sc-dots"><div class="sc-dot"></div><div class="sc-dot"></div><div class="sc-dot"></div></div></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ===== مودالِ پایانِ مسابقه ===== -->
+<div class="modal-backdrop" id="modalOver">
+  <div class="modal-box">
+    <span class="trophy">🏆</span>
+    <h3 id="overTitle">تموم شد!</h3>
+    <p id="overSub">—</p>
+    <div class="modal-actions">
+      <button class="btn-ghost" id="btnOverExit" style="flex:1;">خروج به لابی</button>
+      <button class="btn-primary" id="btnOverRematch">دوباره بازی</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-err" id="toastErr"></div>
+
+<script>
+(function () {
+"use strict";
+
+/* ============================================================
+   ۱) تنظیمات و احرازِ هویت
+   ============================================================ */
+const WORKER_DIRECT_URL = "https://api-7x2.pages.dev"; // همیشه مستقیم؛ چون Originِ مرورگر (دامنه‌ی سایتِ اصلی) توی ALLOWED_ORIGINS ورکره
+const API_BASE = WORKER_DIRECT_URL;
+const WS_BASE = WORKER_DIRECT_URL.replace(/^http/, "ws");
+
+function getToken() { try { return localStorage.getItem("token"); } catch (e) { return null; } }
+function getUsername() { try { return localStorage.getItem("username"); } catch (e) { return null; } }
+function mediaUrl(fileId) {
+  if (!fileId) return "";
+  return `${API_BASE}/api/media/${encodeURIComponent(fileId)}?token=${encodeURIComponent(getToken() || "")}`;
+}
+
+const $ = (sel, root) => (root || document).querySelector(sel);
+const $$ = (sel, root) => Array.from((root || document).querySelectorAll(sel));
+
+function showScreen(id) {
+  $$(".screen").forEach((s) => s.classList.remove("active"));
+  $("#" + id).classList.add("active");
+}
+
+function showToast(msg) {
+  const el = $("#toastErr");
+  el.textContent = msg;
+  el.classList.add("show");
+  clearTimeout(showToast._t);
+  showToast._t = setTimeout(() => el.classList.remove("show"), 2600);
+}
+
+function avatarNode(fileId, username) {
+  const wrap = document.createElement("div");
+  if (fileId) {
+    const img = document.createElement("img");
+    img.src = mediaUrl(fileId);
+    img.alt = "";
+    wrap.appendChild(img);
+    return img;
+  }
+  const fb = document.createElement("div");
+  fb.className = "avatar-fallback";
+  fb.textContent = ((username || "?")[0] || "?").toUpperCase();
+  return fb;
+}
+
+async function api(path, opts) {
+  opts = opts || {};
+  const headers = Object.assign({ "Content-Type": "application/json", "Authorization": "Bearer " + (getToken() || "") }, opts.headers || {});
+  const res = await fetch(API_BASE + path, Object.assign({}, opts, { headers }));
+  let data = null;
+  try { data = await res.json(); } catch (e) {}
+  if (!res.ok) throw new Error((data && data.error) || "خطا در ارتباط با سرور");
+  return data;
+}
+
+let ME = { username: null, avatarFileId: null };
+
+async function boot() {
+  // ۱. باید داخلِ آی‌فریمِ هم‌مبدأ باز شده باشه (نه مستقیم، نه تو دامنه‌ی دیگه)
+  let inFrame = false, sameOrigin = false;
+  try { inFrame = window.top !== window.self; } catch (e) { inFrame = true; }
+  try { sameOrigin = !!(window.parent && window.parent.document); } catch (e) { sameOrigin = false; }
+
+  if (!inFrame || !sameOrigin) {
+    $("#blockTitle").textContent = "این صفحه جدا باز نمی‌شه";
+    $("#blockText").textContent = "بازیِ دوز فقط از داخلِ سایتِ دهات در دسترسه. برگرد به سایت و از قسمتِ بازی‌ها واردش شو.";
+    showScreen("screenBlock");
+    return;
+  }
+
+  if (!getToken()) {
+    $("#blockTitle").textContent = "اول باید وارد بشی";
+    $("#blockText").textContent = "برای بازیِ دوز باید تو دهات لاگین باشی.";
+    showScreen("screenBlock");
+    return;
+  }
+
+  try {
+    const me = await api("/api/dooz/me");
+    ME.username = me.username;
+    ME.avatarFileId = me.avatarFileId;
+  } catch (e) {
+    $("#blockTitle").textContent = "مشکلی پیش اومد";
+    $("#blockText").textContent = e.message || "نشد به سرورِ بازی وصل بشیم؛ یه بار دیگه امتحان کن.";
+    showScreen("screenBlock");
+    return;
+  }
+
+  renderMeChips();
+  initPieceStudio();
+  initLobby();
+  initGameHandlers();
+  showScreen("screenSetup");
+}
+
+function renderMeChips() {
+  ["meChip", "meChip2"].forEach((id) => {
+    const el = $("#" + id);
+    el.innerHTML = "";
+    el.appendChild(avatarNode(ME.avatarFileId, ME.username));
+    const span = document.createElement("span");
+    span.textContent = ME.username;
+    el.appendChild(span);
+  });
+}
+
+/* ============================================================
+   ۲) استودیوی نقاشیِ مهره — بهینه‌شده برای یه خونه‌ی مربعیِ دوز
+   ============================================================ */
+let piece = { dataUrl: null };
+
+function initPieceStudio() {
+  const canvas = $("#pieceCanvas");
+  const ctx = canvas.getContext("2d");
+  const guide = $("#pieceGuide");
+  let drawing = false, tool = "pen", color = "#8B5CF6", size = 8;
+  let undoStack = [], redoStack = [];
+  let lastX = 0, lastY = 0;
+
+  const COLORS = ["#8B5CF6","#EF4444","#F97316","#EAB308","#22C55E","#06B6D4","#3B82F6","#EC4899","#111827","#FFFFFF"];
+  const colorRow = $("#colorRow");
+  COLORS.forEach((c, i) => {
+    const b = document.createElement("button");
+    b.className = "ptb-swatch" + (i === 0 ? " active" : "");
+    b.style.background = c;
+    b.type = "button";
+    b.addEventListener("click", () => {
+      color = c; tool = "pen";
+      $$(".ptb-swatch").forEach((s) => s.classList.remove("active"));
+      b.classList.add("active");
+      $("#toolPen").classList.add("active");
+      $("#toolEraser").classList.remove("active");
+    });
+    colorRow.appendChild(b);
+  });
+
+  function updateSizeDot() {
+    const d = $("#sizeDot");
+    const px = Math.max(4, Math.min(24, size));
+    d.style.width = px + "px"; d.style.height = px + "px";
+    d.style.color = tool === "eraser" ? "var(--subtext)" : color;
+  }
+  updateSizeDot();
+
+  $("#sizeRange").addEventListener("input", (e) => { size = parseInt(e.target.value, 10); updateSizeDot(); });
+
+  function setTool(t) {
+    tool = t;
+    $("#toolPen").classList.toggle("active", t === "pen");
+    $("#toolEraser").classList.toggle("active", t === "eraser");
+    updateSizeDot();
+  }
+  $("#toolPen").addEventListener("click", () => setTool("pen"));
+  $("#toolEraser").addEventListener("click", () => setTool("eraser"));
+
+  function snapshot() {
+    undoStack.push(canvas.toDataURL());
+    if (undoStack.length > 25) undoStack.shift();
+    redoStack = [];
+    updateUndoRedoState();
+    checkHasContent();
+  }
+  function updateUndoRedoState() {
+    $("#toolUndo").disabled = undoStack.length === 0;
+    $("#toolRedo").disabled = redoStack.length === 0;
+  }
+  function restoreFrom(dataUrl) {
+    const img = new Image();
+    img.onload = () => { ctx.clearRect(0, 0, canvas.width, canvas.height); ctx.drawImage(img, 0, 0); checkHasContent(); };
+    img.src = dataUrl;
+  }
+  $("#toolUndo").addEventListener("click", () => {
+    if (!undoStack.length) return;
+    redoStack.push(canvas.toDataURL());
+    const prev = undoStack.pop();
+    restoreFrom(prev);
+    updateUndoRedoState();
+  });
+  $("#toolRedo").addEventListener("click", () => {
+    if (!redoStack.length) return;
+    undoStack.push(canvas.toDataURL());
+    const next = redoStack.pop();
+    restoreFrom(next);
+    updateUndoRedoState();
+  });
+  $("#toolClear").addEventListener("click", () => {
+    snapshot();
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    checkHasContent();
+  });
+
+  function checkHasContent() {
+    const data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+    let has = false;
+    for (let i = 3; i < data.length; i += 4 * 37) { if (data[i] > 10) { has = true; break; } }
+    guide.style.display = has ? "none" : "flex";
+    $("#btnSavePiece").disabled = !has;
+  }
+
+  function pos(evt) {
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width, scaleY = canvas.height / rect.height;
+    const cx = (evt.touches ? evt.touches[0].clientX : evt.clientX) - rect.left;
+    const cy = (evt.touches ? evt.touches[0].clientY : evt.clientY) - rect.top;
+    return { x: cx * scaleX, y: cy * scaleY };
+  }
+
+  function strokeStart(evt) {
+    evt.preventDefault();
+    drawing = true;
+    undoStack.push(canvas.toDataURL());
+    if (undoStack.length > 25) undoStack.shift();
+    redoStack = [];
+    updateUndoRedoState();
+    const p = pos(evt);
+    lastX = p.x; lastY = p.y;
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, size / 2, 0, Math.PI * 2);
+    ctx.fillStyle = color;
+    ctx.globalCompositeOperation = tool === "eraser" ? "destination-out" : "source-over";
+    ctx.fill();
+  }
+  function strokeMove(evt) {
+    if (!drawing) return;
+    evt.preventDefault();
+    const p = pos(evt);
+    ctx.globalCompositeOperation = tool === "eraser" ? "destination-out" : "source-over";
+    ctx.strokeStyle = color;
+    ctx.lineWidth = size;
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+    ctx.beginPath();
+    ctx.moveTo(lastX, lastY);
+    ctx.lineTo(p.x, p.y);
+    ctx.stroke();
+    lastX = p.x; lastY = p.y;
+  }
+  function strokeEnd() {
+    if (!drawing) return;
+    drawing = false;
+    checkHasContent();
+  }
+
+  canvas.addEventListener("pointerdown", strokeStart);
+  canvas.addEventListener("pointermove", strokeMove);
+  window.addEventListener("pointerup", strokeEnd);
+  canvas.addEventListener("touchstart", strokeStart, { passive: false });
+  canvas.addEventListener("touchmove", strokeMove, { passive: false });
+  window.addEventListener("touchend", strokeEnd);
+
+  updateUndoRedoState();
+
+  $("#btnSavePiece").addEventListener("click", () => {
+    piece.dataUrl = exportPieceImage(canvas);
+    goToLobby();
+  });
+  $("#btnSkipDefault").addEventListener("click", () => {
+    piece.dataUrl = defaultPieceDataUrl();
+    goToLobby();
+  });
+}
+
+// خروجیِ نهاییِ مهره رو کوچیک می‌کنیم (۹۶×۹۶) تا حجمِ پیامِ وب‌ساکت معقول بمونه
+function exportPieceImage(sourceCanvas) {
+  const out = document.createElement("canvas");
+  out.width = 96; out.height = 96;
+  const octx = out.getContext("2d");
+  octx.drawImage(sourceCanvas, 0, 0, 96, 96);
+  return out.toDataURL("image/png");
+}
+
+function defaultPieceDataUrl() {
+  const c = document.createElement("canvas");
+  c.width = 96; c.height = 96;
+  const ctx = c.getContext("2d");
+  ctx.strokeStyle = "#8B5CF6";
+  ctx.lineWidth = 10;
+  ctx.lineCap = "round";
+  ctx.beginPath(); ctx.moveTo(20, 20); ctx.lineTo(76, 76); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(76, 20); ctx.lineTo(20, 76); ctx.stroke();
+  return c.toDataURL("image/png");
+}
+
+function goToLobby() { showScreen("screenLobby"); refreshPublicRooms(); }
+
+/* ============================================================
+   ۳) لابی: روم‌های باز / دعوت / کد
+   ============================================================ */
+function initLobby() {
+  $$(".lobby-tab").forEach((tab) => {
+    tab.addEventListener("click", () => {
+      $$(".lobby-tab").forEach((t) => t.classList.remove("active"));
+      $$(".lobby-panel").forEach((p) => p.classList.remove("active"));
+      tab.classList.add("active");
+      $(`.lobby-panel[data-panel="${tab.dataset.tab}"]`).classList.add("active");
+      if (tab.dataset.tab === "public") refreshPublicRooms();
+    });
+  });
+
+  $("#btnCreatePublic").addEventListener("click", () => createRoom("public"));
+  $("#btnCreatePrivate").addEventListener("click", () => createRoom("private"));
+
+  $("#btnSendInvite").addEventListener("click", async () => {
+    const u = $("#inviteInput").value.trim();
+    if (!u) return showToast("یه یوزرنیم بنویس");
+    try {
+      const res = await api("/api/dooz/invite", { method: "POST", body: JSON.stringify({ toUsername: u }) });
+      showToast("دعوت شد! منتظرِ ورودشیم");
+      enterWaitingRoom(res.code, "private", true);
+    } catch (e) { showToast(e.message); }
+  });
+
+  $("#btnJoinCode").addEventListener("click", async () => {
+    const code = $("#codeInput").value.trim().toUpperCase();
+    if (!code) return showToast("کدو وارد کن");
+    joinByCode(code);
+  });
+}
+
+async function createRoom(visibility) {
+  try {
+    const res = await api("/api/dooz/room", { method: "POST", body: JSON.stringify({ visibility }) });
+    enterWaitingRoom(res.code, visibility, true);
+  } catch (e) { showToast(e.message); }
+}
+
+async function joinByCode(code) {
+  try {
+    const info = await api(`/api/dooz/room/${encodeURIComponent(code)}/info`);
+    if (!info.exists) return showToast("همچین رومی پیدا نشد");
+    if (info.playersCount >= 2 && info.status !== "finished") return showToast("این روم پره");
+    connectRoom(code, false);
+  } catch (e) { showToast(e.message); }
+}
+
+async function refreshPublicRooms() {
+  const list = $("#publicList");
+  list.innerHTML = '<div class="empty-hint">در حال بارگذاری...</div>';
+  try {
+    const res = await api("/api/dooz/rooms");
+    const rooms = res.rooms || [];
+    if (!rooms.length) {
+      list.innerHTML = '<div class="empty-hint">فعلاً هیچ روم بازی نیست. اولین نفر باش! 👀</div>';
+      return;
+    }
+    list.innerHTML = "";
+    rooms.forEach((r) => {
+      const row = document.createElement("div");
+      row.className = "room-row";
+      row.appendChild(avatarNode(r.hostAvatarFileId, r.hostUsername));
+      const mid = document.createElement("div");
+      mid.style.flex = "1";
+      mid.innerHTML = `<div class="rr-name">${escapeHtml(r.hostUsername)}</div><div class="rr-sub">منتظرِ حریف...</div>`;
+      row.appendChild(mid);
+      const btn = document.createElement("button");
+      btn.className = "btn-join";
+      btn.textContent = "ورود";
+      btn.addEventListener("click", () => connectRoom(r.code, false));
+      row.appendChild(btn);
+      list.appendChild(row);
+    });
+  } catch (e) {
+    list.innerHTML = '<div class="empty-hint">نشد لیست بیاد؛ دوباره امتحان کن.</div>';
+  }
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+}
+
+function enterWaitingRoom(code, visibility, isHost) {
+  $("#waitingCode").textContent = code;
+  $("#visibilityBox").style.display = isHost ? "block" : "none";
+  updateVisibilityButtons(visibility);
+  showScreen("screenWaiting");
+  connectRoom(code, isHost);
+}
+
+function updateVisibilityButtons(v) {
+  $("#vPublic").classList.toggle("active", v === "public");
+  $("#vPrivate").classList.toggle("active", v === "private");
+}
+
+$ && document.addEventListener("DOMContentLoaded", () => {}); // no-op guard
+
+/* ============================================================
+   ۴) اتصالِ وب‌ساکت و منطقِ خودِ بازی
+   ============================================================ */
+const LINES = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+let ws = null, currentRoom = null, myCurrentCode = null, wsPing = null, deadlineTimer = null;
+let lastStatus = null;
+
+function connectRoom(code, isHost) {
+  myCurrentCode = code;
+  if (ws) { try { ws.close(); } catch (e) {} ws = null; }
+
+  const url = `${WS_BASE}/api/dooz/ws?code=${encodeURIComponent(code)}&token=${encodeURIComponent(getToken() || "")}`;
+  ws = new WebSocket(url);
+
+  ws.addEventListener("open", () => {
+    clearInterval(wsPing);
+    wsPing = setInterval(() => { try { ws.send(JSON.stringify({ t: "ping" })); } catch (e) {} }, 25000);
+    // مهره‌ای که از قبل نقاشی کرده رو می‌فرستیم
+    if (piece.dataUrl) ws.send(JSON.stringify({ t: "piece", data: piece.dataUrl }));
+  });
+
+  ws.addEventListener("message", (evt) => {
+    let msg; try { msg = JSON.parse(evt.data); } catch (e) { return; }
+    if (msg.t === "hello") { /* چیزِ خاصی لازم نداره، state بعدش می‌رسه */ }
+    else if (msg.t === "state") onRoomState(msg.room, isHost);
+    else if (msg.t === "opponentLeft") { showToast("حریف از بازی خارج شد"); }
+    else if (msg.t === "error") { showToast(msg.message || "خطا"); }
+  });
+
+  ws.addEventListener("close", () => {
+    clearInterval(wsPing);
+    if (currentRoom && currentRoom.status !== "finished" && screenIsGameOrWaiting()) {
+      showToast("اتصال قطع شد؛ در حالِ اتصالِ دوباره...");
+      setTimeout(() => { if (myCurrentCode === code) connectRoom(code, isHost); }, 1500);
+    }
+  });
+
+  ws.addEventListener("error", () => {});
+}
+
+function screenIsGameOrWaiting() {
+  return $("#screenGame").classList.contains("active") || $("#screenWaiting").classList.contains("active");
+}
+
+function onRoomState(room, isHost) {
+  currentRoom = room;
+
+  if (room.status === "waiting") {
+    if ($("#screenGame").classList.contains("active") === false) {
+      $("#waitingCode").textContent = room.code;
+      $("#visibilityBox").style.display = (room.hostUsername === ME.username) ? "block" : "none";
+      updateVisibilityButtons(room.visibility);
+      showScreen("screenWaiting");
+    }
+    return;
+  }
+
+  if (["playing", "roundover", "finished"].includes(room.status)) {
+    showScreen("screenGame");
+    renderGame(room);
+    if (room.status === "finished" && lastStatus !== "finished") {
+      openOverModal(room);
+    }
+  }
+  lastStatus = room.status;
+}
+
+function initGameHandlers() {
+  const board = $("#board");
+  for (let i = 0; i < 9; i++) {
+    const cell = document.createElement("div");
+    cell.className = "cell";
+    cell.dataset.i = i;
+    cell.addEventListener("click", () => onCellClick(i));
+    board.appendChild(cell);
+  }
+
+  $("#btnLeaveWaiting").addEventListener("click", () => leaveRoom());
+  $("#btnLeaveGame").addEventListener("click", () => {
+    if (confirm("مطمئنی می‌خوای از بازی خارج بشی؟")) leaveRoom();
+  });
+  $("#btnCopyCode").addEventListener("click", () => {
+    const code = $("#waitingCode").textContent;
+    navigator.clipboard && navigator.clipboard.writeText(code).then(() => showToast("کد کپی شد"));
+  });
+  $("#vPublic").addEventListener("click", () => setVisibility("public"));
+  $("#vPrivate").addEventListener("click", () => setVisibility("private"));
+
+  $("#btnOverExit").addEventListener("click", () => { closeOverModal(); leaveRoom(); });
+  $("#btnOverRematch").addEventListener("click", () => {
+    if (ws && ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ t: "rematch" }));
+    closeOverModal();
+    showToast("منتظرِ تاییدِ حریف برای دورِ جدید...");
+  });
+}
+
+function setVisibility(v) {
+  if (ws && ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ t: "setVisibility", v }));
+  updateVisibilityButtons(v);
+}
+
+function leaveRoom() {
+  if (ws && ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ t: "leave" }));
+  if (ws) { try { ws.close(); } catch (e) {} }
+  ws = null; currentRoom = null; myCurrentCode = null; lastStatus = null;
+  clearInterval(wsPing);
+  clearInterval(deadlineTimer);
+  showScreen("screenLobby");
+  refreshPublicRooms();
+}
+
+function onCellClick(i) {
+  if (!currentRoom || currentRoom.status !== "playing") return;
+  if (currentRoom.turn !== ME.username) return;
+  if (currentRoom.board[i]) return;
+  if (ws && ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ t: "move", i }));
+}
+
+function playerByUsername(room, username) {
+  return (room.players || []).find((p) => p.username === username);
+}
+
+function renderGame(room) {
+  const players = room.players || [];
+  const me = players.find((p) => p.username === ME.username);
+  const opp = players.find((p) => p.username !== ME.username);
+
+  fillChip($("#chipP1"), me, room);
+  fillChip($("#chipP2"), opp, room);
+  fillScore($("#scoreP1"), me);
+  fillScore($("#scoreP2"), opp);
+
+  $("#roundNo").textContent = "دور " + (room.roundNumber || 1);
+
+  // تخته
+  const board = $("#board");
+  const cells = $$(".cell", board);
+  cells.forEach((cell, i) => {
+    const owner = room.board[i];
+    const isWin = room.winnerLine && room.winnerLine.includes(i);
+    cell.classList.toggle("win-cell", !!isWin);
+    const canClick = room.status === "playing" && room.turn === ME.username && !owner;
+    cell.classList.toggle("clickable", canClick);
+    const ownerPlayer = owner ? playerByUsername(room, owner) : null;
+    const wantSrc = ownerPlayer ? ownerPlayer.piece : null;
+    if (cell.dataset.rendered !== (wantSrc || "")) {
+      cell.innerHTML = "";
+      if (wantSrc) { const img = document.createElement("img"); img.src = wantSrc; cell.appendChild(img); }
+      cell.dataset.rendered = wantSrc || "";
+    }
+  });
+
+  // تایمر
+  clearInterval(deadlineTimer);
+  const bar = $("#timerBar");
+  if (room.status === "playing" && room.deadline) {
+    const total = 15000;
+    const tick = () => {
+      const remain = room.deadline - Date.now();
+      const pct = Math.max(0, Math.min(100, (remain / total) * 100));
+      bar.style.width = pct + "%";
+      bar.classList.toggle("urgent", remain < 4000);
+      if (remain <= 0) clearInterval(deadlineTimer);
+    };
+    tick();
+    deadlineTimer = setInterval(tick, 200);
+  } else {
+    bar.style.width = "100%";
+    bar.classList.remove("urgent");
+  }
+
+  // تُستِ دورِ جدید
+  if (room.status === "roundover") {
+    const toast = $("#roundToast");
+    if (room.winnerLine === null) toast.textContent = "مساوی شد! 🤝";
+    else {
+      const winnerUsername = room.board[room.winnerLine[0]];
+      toast.textContent = (winnerUsername === ME.username ? "بردی این دور رو! 🎉" : "این دور رو باختی 😅");
+    }
+    toast.classList.add("show");
+    setTimeout(() => toast.classList.remove("show"), 1900);
+  }
+}
+
+function fillChip(chip, player, room) {
+  const wrap = $(".pc-avatar-wrap", chip);
+  wrap.innerHTML = "";
+  wrap.appendChild(avatarNode(player ? player.avatarFileId : null, player ? player.username : "?"));
+  $(".pc-name", chip).textContent = player ? player.username : "منتظر...";
+  const statusEl = $(".pc-status", chip);
+  if (!player) statusEl.textContent = "—";
+  else if (!player.connected) statusEl.textContent = "قطع شده";
+  else if (room.status === "playing" && room.turn === player.username) statusEl.textContent = "نوبتشه";
+  else statusEl.textContent = "آماده";
+  chip.classList.toggle("turn", !!player && room.status === "playing" && room.turn === player.username);
+  chip.classList.toggle("disconnected", !!player && !player.connected);
+}
+
+function fillScore(el, player) {
+  const pieceBox = $(".sc-piece", el);
+  pieceBox.innerHTML = "";
+  if (player && player.piece) { const img = document.createElement("img"); img.src = player.piece; pieceBox.appendChild(img); }
+  const dots = $$(".sc-dot", el);
+  const score = player ? player.score : 0;
+  dots.forEach((d, i) => d.classList.toggle("filled", i < score));
+}
+
+/* ============================================================
+   ۵) مودالِ پایانِ مسابقه + کنفتی
+   ============================================================ */
+function openOverModal(room) {
+  const iWon = room.matchWinner === ME.username;
+  $("#overTitle").textContent = iWon ? "بردی! 🎉" : "این بار باختی 😌";
+  $("#overSub").textContent = iWon ? "سه برد رو زودتر گرفتی، قهرمانِ این دستی!" : "دفعه‌ی بعد حتماً می‌بری، آماده باش!";
+  $("#modalOver").classList.add("open");
+  if (iWon) burstConfetti();
+}
+function closeOverModal() { $("#modalOver").classList.remove("open"); }
+
+const confettiCanvas = document.getElementById("confettiCanvas");
+const cctx = confettiCanvas.getContext("2d");
+function resizeConfetti() { confettiCanvas.width = innerWidth; confettiCanvas.height = innerHeight; }
+resizeConfetti();
+window.addEventListener("resize", resizeConfetti);
+let confettiParticles = [];
+function burstConfetti() {
+  const colors = ["#8B5CF6", "#A78BFA", "#F97316", "#22C55E", "#06B6D4", "#EC4899"];
+  for (let i = 0; i < 80; i++) {
+    confettiParticles.push({
+      x: confettiCanvas.width / 2, y: confettiCanvas.height / 3,
+      vx: (Math.random() - 0.5) * 12, vy: Math.random() * -10 - 4,
+      g: 0.35, size: Math.random() * 6 + 4,
+      color: colors[Math.floor(Math.random() * colors.length)],
+      rot: Math.random() * Math.PI, vr: (Math.random() - 0.5) * 0.3,
+      life: 100,
+    });
+  }
+  if (!burstConfetti._running) { burstConfetti._running = true; requestAnimationFrame(tickConfetti); }
+}
+function tickConfetti() {
+  cctx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+  confettiParticles.forEach((p) => {
+    p.vy += p.g; p.x += p.vx; p.y += p.vy; p.rot += p.vr; p.life--;
+    cctx.save();
+    cctx.translate(p.x, p.y); cctx.rotate(p.rot);
+    cctx.fillStyle = p.color;
+    cctx.globalAlpha = Math.max(0, p.life / 100);
+    cctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size);
+    cctx.restore();
+  });
+  confettiParticles = confettiParticles.filter((p) => p.life > 0 && p.y < confettiCanvas.height + 40);
+  if (confettiParticles.length) requestAnimationFrame(tickConfetti);
+  else burstConfetti._running = false;
+}
+
+/* ============================================================
+   شروع
+   ============================================================ */
+boot();
+
+})();
+</script>
+</body>
+</html>
