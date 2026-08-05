@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>کافه رستوران | دهات</title>
+<script>
+// ---------- سینکِ تمِ سایتِ اصلی، قبل از هر رندری (دقیقاً مثلِ dooz.html/radio.html) ----------
+(function () {
+  try {
+    var pdoc = window.parent && window.parent !== window ? window.parent.document : null;
+    var theme, bg;
+    if (pdoc) {
+      var proot = pdoc.documentElement;
+      theme = proot.getAttribute("data-theme");
+      bg = proot.getAttribute("data-bg");
+    }
+    if (!theme) {
+      var LEGACY_MAP = { purple: "purple-dark", dark: "walnut-dark", red: "red-dark", blue: "blue-dark", teal: "pure-dark", emerald: "emerald-dark" };
+      var t = localStorage.getItem("theme") || "purple-dark";
+      if (LEGACY_MAP[t]) t = LEGACY_MAP[t];
+      var parts = t.split("-");
+      theme = parts[0] + "-" + parts[1];
+      bg = parts[2] === "bg" ? "on" : "off";
+    }
+    document.documentElement.setAttribute("data-theme", theme);
+    document.documentElement.setAttribute("data-bg", bg || "off");
+  } catch (e) {}
+})();
+</script>
+<style>
+  @font-face {
+    font-family: 'Vazirmatn';
+    font-style: normal; font-weight: 400; font-display: swap;
+    src: url('/fonts/Vazirmatn-Regular.woff2') format('woff2');
+  }
+  @font-face {
+    font-family: 'Vazirmatn';
+    font-style: normal; font-weight: 700; font-display: swap;
+    src: url('/fonts/Vazirmatn-Bold.woff2') format('woff2');
+  }
+  @font-face {
+    font-family: 'Vazirmatn';
+    font-style: normal; font-weight: 800; font-display: swap;
+    src: url('/fonts/Vazirmatn-ExtraBold.woff2') format('woff2');
+  }
+
+  :root {
+    --primary: #1A0A31; --surface: #241243; --card: #2D1856;
+    --accent: #8B5CF6; --accent-hover: #A78BFA; --text: #FFFFFF; --subtext: #C9C4D8;
+    --border: #3D2A64; --success: #22C55E; --error: #EF4444; --radius: 16px;
+    --accent-gradient: linear-gradient(135deg, var(--accent), var(--accent-hover));
+    --card-gradient: linear-gradient(160deg, var(--card), var(--surface));
+  }
+
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; padding: 0; height: 100%; }
+  body {
+    background: var(--primary); color: var(--text);
+    font-family: 'Vazirmatn', -apple-system, BlinkMacSystemFont, "Segoe UI", Tahoma, sans-serif;
+    overflow: hidden; position: relative; min-height: 100vh;
+    display: flex; align-items: stretch; justify-content: center;
+  }
+
+  .bg-blobs { position: fixed; inset: 0; overflow: hidden; z-index: 0; pointer-events: none; }
+  .blob { position: absolute; border-radius: 50%; filter: blur(46px); opacity: .35; background: var(--accent-gradient); }
+  .blob.b1 { width: 220px; height: 220px; top: -60px; right: -50px; animation: floatA 13s ease-in-out infinite; }
+  .blob.b2 { width: 180px; height: 180px; bottom: -40px; left: -50px; animation: floatB 16s ease-in-out infinite; }
+  @keyframes floatA { 0%,100%{ transform: translate(0,0) scale(1);} 50%{ transform: translate(-18px,20px) scale(1.08);} }
+  @keyframes floatB { 0%,100%{ transform: translate(0,0) scale(1);} 50%{ transform: translate(20px,-16px) scale(0.94);} }
+
+  .app { position: relative; z-index: 1; width: 100%; height: 100vh; display: flex; flex-direction: column; }
+
+  .screen { flex: 1; display: none; flex-direction: column; min-height: 0; padding: calc(14px + env(safe-area-inset-top,0px)) 14px 14px; animation: fadeIn .25s ease; }
+  .screen.active { display: flex; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px);} to { opacity: 1; transform: translateY(0);} }
+
+  h1, h2, h3 { margin: 0; font-family: 'Vazirmatn'; }
+  p { margin: 0; }
+  button { font-family: 'Vazirmatn'; cursor: pointer; border: none; }
+
+  .topline { display: flex; align-items: center; justify-content: space-between; padding: 4px 2px 14px; flex-shrink: 0; }
+  .topline .brand { display: flex; align-items: center; gap: 8px; font-weight: 800; font-size: 15px; }
+  .topline .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent-gradient); }
+  .points-chip {
+    display: flex; align-items: center; gap: 6px; background: var(--card); border: 1px solid var(--border);
+    border-radius: 999px; padding: 6px 14px; font-size: 13px; font-weight: 700; color: var(--accent-hover);
+  }
+
+  .center-msg { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 14px; padding: 30px; }
+  .center-msg .icon { width: 56px; height: 56px; opacity: .85; }
+  .center-msg h2 { font-size: 16px; }
+  .center-msg p { color: var(--subtext); font-size: 13px; line-height: 1.9; }
+  .spinner { width: 30px; height: 30px; border-radius: 50%; border: 3px solid var(--border); border-top-color: var(--accent); animation: spin 0.8s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ---------- منویِ چرخ‌وفلکی: اسکرولِ افقی + پرسپکتیو، هر کارت بر اساسِ فاصله‌ش از مرکز
+     چرخیده/کوچیک/محو می‌شه (نه اینکه ناگهانی جابه‌جا بشه، مثلِ چیدمانِ پشتِ‌همِ دیلز) ---------- */
+  .wheel-wrap { flex: 1; display: flex; flex-direction: column; min-height: 0; }
+  .wheel-viewport {
+    flex: 1; display: flex; align-items: center; overflow-x: auto; overflow-y: hidden;
+    scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; perspective: 1000px;
+  }
+  .wheel-viewport::-webkit-scrollbar { display: none; }
+  .wheel-spacer { flex: 0 0 calc(50% - 105px); }
+  .food-card {
+    flex: 0 0 210px; height: 280px; margin: 0 12px; scroll-snap-align: center;
+    border-radius: 18px; background: var(--card-gradient); border: 1px solid var(--border);
+    display: flex; flex-direction: column; align-items: center; padding: 14px 12px;
+    will-change: transform, opacity; text-align: center;
+  }
+  .food-card-title { font-size: 14px; font-weight: 800; margin-bottom: 8px; line-height: 1.4; }
+  .food-card-photo-wrap {
+    width: 100%; flex: 1; min-height: 0; border-radius: 12px; overflow: hidden; background: var(--surface);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .food-card-photo-wrap img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .food-card-price { margin-top: 8px; font-size: 12.5px; font-weight: 700; color: var(--accent-hover); }
+  .food-card-desc { margin-top: 4px; font-size: 11px; color: var(--subtext); line-height: 1.6; max-height: 32px; overflow: hidden; }
+  .food-card-chef { margin-top: 2px; font-size: 10px; color: var(--subtext); opacity: .75; }
+  .food-card-buy {
+    margin-top: 8px; width: 100%; padding: 8px; border-radius: 10px; background: var(--accent-gradient);
+    color: #fff; font-size: 12.5px; font-weight: 700;
+  }
+  .food-card-buy:disabled { opacity: .5; }
+
+  .wheel-nav { display: flex; justify-content: center; gap: 16px; padding: 10px 0 4px; flex-shrink: 0; }
+  .wheel-nav-btn {
+    width: 38px; height: 38px; border-radius: 50%; background: var(--card); border: 1px solid var(--border);
+    color: var(--text); display: flex; align-items: center; justify-content: center;
+  }
+  .wheel-nav-btn svg { width: 18px; height: 18px; }
+
+  .toast-err { position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%) translateY(20px); background: var(--error); color: #fff; font-size: 12.5px; font-weight: 700; padding: 10px 18px; border-radius: 12px; opacity: 0; pointer-events: none; transition: all .25s; z-index: 30; white-space: nowrap; }
+  .toast-err.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  .toast-ok { background: var(--success); }
+</style>
+</head>
+<body>
+
+<div class="bg-blobs"><div class="blob b1"></div><div class="blob b2"></div></div>
+
+<div class="app">
+  <!-- بلاک: بیرون از آی‌فریمِ سایت باز شده یا لاگین نیست -->
+  <div class="screen" id="screenBlock">
+    <div class="center-msg">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 3v6a3 3 0 0 0 3 3h0a3 3 0 0 0 3-3V3M6 3v18M15 3c-1.5 0-3 1.5-3 4.5S13.5 12 15 12v9"/></svg>
+      <h2 id="blockTitle">—</h2>
+      <p id="blockText">—</p>
+    </div>
+  </div>
+
+  <!-- لودینگ -->
+  <div class="screen active" id="screenLoading">
+    <div class="center-msg">
+      <div class="spinner"></div>
+      <p>در حال آماده‌سازیِ کافه رستوران...</p>
+    </div>
+  </div>
+
+  <!-- منوی اصلی -->
+  <div class="screen" id="screenMenu">
+    <div class="topline">
+      <div class="brand"><span class="dot"></span>کافه رستوران</div>
+      <div class="points-chip" id="pointsChip">۰ دهپوینت</div>
+    </div>
+
+    <div class="wheel-wrap" id="wheelWrap">
+      <div class="wheel-viewport" id="wheelViewport">
+        <div class="wheel-spacer"></div>
+        <!-- کارت‌های غذا با JS اینجا اضافه می‌شن -->
+        <div class="wheel-spacer"></div>
+      </div>
+      <div class="wheel-nav">
+        <button class="wheel-nav-btn" id="wheelPrevBtn" aria-label="غذای قبلی">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+        </button>
+        <button class="wheel-nav-btn" id="wheelNextBtn" aria-label="غذای بعدی">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast-err" id="toastErr"></div>
+
+<script>
+(function () {
+"use strict";
+
+const WORKER_DIRECT_URL = "https://api-7x2.pages.dev"; // بک‌اندِ اصلیِ سایت؛ از هر دامنه‌ای کار می‌کنه
+const API_BASE = WORKER_DIRECT_URL;
+
+function getToken() { try { return localStorage.getItem("token"); } catch (e) { return null; } }
+function getUsername() { try { return localStorage.getItem("username"); } catch (e) { return null; } }
+function mediaUrl(fileId) {
+  if (!fileId) return "";
+  return `${API_BASE}/api/media/${encodeURIComponent(fileId)}?token=${encodeURIComponent(getToken() || "")}`;
+}
+const $ = (sel, root) => (root || document).querySelector(sel);
+const $$ = (sel, root) => Array.from((root || document).querySelectorAll(sel));
+
+function showToast(msg, kind) {
+  const el = $("#toastErr");
+  el.textContent = msg;
+  el.classList.toggle("toast-ok", kind === "ok");
+  el.classList.add("show");
+  clearTimeout(showToast._t);
+  showToast._t = setTimeout(() => el.classList.remove("show"), 2600);
+}
+
+function showScreen(id) {
+  $$(".screen").forEach((s) => s.classList.remove("active"));
+  $("#" + id).classList.add("active");
+}
+
+async function api(path, opts) {
+  opts = opts || {};
+  const headers = Object.assign({ "Content-Type": "application/json", Authorization: "Bearer " + (getToken() || "") }, opts.headers || {});
+  const res = await fetch(API_BASE + path, Object.assign({}, opts, { headers }));
+  let data = null;
+  try { data = await res.json(); } catch (e) {}
+  if (!res.ok) throw new Error((data && data.error) || "خطا در ارتباط با سرور");
+  return data;
+}
+
+let myPoints = 0;
+let menuItems = [];
+
+async function boot() {
+  let inFrame = false, sameOrigin = false;
+  try { inFrame = window.top !== window.self; } catch (e) { inFrame = true; }
+  try { sameOrigin = !!(window.parent && window.parent.document); } catch (e) { sameOrigin = false; }
+
+  if (!inFrame || !sameOrigin) {
+    $("#blockTitle").textContent = "این صفحه جدا باز نمی‌شه";
+    $("#blockText").textContent = "کافه رستوران فقط از داخلِ سایتِ دهات در دسترسه. برگرد به سایت و از قسمتِ ده‌دودز واردش شو.";
+    showScreen("screenBlock");
+    return;
+  }
+  if (!getToken()) {
+    $("#blockTitle").textContent = "اول باید وارد بشی";
+    $("#blockText").textContent = "برای رفتن به کافه رستوران باید تو دهات لاگین باشی.";
+    showScreen("screenBlock");
+    return;
+  }
+
+  try {
+    const [profileData, menuData] = await Promise.all([
+      api(`/api/profile?username=${encodeURIComponent(getUsername() || "")}`),
+      api("/api/restaurant/menu"),
+    ]);
+    myPoints = (profileData && profileData.profile && profileData.profile.dehpoints) || 0;
+    menuItems = (menuData && menuData.items) || [];
+    renderPointsChip();
+    renderMenu();
+    showScreen("screenMenu");
+  } catch (e) {
+    $("#blockTitle").textContent = "لود نشد";
+    $("#blockText").textContent = e.message || "یه خطا پیش اومد؛ با دکمه‌ی رفرش دوباره امتحان کن.";
+    showScreen("screenBlock");
+  }
+}
+
+function renderPointsChip() {
+  $("#pointsChip").textContent = `${myPoints.toLocaleString("fa-IR")} دهپوینت`;
+}
+
+function renderMenu() {
+  const viewport = $("#wheelViewport");
+  const spacers = $$(".wheel-spacer", viewport);
+  // کارت‌های قبلی رو پاک می‌کنیم ولی دو تا اسپیسرِ کنارش رو نگه می‌داریم
+  $$(".food-card", viewport).forEach((c) => c.remove());
+
+  if (!menuItems.length) {
+    const empty = document.createElement("div");
+    empty.style.cssText = "flex:1; display:flex; align-items:center; justify-content:center; color:var(--subtext); font-size:13px;";
+    empty.textContent = "هنوز هیچ غذایی تو منو نیست؛ سرآشپزها هنوز چیزی سرو نکردن.";
+    viewport.insertBefore(empty, spacers[1]);
+    return;
+  }
+
+  menuItems.forEach((item) => {
+    const card = document.createElement("div");
+    card.className = "food-card";
+    card.dataset.itemId = item.id;
+    card.dataset.price = item.price_points;
+    card.innerHTML = `
+      <div class="food-card-title">${escapeHtml(item.title || "غذا")}</div>
+      <div class="food-card-photo-wrap"><img src="${mediaUrl(item.file_id)}" alt="" /></div>
+      <div class="food-card-price">${Number(item.price_points).toLocaleString("fa-IR")} دهپوینت</div>
+      <div class="food-card-desc">${escapeHtml(item.description || "")}</div>
+      <div class="food-card-chef">سرآشپز: ${escapeHtml(item.chef_username)}</div>
+      <button type="button" class="food-card-buy">خرید</button>
+    `;
+    card.querySelector(".food-card-buy").addEventListener("click", () => buyItem(item.id, card));
+    viewport.insertBefore(card, spacers[1]);
+  });
+
+  requestAnimationFrame(updateWheelTransforms);
+}
+
+function escapeHtml(str) {
+  return String(str == null ? "" : str).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+}
+
+// ---------- افکتِ چرخ‌وفلک: هر کارت بر اساسِ فاصله‌ش از مرکزِ ویوپورت می‌چرخه/کوچیک/محو می‌شه ----------
+let wheelRaf = null;
+function updateWheelTransforms() {
+  const viewport = $("#wheelViewport");
+  if (!viewport) return;
+  const vpRect = viewport.getBoundingClientRect();
+  const centerX = vpRect.left + vpRect.width / 2;
+  $$(".food-card", viewport).forEach((card) => {
+    const r = card.getBoundingClientRect();
+    const cardCenter = r.left + r.width / 2;
+    const offset = (cardCenter - centerX) / (r.width * 0.72);
+    const clamped = Math.max(-3, Math.min(3, offset));
+    const rotateY = clamped * -26;
+    const scale = 1 - Math.min(Math.abs(clamped), 1) * 0.2;
+    const opacity = 1 - Math.min(Math.abs(clamped), 1.4) * 0.55;
+    card.style.transform = `rotateY(${rotateY}deg) scale(${scale})`;
+    card.style.opacity = String(Math.max(opacity, 0.15));
+    card.style.zIndex = String(100 - Math.round(Math.abs(offset) * 10));
+  });
+}
+
+function onWheelScroll() {
+  if (wheelRaf) return;
+  wheelRaf = requestAnimationFrame(() => {
+    updateWheelTransforms();
+    wheelRaf = null;
+  });
+}
+
+function scrollWheelBy(dir) {
+  const viewport = $("#wheelViewport");
+  const card = $(".food-card", viewport);
+  const step = card ? card.getBoundingClientRect().width + 24 : 240;
+  viewport.scrollBy({ left: dir * step, behavior: "smooth" });
+}
+
+async function buyItem(itemId, card) {
+  const price = Number(card.dataset.price);
+  if (myPoints < price) {
+    showToast("دهپوینتِ کافی نداری");
+    return;
+  }
+  const btn = card.querySelector(".food-card-buy");
+  btn.disabled = true;
+  btn.textContent = "در حال خرید...";
+  try {
+    await api("/api/restaurant/buy", { method: "POST", body: JSON.stringify({ itemId }) });
+    myPoints -= price;
+    renderPointsChip();
+    showToast("خریدی؛ برو تو یخچالِ پروفایلت ببینش", "ok");
+    btn.textContent = "خریداری شد ✓";
+    setTimeout(() => { btn.disabled = false; btn.textContent = "خرید"; }, 1800);
+  } catch (e) {
+    showToast(e.message || "خرید ناموفق بود");
+    btn.disabled = false;
+    btn.textContent = "خرید";
+  }
+}
+
+window.addEventListener("resize", () => requestAnimationFrame(updateWheelTransforms));
+
+document.addEventListener("DOMContentLoaded", () => {
+  $("#wheelViewport").addEventListener("scroll", onWheelScroll, { passive: true });
+  $("#wheelPrevBtn").addEventListener("click", () => scrollWheelBy(-1));
+  $("#wheelNextBtn").addEventListener("click", () => scrollWheelBy(1));
+  boot();
+});
+})();
+</script>
+</body>
+</html>
