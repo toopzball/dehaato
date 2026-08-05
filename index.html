@@ -2920,6 +2920,43 @@
     cursor: pointer;
   }
 
+  /* ---------- پاپ‌آپِ تولدِ alucardswifey (یه‌بار برای هر کاربر) ---------- */
+  .birthday-backdrop {
+    position: fixed; inset: 0; z-index: 401; background: rgba(0,0,0,0.6); display: none;
+    align-items: center; justify-content: center; padding: 24px;
+  }
+  .birthday-backdrop.open { display: flex; }
+  .birthday-panel {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 20px; width: 100%; max-width: 380px;
+    padding: 26px 20px 22px; text-align: center; animation: changelogPopIn 0.3s cubic-bezier(0.2, 0.9, 0.3, 1.2);
+  }
+  .birthday-stage { display: none; flex-direction: column; align-items: center; }
+  .birthday-stage.active { display: flex; }
+  .birthday-emoji { font-size: 42px; animation: changelogBounce 1.2s ease-in-out infinite; }
+  .birthday-title { font-size: 18px; font-weight: 800; color: var(--text); margin-top: 8px; line-height: 1.7; }
+  .birthday-gift-btn, .birthday-taste-btn, .birthday-close-btn {
+    margin-top: 20px; width: 100%; padding: 12px; border: none; border-radius: 12px;
+    background: var(--accent-gradient, var(--accent)); color: #fff; font-family: inherit; font-size: 14.5px; font-weight: 700;
+    cursor: pointer;
+  }
+  .birthday-cake-wrap { margin-top: 4px; }
+  .birthday-cake-img {
+    width: 160px; height: 160px; object-fit: contain; cursor: pointer; transition: transform 0.15s ease, opacity 0.35s ease;
+  }
+  .birthday-cake-img:active { transform: scale(0.93); }
+  .birthday-cake-img.eaten { opacity: 0; transform: scale(0.6); pointer-events: none; }
+  .birthday-cake-caption { margin-top: 10px; font-size: 13px; color: var(--subtext); }
+  .birthday-taste-input {
+    margin-top: 16px; width: 100%; background: var(--card); border: 1px solid var(--border); border-radius: 10px;
+    padding: 10px 12px; color: var(--text); font-family: inherit; font-size: 13.5px; box-sizing: border-box;
+  }
+  .birthday-cost-text { font-size: 13.5px; color: var(--subtext); line-height: 1.9; margin-top: 6px; }
+  .birthday-cost-amount { font-weight: 800; color: var(--accent-hover); }
+  .birthday-cost-amount.negative { color: var(--error); }
+
+  /* دهپوینتِ منفی: هرجا شماره‌ی دهپوینتِ خودِ کاربر نشون داده می‌شه، اگه منفی بود قرمز بشه */
+  .dehpoints-negative { color: var(--error) !important; }
+
   .chat-conv-composer {
     position: relative;
     display: flex; align-items: flex-end; gap: 6px; padding: 10px 12px calc(10px + var(--safe-bottom));
@@ -4321,6 +4358,41 @@
     <button type="button" class="changelog-close-btn" onclick="closeChangelogModal()">متوجه شدم</button>
   </div>
 </div>
+<div class="birthday-backdrop" id="birthdayBackdrop">
+  <div class="birthday-panel">
+    <audio id="birthdayMusic" src="bd.mp3" loop></audio>
+    <audio id="birthdayEatSound" src="eat.mp3"></audio>
+
+    <!-- مرحله ۱: تبریک -->
+    <div class="birthday-stage active" id="birthdayStage1">
+      <div class="birthday-emoji">🥳</div>
+      <div class="birthday-title">امروز تولد alucardswifey عه🥳🥳</div>
+      <button type="button" class="birthday-gift-btn" onclick="birthdayShowGift()">کادوی من کو</button>
+    </div>
+
+    <!-- مرحله ۲: نشون‌دادنِ کیک -->
+    <div class="birthday-stage" id="birthdayStage2">
+      <div class="birthday-cake-wrap">
+        <img src="cake.png" alt="کیک" class="birthday-cake-img" id="birthdayCakeImg" onclick="birthdayEatCake()" />
+      </div>
+      <div class="birthday-cake-caption">اینم کیک</div>
+    </div>
+
+    <!-- مرحله ۳: خوشمزه بود؟ -->
+    <div class="birthday-stage" id="birthdayStage3">
+      <div class="birthday-title">خوشمزه بود؟</div>
+      <input type="text" class="birthday-taste-input" id="birthdayTasteInput" placeholder="نظرت چیه؟" maxlength="200" />
+      <button type="button" class="birthday-taste-btn" onclick="birthdaySubmitTaste()">ثبت</button>
+    </div>
+
+    <!-- مرحله ۴: هزینه -->
+    <div class="birthday-stage" id="birthdayStage4">
+      <div class="birthday-emoji">🎂</div>
+      <div class="birthday-cost-text" id="birthdayCostText">در حال ثبت...</div>
+    </div>
+  </div>
+</div>
+
 <div class="wrap">
 
   <header>
@@ -9629,8 +9701,7 @@ async function uploadAndSendChatMedia(file, msgType) {
   try {
     const fileToSend = msgType === "image" ? await compressImage(file, { maxDimension: 1600, quality: 0.85 }) : file;
     const { fileId } = await resumableUpload(fileToSend, msgType);
-    await submitChatMessage({ msgType, fileId });
-  } catch (e) {
+    await submitChatMessage({ msgType, fileId });} catch (e) {
     toast(e.message || "آپلود ناموفق بود", "error");
   }
 }
@@ -17470,7 +17541,10 @@ async function loadProfile(username) {
       spouseRow.classList.remove("hidden");
     }
 
-    document.getElementById("profileDehpoints").textContent = (p.dehpoints || 0).toLocaleString("fa-IR");
+    const profileDehpointsVal = p.dehpoints || 0;
+    const profileDehpointsEl = document.getElementById("profileDehpoints");
+    profileDehpointsEl.textContent = profileDehpointsVal.toLocaleString("fa-IR");
+    profileDehpointsEl.classList.toggle("dehpoints-negative", profileDehpointsVal < 0);
 
     if (isSelf) {
       document.getElementById("profileSettingsBlock").classList.remove("hidden");
@@ -19199,6 +19273,97 @@ async function closeChangelogModal() {
   } catch (e) {}
 }
 
+// ---------- پاپ‌آپِ تولدِ alucardswifey: یه‌بار برای هر کاربر (چک سمتِ سرور، نه فقط لوکال) ----------
+async function initBirthdayPopup() {
+  try {
+    const res = await fetch(`${WORKER_URL}/api/birthday/status`, {
+      headers: { Authorization: `Bearer ${getToken()}` },
+    });
+    if (!res.ok) return;
+    const data = await res.json();
+    if (data && !data.claimed) openBirthdayPopup();
+  } catch (e) {
+    // اگه چک نشد، بی‌خیال می‌شیم — بهتر از این‌که با خطا کلِ لودِ صفحه رو خراب کنه
+  }
+}
+
+function openBirthdayPopup() {
+  // ریست کردنِ همه‌ی مراحل به حالتِ اول (برای احتیاط، اگه قبلاً یه‌بار باز/بسته شده باشه)
+  document.querySelectorAll(".birthday-stage").forEach((s) => s.classList.remove("active"));
+  document.getElementById("birthdayStage1").classList.add("active");
+  const cakeImg = document.getElementById("birthdayCakeImg");
+  cakeImg.classList.remove("eaten");
+  document.getElementById("birthdayTasteInput").value = "";
+  document.getElementById("birthdayBackdrop").classList.add("open");
+
+  const music = document.getElementById("birthdayMusic");
+  music.currentTime = 0;
+  music.play().catch(() => {}); // اگه مرورگر بدونِ تعاملِ کاربر پخشِ خودکار رو رد کرد، مشکلی نیست
+}
+
+function birthdayShowGift() {
+  document.getElementById("birthdayStage1").classList.remove("active");
+  document.getElementById("birthdayStage2").classList.add("active");
+}
+
+function birthdayEatCake() {
+  const cakeImg = document.getElementById("birthdayCakeImg");
+  if (cakeImg.classList.contains("eaten")) return; // جلوگیری از دوبار کلیک
+  cakeImg.classList.add("eaten");
+
+  const eatSound = document.getElementById("birthdayEatSound");
+  eatSound.currentTime = 0;
+  eatSound.play().catch(() => {});
+
+  setTimeout(() => {
+    document.getElementById("birthdayStage2").classList.remove("active");
+    document.getElementById("birthdayStage3").classList.add("active");
+    document.getElementById("birthdayTasteInput").focus();
+  }, 400);
+}
+
+async function birthdaySubmitTaste() {
+  const btn = document.querySelector("#birthdayStage3 .birthday-taste-btn");
+  if (btn.disabled) return;
+  btn.disabled = true;
+
+  document.getElementById("birthdayStage3").classList.remove("active");
+  const stage4 = document.getElementById("birthdayStage4");
+  stage4.classList.add("active");
+  const costText = document.getElementById("birthdayCostText");
+  costText.textContent = "در حال ثبت...";
+
+  try {
+    const res = await fetch(`${WORKER_URL}/api/birthday/claim`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${getToken()}` },
+    });
+    const data = await res.json();
+    const dehpoints = (data && typeof data.dehpoints === "number") ? data.dehpoints : 0;
+    const negative = dehpoints < 0;
+    const debtLine = negative
+      ? `الان بهمون <span class="birthday-cost-amount negative">${Math.abs(dehpoints).toLocaleString("fa-IR")} دهپوینت</span> بدهکاری`
+      : `دهپوینتِ فعلیت: <span class="birthday-cost-amount">${dehpoints.toLocaleString("fa-IR")}</span>`;
+    costText.innerHTML = `هزینه‌ی کیک از دهپوینت‌های شما تصفیه شد. ${debtLine}`;
+
+    // اگه همین الان پروفایلِ خودمون بازه، عددِ دهپوینت رو همون‌جا هم به‌روز کنیم
+    const profileDehpointsEl = document.getElementById("profileDehpoints");
+    if (profileDehpointsEl) {
+      profileDehpointsEl.textContent = dehpoints.toLocaleString("fa-IR");
+      profileDehpointsEl.classList.toggle("dehpoints-negative", negative);
+    }
+  } catch (e) {
+    costText.textContent = "هزینه‌ی کیک از دهپوینت‌های شما تصفیه شد.";
+  }
+
+  setTimeout(() => {
+    document.getElementById("birthdayBackdrop").classList.remove("open");
+    const music = document.getElementById("birthdayMusic");
+    music.pause();
+    music.currentTime = 0;
+  }, 2600);
+}
+
 async function bootstrapApp() {
   feedState.media.page = 1;
   ["mediaCol0", "mediaCol1", "mediaCol2"].forEach((id) => { document.getElementById(id).innerHTML = ""; });
@@ -19216,12 +19381,13 @@ async function bootstrapApp() {
     applyNotificationBadge(data.unread_notifications);
     renderMediaFeedPage(data.feed, true);
     initReferralStatus();
+    initBirthdayPopup();
     if (data.changelog && !data.changelog.seen) {
       showChangelogModal(data.changelog.entries);
     }
   } catch (e) {
     // برگشت به روشِ قدیمی، جدا جدا
-    await Promise.all([initAdminStatus(), syncThemeFromServer(), checkNotificationsBadge(), loadFeedView("media", true), initReferralStatus()]);
+    await Promise.all([initAdminStatus(), syncThemeFromServer(), checkNotificationsBadge(), loadFeedView("media", true), initReferralStatus(), initBirthdayPopup()]);
   }
 }
 
