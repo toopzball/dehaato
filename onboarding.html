@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+<title>خوش‌اومدی به دهات</title>
+<style>
+  @font-face { font-family: 'Vazirmatn'; font-style: normal; font-weight: 400; font-display: swap; src: url('/fonts/Vazirmatn-Regular.woff2') format('woff2'); }
+  @font-face { font-family: 'Vazirmatn'; font-style: normal; font-weight: 500; font-display: swap; src: url('/fonts/Vazirmatn-Medium.woff2') format('woff2'); }
+  @font-face { font-family: 'Vazirmatn'; font-style: normal; font-weight: 700; font-display: swap; src: url('/fonts/Vazirmatn-Bold.woff2') format('woff2'); }
+  @font-face { font-family: 'Vazirmatn'; font-style: normal; font-weight: 800; font-display: swap; src: url('/fonts/Vazirmatn-ExtraBold.woff2') format('woff2'); }
+
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; height: 100%; overflow: hidden; }
+
+  /* ---------- متغیرهای رنگیِ عمومیِ حالت روشن/تاریک (مستقل از رنگ‌بندیِ انتخابی) ---------- */
+  html { --ob-text: #FFFFFF; --ob-subtext: #D9D2E8; --ob-dot: rgba(255,255,255,0.25); --ob-dot-active: #fff;
+    --ob-card-border: rgba(255,255,255,0.14); --ob-card-base: rgba(255,255,255,0.06); --ob-body-bg: #12081f; }
+  html[data-mode="light"] { --ob-text: #241243; --ob-subtext: #5B5470; --ob-dot: rgba(36,18,67,0.2); --ob-dot-active: #241243;
+    --ob-card-border: rgba(36,18,67,0.12); --ob-card-base: rgba(255,255,255,0.55); --ob-body-bg: #FAF7FE; }
+
+  body {
+    font-family: 'Vazirmatn', Tahoma, sans-serif;
+    color: var(--ob-text);
+    background: var(--ob-body-bg);
+    position: relative;
+    transition: color 0.4s ease;
+  }
+
+  /* ---------- پس‌زمینه‌ی تمام‌صفحه: دو لایه برای کراس‌فیدِ نرم بینِ تم‌ها/حالت‌ها موقعِ اسکرول یا تاگل ---------- */
+  .bg-layer {
+    position: fixed; inset: 0; opacity: 0; transition: opacity 0.9s ease;
+    background-color: var(--ob-body-bg);
+  }
+  .bg-layer.visible { opacity: 1; }
+  .bg-scrim { position: fixed; inset: 0; pointer-events: none; transition: background 0.4s ease;
+    background: radial-gradient(120% 90% at 50% 100%, rgba(5,2,10,0.55) 0%, rgba(5,2,10,0.15) 45%, transparent 70%); }
+  html[data-mode="light"] .bg-scrim { background: radial-gradient(120% 90% at 50% 100%, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0.14) 45%, transparent 70%); }
+
+  .wrap { position: relative; z-index: 2; height: 100%; display: flex; flex-direction: column; padding: 0 0 max(20px, env(safe-area-inset-bottom)) 0; }
+
+  /* ---------- تاگلِ حالت روشن/تاریک ---------- */
+  .mode-toggle {
+    position: fixed; top: max(20px, env(safe-area-inset-top)); left: 18px; z-index: 5;
+    width: 62px; height: 32px; border-radius: 999px; padding: 3px;
+    background: rgba(255,255,255,0.12); border: 1.5px solid rgba(255,255,255,0.18);
+    backdrop-filter: blur(8px); display: flex; align-items: center; position: fixed;
+    transition: background 0.4s ease, border-color 0.4s ease;
+  }
+  html[data-mode="light"] .mode-toggle { background: rgba(36,18,67,0.08); border-color: rgba(36,18,67,0.14); }
+  .mode-slider {
+    position: absolute; top: 3px; right: 3px; width: 26px; height: 26px; border-radius: 50%;
+    background: #fff; box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    transition: transform 0.3s cubic-bezier(.2,.8,.2,1);
+  }
+  html[data-mode="dark"] .mode-slider { transform: translateX(0); }
+  html[data-mode="light"] .mode-slider { transform: translateX(-30px); }
+  .mode-btn {
+    position: relative; z-index: 1; flex: 1; height: 100%; border: none; background: none; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; color: var(--ob-subtext);
+    transition: color 0.3s ease;
+  }
+  .mode-btn svg { width: 15px; height: 15px; }
+  .mode-btn.active { color: #12081f; }
+  html[data-mode="light"] .mode-btn.active { color: #fff; }
+
+  /* ---------- ردِ بالا: عنوانِ شوخ‌طبعانه ---------- */
+  .head { padding: max(28px, env(safe-area-inset-top)) 22px 8px; text-align: center; flex-shrink: 0; }
+  .head-emoji { font-size: 30px; margin-bottom: 6px; }
+  .head-title { font-size: 21px; font-weight: 800; margin: 0 0 8px; text-shadow: 0 2px 12px rgba(0,0,0,0.2); }
+  .head-sub { font-size: 13.5px; color: var(--ob-subtext); margin: 0 auto; max-width: 320px; line-height: 1.9; opacity: 0.9; transition: color 0.4s ease; }
+
+  /* ---------- ناحیه‌ی اسکرولِ افقیِ کارت‌ها ---------- */
+  .cards-viewport { flex: 1; display: flex; align-items: center; min-height: 0; }
+  .cards-track {
+    display: flex; align-items: center; gap: 16px;
+    overflow-x: auto; overflow-y: hidden; width: 100%;
+    scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch;
+    scrollbar-width: none; padding: 10px 0;
+  }
+  .cards-track::-webkit-scrollbar { display: none; }
+  .spacer { flex: 0 0 calc(50% - 100px); scroll-snap-align: none; }
+
+  .theme-card {
+    flex: 0 0 200px; width: 200px; height: 260px;
+    scroll-snap-align: center;
+    border-radius: 26px; padding: 22px 16px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px;
+    text-align: center; cursor: pointer; user-select: none;
+    border: 1.5px solid var(--ob-card-border);
+    background: var(--ob-card-base);
+    backdrop-filter: blur(10px);
+    transition: transform 0.35s cubic-bezier(.2,.8,.2,1), border-color 0.35s ease, box-shadow 0.35s ease, background 0.35s ease;
+    transform: scale(0.86); opacity: 0.55;
+  }
+  .theme-card.active {
+    transform: scale(1); opacity: 1;
+    box-shadow: 0 14px 34px rgba(0,0,0,0.25);
+  }
+  .card-icon-badge {
+    width: 64px; height: 64px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.25), 0 6px 16px rgba(0,0,0,0.3);
+    transition: box-shadow 0.35s ease, background 0.35s ease;
+  }
+  .card-icon-badge svg { width: 28px; height: 28px; }
+  .theme-card.active .card-icon-badge { box-shadow: inset 0 1px 0 rgba(255,255,255,0.3), 0 0 0 5px rgba(255,255,255,0.1), 0 8px 20px rgba(0,0,0,0.35); }
+  .card-title { font-size: 15px; font-weight: 700; margin: 0; }
+  .card-sub { font-size: 12px; color: var(--ob-subtext); opacity: 0.85; margin: 0; line-height: 1.6; transition: color 0.4s ease; }
+  .card-check {
+    width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    opacity: 0; transform: scale(0.5); transition: opacity 0.25s ease, transform 0.25s ease, background 0.35s ease;
+  }
+  .theme-card.active .card-check { opacity: 1; transform: scale(1); }
+  .card-check svg { width: 12px; height: 12px; }
+
+  /* ---------- نقطه‌های پیجینیشن ---------- */
+  .dots { display: flex; justify-content: center; gap: 7px; padding: 4px 0 2px; flex-shrink: 0; }
+  .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--ob-dot); transition: all 0.3s ease, background 0.4s ease; }
+  .dot.active { width: 18px; background: var(--ob-dot-active); }
+
+  /* ---------- پایین: دکمه‌ی تایید + رد کردن ---------- */
+  .footer { padding: 14px 22px 6px; display: flex; flex-direction: column; align-items: center; gap: 12px; flex-shrink: 0; }
+  .confirm-btn {
+    width: 100%; max-width: 320px; padding: 15px 20px; border: none; border-radius: 999px;
+    font-family: inherit; font-size: 15px; font-weight: 700; color: #fff; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    box-shadow: 0 10px 26px rgba(0,0,0,0.3);
+    transition: background 0.35s ease, transform 0.15s ease;
+  }
+  .confirm-btn:active { transform: scale(0.97); }
+  .confirm-btn svg { width: 17px; height: 17px; transform: scaleX(-1); }
+  .confirm-btn.saving { opacity: 0.75; pointer-events: none; }
+  .skip-link {
+    background: none; border: none; color: var(--ob-subtext); font-family: inherit; font-size: 12.5px;
+    opacity: 0.75; cursor: pointer; padding: 6px; text-decoration: underline; text-underline-offset: 3px;
+    transition: color 0.4s ease;
+  }
+  .skip-link:active { opacity: 0.5; }
+
+  @media (max-width: 340px) {
+    .theme-card { flex-basis: 176px; width: 176px; height: 244px; }
+    .spacer { flex-basis: calc(50% - 88px); }
+  }
+</style>
+</head>
+<body>
+
+<div class="bg-layer visible" id="bgLayerA"></div>
+<div class="bg-layer" id="bgLayerB"></div>
+<div class="bg-scrim"></div>
+
+<div class="mode-toggle" id="modeToggle">
+  <div class="mode-slider"></div>
+  <button type="button" class="mode-btn" data-m="dark" aria-label="حالت تاریک" title="حالت تاریک">
+    <svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M20.8 14.5c-3.9 1.5-8.3-.4-9.8-4.3-.9-2.4-.6-4.9.6-7-3.7 1-6.6 4.1-7.2 8-.9 5.4 2.7 10.5 8.1 11.4 4.7.8 9.1-1.8 10.8-6-.8-.5-1.6-1.2-2.5-2.1z"/></svg>
+  </button>
+  <button type="button" class="mode-btn" data-m="light" aria-label="حالت روشن" title="حالت روشن">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
+  </button>
+</div>
+
+<div class="wrap">
+  <div class="head">
+    <div class="head-emoji">👋</div>
+    <p class="head-title">به دهات خوش اومدی!</p>
+    <p class="head-sub">قبل از اینکه بریم تو ده، بذار رنگِ درِ خونه‌تو انتخاب کنیم — هر وقت دلت خواست هم از تنظیمات عوضش می‌کنی.</p>
+  </div>
+
+  <div class="cards-viewport">
+    <div class="cards-track" id="cardsTrack"></div>
+  </div>
+
+  <div class="dots" id="dots"></div>
+
+  <div class="footer">
+    <button class="confirm-btn" id="confirmBtn">
+      <span id="confirmBtnText">بریم تو دهات</span>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+    </button>
+    <button class="skip-link" id="skipBtn">فعلاً رد شو، بعداً از تنظیمات عوضش می‌کنم</button>
+  </div>
+</div>
+
+<script>
+const WORKER_URL = "";
+function getToken() { return localStorage.getItem("token"); }
+function getUsername() { return localStorage.getItem("username"); }
+function nextUrl() {
+  const p = new URLSearchParams(window.location.search).get("next");
+  return p && p.startsWith("/") === false && !p.includes("://") ? p : "index.html";
+}
+function seenKey() { return "dehaat_onboard_seen_" + (getUsername() || "anon"); }
+
+// دهات کاملاً خصوصیه؛ بدونِ توکن اصلاً نباید این صفحه رو ببینه
+if (!getToken()) {
+  window.location.replace("login.html?next=onboarding.html");
+}
+
+// ---------- ۹ تمِ رنگیِ سایت — عنوان و توضیحِ هر تم دقیقاً همونیه که تویِ خودِ اپ (تنظیمات ظاهری > تم سایت)
+// استفاده می‌شه (THEME_HUE_INFO)، تا حرفِ اینجا با حرفِ خودِ سایت یکی باشه. هر رنگ‌بندی هم نسخه‌ی روشن و هم
+// تاریک داره؛ رنگ‌ها عیناً از متغیرهای CSS همون تم‌ها (--accent/--accent-hover/--card و بک‌گراندِ بدنه) گرفته شدن.
+const HUES = [
+  {
+    id: "purple", title: "بنفش", sub: "بنفش وصل، میراث وایرکس",
+    dark:  { accent: "#8B5CF6", accentHover: "#A78BFA", card: "#2D1856",
+      bg: "radial-gradient(50% 40% at 25% 18%, #A78BFA99 0%, transparent 58%), radial-gradient(55% 45% at 78% 28%, #8B5CF699 0%, transparent 58%), radial-gradient(60% 55% at 50% 82%, #5B21B680 0%, transparent 55%), linear-gradient(160deg, #241243 0%, #1A0A31 100%)" },
+    light: { accent: "#7C3AED", accentHover: "#6427D9", card: "#E2D6F7",
+      bg: "radial-gradient(55% 45% at 20% 18%, #E2D6F7CC 0%, transparent 58%), radial-gradient(55% 50% at 82% 30%, #D6C2F5B3 0%, transparent 58%), radial-gradient(60% 55% at 50% 85%, #C4A6EF80 0%, transparent 55%), linear-gradient(160deg, #F5F1FC 0%, #EEE5FB 100%)" },
+    icon: '<path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5Z"/>'
+  },
+  {
+    id: "walnut", title: "قهوه", sub: "بلوط فراموش‌شده‌ای که درخت نشد",
+    dark:  { accent: "#B9825A", accentHover: "#D3A177", card: "#362819",
+      bg: "radial-gradient(50% 40% at 25% 18%, #D3A17799 0%, transparent 58%), radial-gradient(55% 45% at 78% 28%, #B9825A99 0%, transparent 58%), radial-gradient(60% 55% at 50% 82%, #6B442380 0%, transparent 55%), linear-gradient(160deg, #271D16 0%, #1B140F 100%)" },
+    light: { accent: "#7A5038", accentHover: "#613F2B", card: "#EADACD",
+      bg: "radial-gradient(55% 45% at 20% 18%, #EADACDCC 0%, transparent 58%), radial-gradient(55% 50% at 82% 30%, #E3C7AEB3 0%, transparent 58%), radial-gradient(60% 55% at 50% 85%, #C9A47E80 0%, transparent 55%), linear-gradient(160deg, #FBF5F0 0%, #F6EBE1 100%)" },
+    icon: '<path d="M12 3c-3 0-5 3-5 6.5C7 15 9.5 20 12 21c2.5-1 5-6 5-11.5C17 6 15 3 12 3Z"/><path d="M12 3v18"/>'
+  },
+  {
+    id: "red", title: "سرخ", sub: "گویی که دلقک ماهی خون گریه کرده",
+    dark:  { accent: "#C4302F", accentHover: "#DE4B48", card: "#3B0A0A",
+      bg: "radial-gradient(55% 45% at 20% 18%, #DE4B4899 0%, transparent 58%), radial-gradient(55% 50% at 82% 30%, #C4302F99 0%, transparent 58%), radial-gradient(60% 55% at 50% 85%, #7A1010 0%, transparent 55%), linear-gradient(160deg, #260505 0%, #180303 100%)" },
+    light: { accent: "#A01212", accentHover: "#830E0E", card: "#F6D3D0",
+      bg: "radial-gradient(55% 45% at 20% 18%, #FFD464B3 0%, transparent 58%), radial-gradient(55% 50% at 82% 30%, #FF5E5E99 0%, transparent 58%), radial-gradient(60% 55% at 50% 85%, #E23C6480 0%, transparent 55%), linear-gradient(160deg, #FFFFFF 0%, #FFF3F0 100%)" },
+    icon: '<path d="M12 2c2 3-2 4-2 7a4 4 0 1 0 8 0c0-2-1-3-1-3s1 4-1 4-2-3-2-5c0-2 1-2-2-3Z"/>'
+  },
+  {
+    id: "blue", title: "دریا", sub: "مرز بین آسمان و دریا",
+    dark:  { accent: "#2E63C4", accentHover: "#4C81E0", card: "#082352",
+      bg: "radial-gradient(60% 50% at 18% 18%, #BB63FFB3 0%, transparent 65%), radial-gradient(55% 45% at 82% 20%, #5B58EBB3 0%, transparent 65%), radial-gradient(60% 55% at 30% 78%, #56E1E999 0%, transparent 60%), linear-gradient(160deg, #112C71 0%, #0A2353 100%)" },
+    light: { accent: "#3661AB", accentHover: "#2A4F8F", card: "#D3E2F7",
+      bg: "radial-gradient(55% 45% at 18% 18%, #D6C9FF 0%, transparent 65%), radial-gradient(55% 45% at 82% 20%, #C7D6FF 0%, transparent 65%), radial-gradient(60% 55% at 35% 80%, #BFF0F5 0%, transparent 60%), linear-gradient(160deg, #F2F6FD 0%, #E6EEFC 100%)" },
+    icon: '<path d="M3 15c2-2 4-2 6 0s4 2 6 0 4-2 6 0M3 10c2-2 4-2 6 0s4 2 6 0 4-2 6 0"/>'
+  },
+  {
+    id: "pure", title: "پوچ", sub: "گرفتاری در تاریکی و روشناییِ مطلق",
+    dark:  { accent: "#3D3E42", accentHover: "#57585D", card: "#141416",
+      bg: "radial-gradient(55% 45% at 25% 18%, #1D1D20 0%, transparent 62%), radial-gradient(55% 50% at 78% 30%, #141416 0%, transparent 62%), radial-gradient(60% 55% at 50% 85%, #0A0A0B 0%, transparent 58%), linear-gradient(160deg, #000000 0%, #050505 100%)" },
+    light: { accent: "#4B4B4E", accentHover: "#333335", card: "#E6E6E6",
+      bg: "radial-gradient(55% 45% at 25% 18%, #F1F1F1 0%, transparent 62%), radial-gradient(55% 50% at 78% 30%, #E6E6E6 0%, transparent 62%), radial-gradient(60% 55% at 50% 85%, #DADADA 0%, transparent 58%), linear-gradient(160deg, #FAFAFA 0%, #F4F4F4 100%)" },
+    icon: '<path d="M12 2 4 9l8 13 8-13-8-7Z"/><path d="M4 9h16M12 2v20"/>'
+  },
+  {
+    id: "emerald", title: "زمرد", sub: "قانون سی و چهارم دهات",
+    dark:  { accent: "#1FA348", accentHover: "#29C95A", card: "#0E3D1A",
+      bg: "radial-gradient(55% 45% at 20% 18%, #29C95A80 0%, transparent 58%), radial-gradient(55% 50% at 82% 28%, #1FA34899 0%, transparent 60%), radial-gradient(60% 55% at 50% 82%, #0E3D1A 0%, transparent 55%), linear-gradient(160deg, #082C12 0%, #04170A 100%)" },
+    light: { accent: "#2E7D46", accentHover: "#256838", card: "#D3EEDA",
+      bg: "radial-gradient(55% 45% at 20% 18%, #C3E956B3 0%, transparent 58%), radial-gradient(55% 50% at 82% 28%, #B2FEE7CC 0%, transparent 60%), radial-gradient(60% 55% at 50% 82%, #4D711166 0%, transparent 58%), linear-gradient(160deg, #F4FFFC 0%, #E7FBEF 100%)" },
+    icon: '<path d="M12 21s7-3.5 7-11a7 7 0 0 0-7-3 7 7 0 0 0-7 3c0 7.5 7 11 7 11Z"/><path d="M12 21V9"/>'
+  },
+  {
+    id: "berry", title: "گونه آفتاب", sub: "وقتی که نور نیاز به آسایش دارد",
+    dark:  { accent: "#C85186", accentHover: "#E06CA0", card: "#3A1E2C",
+      bg: "radial-gradient(50% 40% at 25% 15%, #FFF7ADB3 0%, transparent 55%), radial-gradient(55% 45% at 78% 25%, #FFB3AE99 0%, transparent 58%), radial-gradient(60% 55% at 55% 68%, #FF49C199 0%, transparent 58%), linear-gradient(160deg, #6A1452 0%, #44113E 100%)" },
+    light: { accent: "#B64F7D", accentHover: "#9A3C67", card: "#EFD2E0",
+      bg: "radial-gradient(50% 40% at 25% 15%, #FFF3C4 0%, transparent 55%), radial-gradient(55% 45% at 78% 25%, #FFD3D0 0%, transparent 58%), radial-gradient(60% 55% at 55% 70%, #FFC1E8 0%, transparent 58%), linear-gradient(160deg, #FBF2F6 0%, #F6E4ED 100%)" },
+    icon: '<circle cx="9" cy="12" r="3.2"/><circle cx="15" cy="12" r="3.2"/><circle cx="12" cy="7" r="3.2"/>'
+  },
+  {
+    id: "police", title: "سرخابی", sub: "صدای دومی که فقط تو می‌شنوی",
+    dark:  { accent: "#3355FF", accentHover: "#E63946", card: "#1B0433",
+      bg: "radial-gradient(50% 40% at 20% 18%, #3355FF99 0%, transparent 55%), radial-gradient(55% 45% at 80% 25%, #E6394699 0%, transparent 55%), radial-gradient(60% 55% at 50% 80%, #7A5AF080 0%, transparent 52%), linear-gradient(160deg, #0D0326 0%, #05001A 100%)" },
+    light: { accent: "#7A5AF0", accentHover: "#D1425B", card: "#EEDCF5",
+      bg: "radial-gradient(50% 40% at 20% 18%, #C9BFFFCC 0%, transparent 55%), radial-gradient(55% 45% at 80% 25%, #FFC4CCCC 0%, transparent 55%), radial-gradient(60% 55% at 50% 80%, #E7D3F2 0%, transparent 52%), linear-gradient(160deg, #FBF4FE 0%, #F5E9FB 100%)" },
+    icon: '<path d="M12 2a4 4 0 0 1 4 4v4H8V6a4 4 0 0 1 4-4Z"/><path d="M6 14h12l1 6H5l1-6Z"/><path d="M12 10v4"/>'
+  },
+  {
+    id: "fall", title: "پاییز", sub: "بوی پرتقال و بادهای پاییزی",
+    dark:  { accent: "#E85D28", accentHover: "#FF7A45", card: "#3D2417",
+      bg: "radial-gradient(55% 45% at 50% 18%, #FFFB97B3 0%, transparent 60%), radial-gradient(60% 50% at 78% 60%, #FE7F42B3 0%, transparent 62%), radial-gradient(55% 55% at 20% 78%, #B32C1A99 0%, transparent 60%), linear-gradient(180deg, #2A1617 0%, #1C1310 100%)" },
+    light: { accent: "#C94A1A", accentHover: "#A33716", card: "#FFDFCC",
+      bg: "radial-gradient(55% 45% at 50% 18%, #FFF3B0 0%, transparent 60%), radial-gradient(60% 50% at 78% 60%, #FFCBA0 0%, transparent 62%), radial-gradient(55% 55% at 20% 78%, #F3A98E 0%, transparent 55%), linear-gradient(180deg, #FFF7F2 0%, #FFEDE0 100%)" },
+    icon: '<path d="M12 3c4 2 7 6 5 11-1.5 3.7-6 5.5-9 4 2-1 3-3 2-5-2 1-4 0-4-2.5C6 7 9 4 12 3Z"/><path d="M12 21c0-6 2-11 5-14"/>'
+  }
+];
+
+const track = document.getElementById("cardsTrack");
+const dotsWrap = document.getElementById("dots");
+const bgLayerA = document.getElementById("bgLayerA");
+const bgLayerB = document.getElementById("bgLayerB");
+let bgActiveIsA = true;
+let activeHueId = null;
+let currentMode = "dark"; // پیش‌فرضِ خودِ سایت هم دارک هست
+
+function buildIconSvg(pathMarkup) {
+  return `<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${pathMarkup}</svg>`;
+}
+
+// ---------- ساختنِ کارت‌ها ----------
+const spacerStart = document.createElement("div");
+spacerStart.className = "spacer";
+track.appendChild(spacerStart);
+
+HUES.forEach((hue) => {
+  const card = document.createElement("div");
+  card.className = "theme-card";
+  card.dataset.hue = hue.id;
+  card.innerHTML = `
+    <div class="card-icon-badge">${buildIconSvg(hue.icon)}</div>
+    <p class="card-title">${hue.title}</p>
+    <p class="card-sub">${hue.sub}</p>
+    <div class="card-check">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L19 7"/></svg>
+    </div>
+  `;
+  card.addEventListener("click", () => {
+    card.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
+  });
+  track.appendChild(card);
+
+  const dot = document.createElement("div");
+  dot.className = "dot";
+  dot.dataset.hue = hue.id;
+  dotsWrap.appendChild(dot);
+});
+
+const spacerEnd = document.createElement("div");
+spacerEnd.className = "spacer";
+track.appendChild(spacerEnd);
+
+// ---------- رنگ‌آمیزیِ کارت‌ها بر اساسِ رنگ‌بندی + حالتِ فعلی (روشن/تاریک) ----------
+function refreshCardColors() {
+  document.querySelectorAll(".theme-card").forEach((card) => {
+    const hue = HUES.find((h) => h.id === card.dataset.hue);
+    if (!hue) return;
+    const c = hue[currentMode];
+    card.style.background = `linear-gradient(160deg, ${c.card}CC, var(--ob-card-base))`;
+    const badge = card.querySelector(".card-icon-badge");
+    if (badge) badge.style.background = `linear-gradient(135deg, ${c.accent}, ${c.accentHover})`;
+    const check = card.querySelector(".card-check");
+    if (check) check.style.background = c.accentHover;
+  });
+  if (activeHueId) {
+    const hue = HUES.find((h) => h.id === activeHueId);
+    const c = hue[currentMode];
+    document.getElementById("confirmBtn").style.background = `linear-gradient(135deg, ${c.accent}, ${c.accentHover})`;
+  }
+}
+
+// ---------- کراس‌فیدِ نرمِ پس‌زمینه (موقعِ عوض‌شدنِ رنگ‌بندی یا موقعِ تاگلِ روشن/تاریک) ----------
+function paintBackground(hueId, animate) {
+  const hue = HUES.find((h) => h.id === hueId);
+  if (!hue) return;
+  const showingLayer = bgActiveIsA ? bgLayerB : bgLayerA;
+  const hidingLayer = bgActiveIsA ? bgLayerA : bgLayerB;
+  showingLayer.style.background = `${hue[currentMode].bg}, var(--ob-body-bg)`;
+  if (animate === false) {
+    hidingLayer.classList.remove("visible");
+    showingLayer.classList.add("visible");
+  } else {
+    requestAnimationFrame(() => {
+      showingLayer.classList.add("visible");
+      hidingLayer.classList.remove("visible");
+    });
+  }
+  bgActiveIsA = !bgActiveIsA;
+}
+
+function setActiveHue(hueId, animate) {
+  if (hueId === activeHueId) return;
+  const hue = HUES.find((h) => h.id === hueId);
+  if (!hue) return;
+  activeHueId = hueId;
+
+  paintBackground(hueId, animate);
+
+  document.querySelectorAll(".theme-card").forEach((el) => el.classList.toggle("active", el.dataset.hue === hueId));
+  document.querySelectorAll(".dot").forEach((el) => el.classList.toggle("active", el.dataset.hue === hueId));
+
+  const c = hue[currentMode];
+  document.getElementById("confirmBtn").style.background = `linear-gradient(135deg, ${c.accent}, ${c.accentHover})`;
+}
+
+// ---------- تاگلِ حالتِ روشن/تاریک ----------
+function setMode(mode, animate) {
+  if (mode !== "light" && mode !== "dark") return;
+  currentMode = mode;
+  document.documentElement.setAttribute("data-mode", mode);
+  document.querySelectorAll(".mode-btn").forEach((b) => b.classList.toggle("active", b.dataset.m === mode));
+  refreshCardColors();
+  if (activeHueId) paintBackground(activeHueId, animate !== false);
+}
+
+document.querySelectorAll(".mode-btn").forEach((btn) => {
+  btn.addEventListener("click", () => setMode(btn.dataset.m, true));
+});
+
+// ---------- رنگ‌آمیزیِ اولیه‌ی کارت‌ها با حالتِ پیش‌فرض (قبل از خوندنِ تمِ ذخیره‌شده) ----------
+refreshCardColors();
+
+// ---------- تشخیصِ کارتِ وسط با IntersectionObserver (مستقل از جهتِ RTL موقعِ اسکرول) ----------
+const ratios = new Map();
+const io = new IntersectionObserver(
+  (entries) => {
+    entries.forEach((e) => ratios.set(e.target.dataset.hue, e.intersectionRatio));
+    let best = null, bestRatio = 0;
+    ratios.forEach((r, id) => { if (r > bestRatio) { bestRatio = r; best = id; } });
+    if (best) setActiveHue(best, true);
+  },
+  { root: track, threshold: [0, 0.25, 0.5, 0.75, 0.9, 1] }
+);
+document.querySelectorAll(".theme-card").forEach((el) => io.observe(el));
+
+// شروعِ اولیه: اگه قبلاً تم/حالتی انتخاب شده بود همون رو نشون بده، وگرنه بنفشِ تاریک (پیش‌فرضِ خودِ سایت)
+(function initFromStoredTheme() {
+  const stored = (localStorage.getItem("theme") || "purple-dark").split("-");
+  const storedHue = stored[0];
+  const storedMode = stored[1] === "light" ? "light" : "dark";
+  const startHue = HUES.some((h) => h.id === storedHue) ? storedHue : "purple";
+
+  setMode(storedMode, false);
+  setActiveHue(startHue, false);
+  requestAnimationFrame(() => {
+    const el = track.querySelector(`.theme-card[data-hue="${startHue}"]`);
+    if (el) el.scrollIntoView({ behavior: "auto", inline: "center", block: "nearest" });
+  });
+})();
+
+// ---------- ثبتِ نهایی ----------
+function markSeen() {
+  try { localStorage.setItem(seenKey(), "1"); } catch (e) {}
+}
+
+const confirmBtn = document.getElementById("confirmBtn");
+const confirmBtnText = document.getElementById("confirmBtnText");
+confirmBtn.addEventListener("click", async () => {
+  if (!activeHueId) return;
+  const theme = `${activeHueId}-${currentMode}`;
+  confirmBtn.classList.add("saving");
+  confirmBtnText.textContent = "چند لحظه...";
+  try {
+    await fetch(`${WORKER_URL}/api/theme`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${getToken()}` },
+      body: JSON.stringify({ theme }),
+    });
+  } catch (e) {
+    // اگه اینترنت لحظه‌ای قطع بود هم مهم نیست؛ تم رو محلی ذخیره می‌کنیم و کاربر معطلِ سرور نمی‌مونه
+  }
+  try { localStorage.setItem("theme", theme); } catch (e) {}
+  markSeen();
+  window.location.href = nextUrl();
+});
+
+document.getElementById("skipBtn").addEventListener("click", () => {
+  markSeen();
+  window.location.href = nextUrl();
+});
+</script>
+</body>
+</html>
