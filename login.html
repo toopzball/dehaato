@@ -87,8 +87,9 @@ try {
     will-change: transform; backface-visibility: hidden;
     /* saturate/contrast/brightness رو مرورگر رویِ GPU اعمال می‌کنه (بر خلافِ فیلترهایی مثلِ
        feConvolveMatrix که نرم‌افزاری و سنگینن)، پس همون bg.mp4 رنگ‌های پرتر و کنتراستِ بهتری
-       می‌گیره بدونِ اینکه لگی به فریم‌ریت اضافه بشه. */
-    filter: saturate(1.12) contrast(1.06) brightness(1.02);
+       می‌گیره بدونِ اینکه لگی به فریم‌ریت اضافه بشه. مقدارها رو کمی بالاتر بردیم تا ویدیو
+       شفاف‌تر/باکیفیت‌تر به نظر برسه، بدونِ اینکه غیرطبیعی/oversaturated بشه. */
+    filter: saturate(1.22) contrast(1.12) brightness(1.03);
   }
   .box { width: 100%; max-width: 380px; position: relative; z-index: 1; }
 
@@ -2069,8 +2070,10 @@ if (localStorage.getItem("token")) {
   window.location.href = "index.html";
 }
 
-// ---------- رفع لک هنگام تایپ: تا وقتی کاربر روی یه اینپوت فوکوسه، ویدیوی پس‌زمینه رو موقتاً متوقف می‌کنیم
-// چون دیکودِ مداومِ ویدیو هم‌زمان با باز شدن کیبورد/کرسر می‌تونه باعث لک بشه ----------
+// ---------- ویدیوی پس‌زمینه: دیگه هنگامِ فوکوس‌کردن/تایپ‌کردن تو اینپوت‌ها متوقف نمی‌شه ----------
+// (قبلاً برای رفعِ یه لکِ احتمالی موقعِ فوکوس، ویدیو pause می‌شد؛ چون خودش باعثِ یه توقفِ محسوس
+// و ناخوشایند تو ظاهر می‌شد حذف شد. فقط وقتی تب/صفحه واقعاً مخفیه (کاربر رفته سراغِ تبِ دیگه)
+// پخش رو نگه می‌داریم، چون اونجا فایده‌ای نداره و فقط باتری/CPU مصرف می‌کنه)
 const bgAnimEl = document.querySelector(".bg-anim");
 const bgVideoEl = document.querySelector(".bg-video");
 function pauseBgVideo() { if (bgVideoEl) bgVideoEl.pause(); }
@@ -2079,13 +2082,6 @@ function resumeBgVideo() {
   if (document.hidden) return;
   bgVideoEl.play().catch(() => {}); // اگه مرورگر autoplay رو بلاک کنه، بی‌سروصدا نادیده می‌گیریم
 }
-document.addEventListener("focusin", (e) => {
-  if (e.target.tagName === "INPUT") { bgAnimEl.classList.add("is-paused"); pauseBgVideo(); }
-});
-document.addEventListener("focusout", (e) => {
-  if (e.target.tagName === "INPUT") { bgAnimEl.classList.remove("is-paused"); resumeBgVideo(); }
-});
-// وقتی تب مرورگر مخفیه هم پخش رو نگه می‌داریم؛ فایده‌ای نداره و فقط باتری/CPU مصرف می‌کنه
 document.addEventListener("visibilitychange", () => {
   bgAnimEl.classList.toggle("is-paused", document.hidden);
   if (document.hidden) pauseBgVideo(); else resumeBgVideo();
