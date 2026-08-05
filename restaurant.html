@@ -189,8 +189,17 @@
 (function () {
 "use strict";
 
-const WORKER_DIRECT_URL = "https://api-7x2.pages.dev"; // بک‌اندِ اصلیِ سایت؛ از هر دامنه‌ای کار می‌کنه
-const API_BASE = WORKER_DIRECT_URL;
+// ---------- تعیینِ خودکارِ آدرسِ ورکر بر اساسِ دامنه‌ای که کاربر باهاش وارد شده (دقیقاً مثلِ index.html) ----------
+// چرا مهمه: تگ‌های <img> برخلافِ fetch()، موقعِ درخواستِ cross-origin هدرِ Origin نمی‌فرستن (چون
+// حالتشون no-cors ه). ورکرِ اصلی درخواستِ مستقیم (بدونِ X-Internal-Key) رو فقط وقتی قبول می‌کنه که
+// هدرِ Origin وجود داشته باشه و مجاز باشه. نتیجه: قبلاً چون این فایل همیشه مستقیم به آدرسِ ورکر
+// می‌رفت، درخواست‌های fetch (مثل گرفتنِ منو) درست کار می‌کردن، ولی خودِ تگِ <img> عکسِ غذا با ۴۰۳ رد
+// می‌شد و نمایش داده نمی‌شد. با استفاده از همون مسیرِ نسبیِ پروکسی‌شده‌ی index.html (که پروکسیِ
+// Cloudflare Pages خودش هدرِ X-Internal-Key رو اضافه می‌کنه)، این مشکل حل می‌شه.
+const WORKER_DIRECT_URL = "https://api-7x2.pages.dev"; // مسیرِ مستقیم؛ فقط برای دامنه‌هایی که پروکسی ندارن (مثلِ GitHub Pages)
+const WORKER_PAGES_PROXY_URL = ""; // مسیرِ نسبی؛ فقط وقتی از پشتِ Cloudflare Pages Function سرو بشه کار می‌کنه
+const IS_GITHUB_HOST = /(^|\.)github\.io$/.test(location.hostname) || location.hostname === "dehaat.bbboi.ir";
+const API_BASE = IS_GITHUB_HOST ? WORKER_DIRECT_URL : WORKER_PAGES_PROXY_URL;
 
 function getToken() { try { return localStorage.getItem("token"); } catch (e) { return null; } }
 function getUsername() { try { return localStorage.getItem("username"); } catch (e) { return null; } }
