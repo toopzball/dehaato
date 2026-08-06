@@ -11,6 +11,8 @@
     var hasBg = parts[2] === "bg";
     document.documentElement.setAttribute("data-theme", parts[0] + "-" + parts[1]);
     document.documentElement.setAttribute("data-bg", hasBg ? "on" : "off");
+    var f = localStorage.getItem("font") || "vazirmatn";
+    if (f !== "vazirmatn") document.documentElement.setAttribute("data-font", f);
   }catch(e){}
 })();
 </script>
@@ -86,7 +88,52 @@
     font-display: swap;
     src: url('/fonts/Vazirmatn-ExtraBold.woff2') format('woff2');
   }
+  /* ---------- فونتِ دومِ سایت: IBM Plex Sans Arabic ---------- */
+  @font-face {
+    font-family: 'IBMPlexArabic';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url('/fonts/IBMPlexSansArabic-Regular.ttf') format('truetype');
+  }
+  @font-face {
+    font-family: 'IBMPlexArabic';
+    font-style: normal;
+    font-weight: 500;
+    font-display: swap;
+    src: url('/fonts/IBMPlexSansArabic-Medium.ttf') format('truetype');
+  }
+  @font-face {
+    font-family: 'IBMPlexArabic';
+    font-style: normal;
+    font-weight: 700;
+    font-display: swap;
+    src: url('/fonts/IBMPlexSansArabic-Bold.ttf') format('truetype');
+  }
+  /* ---------- فونتِ سومِ سایت: Handjet ---------- */
+  @font-face {
+    font-family: 'Handjet';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url('/fonts/Handjet-Regular.ttf') format('truetype');
+  }
+  @font-face {
+    font-family: 'Handjet';
+    font-style: normal;
+    font-weight: 500;
+    font-display: swap;
+    src: url('/fonts/Handjet-Medium.ttf') format('truetype');
+  }
+  @font-face {
+    font-family: 'Handjet';
+    font-style: normal;
+    font-weight: 700;
+    font-display: swap;
+    src: url('/fonts/Handjet-Bold.ttf') format('truetype');
+  }
   :root, :root[data-theme="purple-dark"] {
+    --app-font: 'Vazirmatn', Tahoma, sans-serif;
     --safe-top: env(safe-area-inset-top, 0px);
     --safe-bottom: env(safe-area-inset-bottom, 0px);
     --safe-left: env(safe-area-inset-left, 0px);
@@ -528,8 +575,11 @@
   * { -webkit-tap-highlight-color: transparent; }
   html { -webkit-tap-highlight-color: transparent; }
   html, body { margin: 0; }
+  /* ---------- انتخابِ فونتِ سایت (مستقل از تمِ رنگی)، از تنظیماتِ ظاهری یا انبوردینگ ---------- */
+  html[data-font="plex"] { --app-font: 'IBMPlexArabic', Tahoma, sans-serif; }
+  html[data-font="handjet"] { --app-font: 'Handjet', Tahoma, sans-serif; }
   body {
-    font-family: 'Vazirmatn', Tahoma, sans-serif;
+    font-family: var(--app-font);
     font-size: 16px;
     background-color: var(--primary);
     /* پیش‌فرض بدون گرادینت؛ اگه کاربر از تنظیماتِ ظاهری سوییچِ «با بک‌گراند» رو برای تمِ بنفش
@@ -1770,6 +1820,34 @@
   .theme-hue-row.active .theme-hue-icon { border-color: #fff; }
   .theme-hue-text { min-width: 0; font-size: 12.5px; line-height: 1.7; color: var(--subtext); }
   .theme-hue-text strong { color: var(--text); font-size: 13.5px; font-weight: 700; }
+
+  /* ---------- لیستِ فونت‌های سایت (پیش‌نمایشِ زنده با فونتِ خودش) ---------- */
+  .font-option-list { display: flex; flex-direction: column; gap: 8px; }
+  .font-option-row {
+    display: flex; align-items: center; gap: 14px; width: 100%;
+    padding: 12px 14px; border-radius: 12px;
+    background: var(--card); border: 1px solid var(--border);
+    color: var(--text); cursor: pointer; text-align: start;
+    transition: border-color 0.15s;
+  }
+  .font-option-row:hover { border-color: var(--accent); }
+  .font-option-row.active { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+  .font-option-sample {
+    flex-shrink: 0; width: 40px; height: 40px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; font-weight: 700; background: var(--surface); color: var(--accent);
+  }
+  .font-option-text { min-width: 0; flex: 1; display: flex; flex-direction: column; gap: 2px; font-size: 12.5px; color: var(--subtext); }
+  .font-option-text strong { color: var(--text); font-size: 13.5px; font-weight: 700; }
+  .font-option-sub { font-size: 11.5px; opacity: 0.85; }
+  .font-option-check {
+    flex-shrink: 0; width: 20px; height: 20px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center; color: #fff;
+    background: var(--accent); opacity: 0; transform: scale(0.6);
+    transition: opacity 0.2s ease, transform 0.2s ease;
+  }
+  .font-option-check svg { width: 12px; height: 12px; }
+  .font-option-row.active .font-option-check { opacity: 1; transform: scale(1); }
 
   /* ---------- کپسولِ روشن/تاریک (بینِ آیکونِ آفتاب و ماه) ---------- */
   .mode-toggle-wrap { display: flex; justify-content: center; margin-top: 14px; }
@@ -6048,6 +6126,42 @@ function parseThemeValue(theme) {
 
 let currentTheme = normalizeThemeValue(localStorage.getItem("theme"));
 
+// ---------- فونتِ سایت (مستقل از تمِ رنگی) ----------
+const FONTS = [
+  { id: "vazirmatn", title: "وزیرمتن", sub: "پیش‌فرضِ خودِ دهات، ساده و خوانا", family: "'Vazirmatn', Tahoma, sans-serif" },
+  { id: "plex", title: "پلکس عربی", sub: "IBM Plex Sans Arabic، مدرن و خوش‌فرم", family: "'IBMPlexArabic', Tahoma, sans-serif" },
+  { id: "handjet", title: "هندجت", sub: "Handjet، حس و حالِ دیجیتال/رترو", family: "'Handjet', Tahoma, sans-serif" },
+];
+function normalizeFontValue(font) {
+  return FONTS.some((f) => f.id === font) ? font : "vazirmatn";
+}
+let currentFont = normalizeFontValue(localStorage.getItem("font"));
+function applyFont(font) {
+  font = normalizeFontValue(font);
+  currentFont = font;
+  if (font === "vazirmatn") document.documentElement.removeAttribute("data-font");
+  else document.documentElement.setAttribute("data-font", font);
+  localStorage.setItem("font", font);
+  markActiveFontRow(font);
+}
+function markActiveFontRow(font) {
+  document.querySelectorAll(".font-option-row").forEach((el) => {
+    el.classList.toggle("active", el.dataset.font === font);
+  });
+}
+async function selectFont(font) {
+  applyFont(font);
+  try {
+    await fetch(`${WORKER_URL}/api/font`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Authorization": `Bearer ${getToken()}` },
+      body: JSON.stringify({ font }),
+    });
+  } catch (e) {
+    // اگه ذخیره روی سرور شکست بخوره، فونت همچنان همینجا (لوکال) اعمال شده
+  }
+}
+
 // ---------- پس‌زمینه‌ی چت: یه فایل‌آیدیِ مشترک برای همه‌ی چت‌ها/گروه‌های کاربر ----------
 let chatBgFileId = localStorage.getItem("chatBgFileId") || null;
 function applyChatBackground(fileId) {
@@ -6160,8 +6274,10 @@ function applyThemeAndAvatar(profile) {
     }
     applyHeaderAvatar(getUsername() || "", profile.avatar_file_id);
     applyChatBackground(profile.chat_bg_file_id || null);
+    applyFont(profile.font || "vazirmatn");
   } else {
     markActiveSwatch(currentTheme);
+    markActiveFontRow(currentFont);
   }
 }
 
@@ -18581,6 +18697,10 @@ function renderSettingsAppearance() {
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="13.5" cy="6.5" r="0.5" fill="currentColor"/><circle cx="17.5" cy="10.5" r="0.5" fill="currentColor"/><circle cx="8.5" cy="7.5" r="0.5" fill="currentColor"/><circle cx="6.5" cy="12.5" r="0.5" fill="currentColor"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.9 0 1.5-.7 1.5-1.5 0-.4-.2-.8-.4-1.1-.3-.3-.4-.7-.4-1.1 0-.8.7-1.5 1.5-1.5H16c3.3 0 6-2.7 6-6 0-4.4-4.5-8-10-8z"/></svg>
         تم سایت
       </button>
+      <button class="settings-item" onclick="goSettingsStage('appearance_font')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h14M9 4v16M15 4v16M6 20h6M13 20h6"/></svg>
+        فونت سایت
+      </button>
       <button class="settings-item" onclick="goSettingsStage('appearance_chatbg')">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
         پس‌زمینه چت
@@ -18631,6 +18751,24 @@ function renderSettingsAppearanceTheme() {
           <span class="switch-slider"></span>
         </label>
       </div>
+    </div>`;
+}
+
+// ---------- مرحله: فونت سایت ----------
+function renderSettingsFont() {
+  const rows = FONTS.map((f) => `
+      <button type="button" class="font-option-row" data-font="${f.id}" onclick="selectFont('${f.id}')" style="font-family:${f.family}">
+        <span class="font-option-sample">Aa</span>
+        <span class="font-option-text"><strong>${f.title}</strong><span class="font-option-sub">${escapeHtml(f.sub)}</span></span>
+        <span class="font-option-check">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L19 7"/></svg>
+        </span>
+      </button>`).join("");
+
+  return settingsHeader("فونت سایت", true) + `
+    <div class="theme-picker" style="margin-top:0; border-top:none; padding-top:0;">
+      <div class="theme-picker-label">فونتِ کل اپ رو انتخاب کن</div>
+      <div class="font-option-list">${rows}</div>
     </div>`;
 }
 
@@ -19289,6 +19427,7 @@ function renderSettingsModal(direction = "none") {
   else if (stage === "password_new") html = renderSettingsPasswordNew();
   else if (stage === "appearance") html = renderSettingsAppearance();
   else if (stage === "appearance_theme") html = renderSettingsAppearanceTheme();
+  else if (stage === "appearance_font") html = renderSettingsFont();
   else if (stage === "appearance_chatbg") html = renderSettingsChatBg();
   else if (stage === "appearance_dogtones") html = renderSettingsDogTones();
   else if (stage === "appearance_chatskin") html = renderSettingsChatSkin();
@@ -19303,6 +19442,9 @@ function renderSettingsModal(direction = "none") {
   // هر مرحله ممکنه بعد از قرارگرفتن توی DOM نیاز به یه مقداردهی اولیه (فچ/وضعیتِ فعلی) داشته باشه
   if (stage === "appearance_theme") {
     markActiveSwatch(currentTheme);
+  }
+  else if (stage === "appearance_font") {
+    markActiveFontRow(currentFont);
   }
   else if (stage === "appearance_chatskin") {
     const chatLayoutInput = document.getElementById("chatLayoutToggleInput");
