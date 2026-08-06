@@ -3538,6 +3538,166 @@
   }
   .dooz-overlay:not(.hidden) { animation: doozOverlayIn 0.25s ease; }
 
+  /* ---------- کادرِ کاربرانِ آنلاین: بالای نوارِ جدیدترین/پرطرفدار/ده‌دودز، لیزی‌لود با اسکرولِ افقی ---------- */
+  .online-users-box {
+    margin: 10px 14px 12px; padding: 12px 12px 10px; border-radius: var(--radius);
+    background: var(--card-gradient); border: 1px solid var(--border);
+  }
+  .online-users-box.hidden { display: none; }
+  .online-users-box-head {
+    display: flex; align-items: center; gap: 7px; margin-bottom: 9px; padding: 0 2px;
+  }
+  .online-users-box-dot {
+    width: 8px; height: 8px; border-radius: 50%; background: var(--success);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--success) 25%, transparent); flex-shrink: 0;
+    animation: onlineDotPulse 1.8s ease-in-out infinite;
+  }
+  @keyframes onlineDotPulse { 0%,100% { opacity: 1; } 50% { opacity: 0.45; } }
+  .online-users-box-title { font-size: 12.5px; font-weight: 700; color: var(--text); }
+  .online-users-box-count { font-size: 11px; color: var(--subtext); }
+  .online-users-scroll {
+    display: flex; gap: 12px; overflow-x: auto; overflow-y: hidden; padding: 2px 2px 4px;
+    scroll-snap-type: x proximity; -webkit-overflow-scrolling: touch;
+  }
+  .online-users-scroll::-webkit-scrollbar { height: 4px; }
+  .online-users-scroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+  .online-user-item {
+    flex-shrink: 0; width: 56px; display: flex; flex-direction: column; align-items: center; gap: 4px;
+    cursor: pointer; scroll-snap-align: start; background: none; border: none; font-family: inherit;
+  }
+  .online-user-avatar-wrap { position: relative; width: 48px; height: 48px; }
+  .online-user-avatar {
+    width: 48px; height: 48px; border-radius: 50%; overflow: hidden; background: var(--accent-gradient);
+    display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; font-size: 16px;
+    border: 2px solid var(--surface); transition: transform 0.12s ease;
+  }
+  .online-user-item:active .online-user-avatar { transform: scale(0.92); }
+  .online-user-avatar img { width: 100%; height: 100%; object-fit: cover; }
+  .online-user-dot {
+    position: absolute; bottom: 0; left: 0; width: 12px; height: 12px; border-radius: 50%;
+    background: var(--success); border: 2px solid var(--surface);
+  }
+  .online-user-name {
+    font-size: 10.5px; color: var(--subtext); max-width: 56px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .online-users-loading-more { flex-shrink: 0; width: 40px; display: flex; align-items: center; justify-content: center; }
+  .online-users-loading-more .mini-spinner {
+    width: 16px; height: 16px; border-radius: 50%; border: 2px solid var(--border); border-top-color: var(--accent);
+    animation: spin 0.7s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .online-users-empty { font-size: 12px; color: var(--subtext); padding: 6px 2px; }
+
+  /* ---------- کادرِ روم‌های بازِ دوز: مستطیلی، بالای همون نوارِ سه‌گانه، زیرِ کادرِ آنلاین ---------- */
+  .dooz-rooms-box {
+    margin: 0 14px 12px; padding: 12px 12px 10px; border-radius: var(--radius);
+    background: var(--card-gradient); border: 1px solid var(--border);
+  }
+  .dooz-rooms-box.hidden { display: none; }
+  .dooz-room-card {
+    flex-shrink: 0; width: 92px; display: flex; flex-direction: column; align-items: center; gap: 6px;
+    background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 10px 8px;
+    scroll-snap-align: start;
+  }
+  .dooz-room-card .online-user-avatar { width: 40px; height: 40px; font-size: 15px; }
+  .dooz-room-card-name {
+    font-size: 11px; color: var(--text); max-width: 78px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .dooz-room-card-join {
+    width: 100%; border: none; border-radius: 8px; background: var(--accent-gradient); color: #fff;
+    font-family: inherit; font-size: 11.5px; font-weight: 700; padding: 6px 0; cursor: pointer;
+  }
+
+  /* ---------- مینی‌مایزکردنِ بازیِ دوز: بجایِ بستنِ کامل، یه حبابِ شناور می‌مونه که برگردی تو بازی ---------- */
+  .dooz-overlay-minimize {
+    display: flex; align-items: center; justify-content: center; width: 38px; height: 38px;
+    background: rgba(20,10,40,0.65); backdrop-filter: blur(6px); border: 1px solid rgba(255,255,255,0.18);
+    color: #fff; border-radius: 50%; cursor: pointer; flex-shrink: 0;
+  }
+  .dooz-overlay-minimize svg { width: 16px; height: 16px; }
+  .dooz-overlay.dooz-minimized .dooz-overlay-topbar { display: none; }
+  .dooz-overlay.dooz-minimized .dooz-overlay-frame-wrap {
+    position: fixed; bottom: 0; left: 0; width: 1px; height: 1px; overflow: hidden; opacity: 0; pointer-events: none;
+  }
+  .dooz-overlay.dooz-minimized { background: transparent; inset: auto; }
+  .dooz-minimized-bubble {
+    position: fixed; z-index: 9400; bottom: calc(84px + var(--safe-bottom)); left: 16px;
+    width: 56px; height: 56px; border-radius: 50%; background: var(--accent-gradient);
+    box-shadow: 0 6px 18px rgba(0,0,0,0.35); border: none; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; font-size: 24px;
+    animation: dehatItemFadeIn 0.25s ease;
+  }
+  .dooz-minimized-bubble.hidden { display: none; }
+  .dooz-minimized-bubble-dot {
+    position: absolute; top: -1px; right: -1px; width: 14px; height: 14px; border-radius: 50%;
+    background: var(--success); border: 2px solid var(--primary);
+  }
+
+  /* ---------- منویِ اکشنِ آواتارِ کاربرِ آنلاین (پروفایل/دعوت) ---------- */
+  .dooz-avatar-menu-backdrop {
+    position: fixed; inset: 0; z-index: 9600; background: rgba(0,0,0,0.4);
+    display: flex; align-items: flex-end; justify-content: center;
+  }
+  .dooz-avatar-menu {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 16px 16px 0 0; width: 100%; max-width: 480px;
+    padding: 16px 14px calc(14px + var(--safe-bottom));
+  }
+  .dooz-avatar-menu-head { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; padding: 0 4px; }
+  .dooz-avatar-menu-head .online-user-avatar { width: 40px; height: 40px; }
+  .dooz-avatar-menu-head-name { font-size: 14px; font-weight: 700; color: var(--text); }
+  .dooz-avatar-menu-item {
+    display: flex; align-items: center; gap: 10px; width: 100%; background: none; border: none; color: var(--text);
+    font-family: inherit; font-size: 14px; padding: 13px 14px; border-radius: 10px; cursor: pointer; text-align: right;
+  }
+  .dooz-avatar-menu-item:hover { background: var(--card); }
+  .dooz-avatar-menu-item svg { width: 18px; height: 18px; flex-shrink: 0; color: var(--accent-hover); }
+
+  /* ---------- اورلیِ «در حالِ انتظار» برای فرستنده‌ی دعوت ---------- */
+  .dooz-invite-waiting-backdrop {
+    position: fixed; inset: 0; z-index: 9700; background: rgba(10,4,20,0.78);
+    display: flex; align-items: center; justify-content: center; backdrop-filter: blur(3px);
+  }
+  .dooz-invite-waiting-backdrop.hidden { display: none; }
+  .dooz-invite-waiting-card {
+    background: var(--card-gradient); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 26px 22px; width: 88%; max-width: 320px; text-align: center;
+  }
+  .dooz-invite-waiting-card .online-user-avatar { width: 64px; height: 64px; font-size: 22px; margin: 0 auto 12px; }
+  .dooz-invite-waiting-title { font-size: 14.5px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+  .dooz-invite-waiting-sub { font-size: 12px; color: var(--subtext); margin-bottom: 16px; }
+  .dooz-invite-waiting-anim { display: flex; gap: 5px; justify-content: center; margin-bottom: 18px; }
+  .dooz-invite-waiting-anim span {
+    width: 7px; height: 7px; border-radius: 50%; background: var(--accent); animation: waitDotBounce 1.1s ease-in-out infinite;
+  }
+  .dooz-invite-waiting-anim span:nth-child(2) { animation-delay: 0.15s; }
+  .dooz-invite-waiting-anim span:nth-child(3) { animation-delay: 0.3s; }
+  @keyframes waitDotBounce { 0%,60%,100% { transform: translateY(0); opacity: 0.5; } 30% { transform: translateY(-6px); opacity: 1; } }
+  .dooz-invite-waiting-cancel {
+    background: none; border: 1px solid var(--border); color: var(--subtext); border-radius: 999px;
+    padding: 8px 20px; font-size: 12.5px; cursor: pointer; font-family: inherit;
+  }
+
+  /* ---------- پاپ‌آپِ دعوتِ ورودی (کسی دعوتت کرده) ---------- */
+  .dooz-invite-incoming-backdrop {
+    position: fixed; inset: 0; z-index: 9700; background: rgba(10,4,20,0.78);
+    display: flex; align-items: center; justify-content: center; backdrop-filter: blur(3px);
+  }
+  .dooz-invite-incoming-backdrop.hidden { display: none; }
+  .dooz-invite-incoming-card {
+    background: var(--card-gradient); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 24px 20px; width: 88%; max-width: 320px; text-align: center;
+    animation: dehatItemFadeIn 0.25s ease;
+  }
+  .dooz-invite-incoming-card .online-user-avatar { width: 60px; height: 60px; font-size: 20px; margin: 0 auto 12px; }
+  .dooz-invite-incoming-title { font-size: 14.5px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+  .dooz-invite-incoming-sub { font-size: 12px; color: var(--subtext); margin-bottom: 18px; }
+  .dooz-invite-incoming-actions { display: flex; gap: 10px; }
+  .dooz-invite-incoming-actions button {
+    flex: 1; padding: 11px 0; border-radius: 12px; font-size: 13px; font-weight: 700; cursor: pointer; font-family: inherit; border: none;
+  }
+  .dooz-invite-decline-btn { background: var(--card); color: var(--subtext); border: 1px solid var(--border) !important; }
+  .dooz-invite-accept-btn { background: var(--accent-gradient); color: #fff; }
+
   /* دکمه‌های ده‌دودز/محضر/بازی موقعِ فشردن یه فیدبکِ کوچیکِ فشاری داشته باشن */
   .dedoodz-item:active { transform: scale(0.985); }
 
@@ -4465,6 +4625,21 @@
 
   <!-- بخش رسانه‌ها -->
   <div id="view-media" class="view">
+    <div class="online-users-box hidden" id="onlineUsersBox">
+      <div class="online-users-box-head">
+        <span class="online-users-box-dot"></span>
+        <span class="online-users-box-title">آنلاین</span>
+        <span class="online-users-box-count" id="onlineUsersCount"></span>
+      </div>
+      <div class="online-users-scroll" id="onlineUsersScroll"></div>
+    </div>
+    <div class="dooz-rooms-box hidden" id="doozRoomsBox">
+      <div class="online-users-box-head">
+        <span class="online-users-box-title">روم‌های بازِ دوز</span>
+        <span class="online-users-box-count" id="doozRoomsCount"></span>
+      </div>
+      <div class="online-users-scroll" id="doozRoomsScroll"></div>
+    </div>
     <div class="media-sort-row">
       <button class="media-sort-btn active" id="mediaSort-date" onclick="setMediaSort('date')">جدیدترین</button>
       <button class="media-sort-btn" id="mediaSort-popular" onclick="setMediaSort('popular')">پرطرفدار</button>
@@ -5411,11 +5586,63 @@
     <button class="dooz-overlay-refresh" onclick="refreshDoozOverlay()" aria-label="تازه‌سازیِ بازی">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10"/><path d="M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
     </button>
+    <button class="dooz-overlay-minimize" onclick="minimizeDoozOverlay()" aria-label="مینی‌مایزکردنِ بازی">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/></svg>
+    </button>
     <button class="dooz-overlay-close" onclick="closeDoozOverlay()" aria-label="بستنِ بازی و برگشت به دهات">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
     </button>
   </div>
   <div class="dooz-overlay-frame-wrap" id="doozOverlayFrameWrap"></div>
+</div>
+
+<!-- حبابِ شناور: وقتی بازی مینی‌مایز شده، اینجا می‌مونه تا هر وقت خواستی برگردی توش (بدونِ این‌که بازی قطع بشه)؛
+     قابلِ کشیدن‌وجابه‌جاکردنه، کلیکِ ساده (بدونِ درگ) برمی‌گردونه به بازی -->
+<button class="dooz-minimized-bubble hidden" id="doozMinimizedBubble" aria-label="برگشت به بازیِ دوز">
+  <span>🎮</span>
+  <span class="dooz-minimized-bubble-dot"></span>
+</button>
+
+<!-- کلیک روی آواتارِ یه کاربرِ آنلاین: منویِ «دیدنِ پروفایل» / «دعوت به دوز» -->
+<div class="dooz-avatar-menu-backdrop hidden" id="onlineUserMenuBackdrop" onclick="if(event.target===this) closeOnlineUserMenu()">
+  <div class="dooz-avatar-menu">
+    <div class="dooz-avatar-menu-head">
+      <div class="online-user-avatar" id="onlineUserMenuAvatar"></div>
+      <div class="dooz-avatar-menu-head-name" id="onlineUserMenuName"></div>
+    </div>
+    <button class="dooz-avatar-menu-item" onclick="onlineUserMenuViewProfile()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 5-6 8-6s6.5 2 8 6"/></svg>
+      دیدنِ پروفایل
+    </button>
+    <button class="dooz-avatar-menu-item" onclick="onlineUserMenuInviteDooz()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/><path d="M7 6.5v.01M17 17.5v.01"/></svg>
+      دعوت به بازیِ دوز
+    </button>
+  </div>
+</div>
+
+<!-- فرستنده‌ی دعوت: حالتِ «در حالِ انتظار» تا طرف قبول/رد کنه یا زمان تموم بشه -->
+<div class="dooz-invite-waiting-backdrop hidden" id="doozInviteWaitingBackdrop">
+  <div class="dooz-invite-waiting-card">
+    <div class="online-user-avatar" id="doozWaitingAvatar"></div>
+    <div class="dooz-invite-waiting-title">منتظرِ جوابِ <span id="doozWaitingName"></span></div>
+    <div class="dooz-invite-waiting-sub">دعوتت به بازیِ دوز فرستاده شد</div>
+    <div class="dooz-invite-waiting-anim"><span></span><span></span><span></span></div>
+    <button class="dooz-invite-waiting-cancel" onclick="cancelOutgoingDoozInvite()">لغوِ دعوت</button>
+  </div>
+</div>
+
+<!-- گیرنده: یه نفر دعوتش کرده به بازیِ دوز -->
+<div class="dooz-invite-incoming-backdrop hidden" id="doozInviteIncomingBackdrop">
+  <div class="dooz-invite-incoming-card">
+    <div class="online-user-avatar" id="doozIncomingAvatar"></div>
+    <div class="dooz-invite-incoming-title"><span id="doozIncomingName"></span> دعوتت کرد به دوز</div>
+    <div class="dooz-invite-incoming-sub">قبول کنی، یه روم اختصاصی برایِ طراحیِ مهره و بازی باز می‌شه</div>
+    <div class="dooz-invite-incoming-actions">
+      <button class="dooz-invite-decline-btn" onclick="respondDoozInvite('decline')">رد کردن</button>
+      <button class="dooz-invite-accept-btn" onclick="respondDoozInvite('accept')">قبول کردن</button>
+    </div>
+  </div>
 </div>
 
 <!-- کافه‌رستورانِ ده‌دودز: دقیقاً همون الگویِ اورلیِ دوز (همون CSS)، فقط آدرسِ آی‌فریم فرق داره -->
@@ -9779,9 +10006,7 @@ async function loadChatMembers(conversationId) {
   } catch (e) {
     // دفعه‌ی بعد دوباره امتحان می‌شه
   }
-}
-
-function openChatMembersPanel() {
+}function openChatMembersPanel() {
   if (!chatState.active || chatState.active.type !== "group") return;
   document.getElementById("chatMembersTitle").textContent = chatState.active.title || "اعضای گروه";
   document.getElementById("chatMembersPanel").classList.add("open");
@@ -13626,30 +13851,365 @@ async function loadGamesLeaderboard() {
 }
 
 // ---------- بازیِ دوز: اورلیِ تمام‌صفحه، جدا از هابِ بازی‌ها ----------
-function openDoozGame() {
+// joinCode/role اختیاری‌ان: وقتی از طریقِ دعوت (پذیرفته‌شده) وارد می‌شیم، آی‌فریم مستقیم می‌ره سراغِ
+// همون رومِ اختصاصی و از لابیِ عادیِ دوز رد می‌شه (dooz.html خودش این پارامترها رو می‌خونه).
+function openDoozGame(joinCode, role) {
   document.getElementById("doozOverlay").classList.remove("hidden");
+  document.getElementById("doozOverlay").classList.remove("dooz-minimized");
+  document.getElementById("doozMinimizedBubble").classList.add("hidden");
   const wrap = document.getElementById("doozOverlayFrameWrap");
-  // آی‌فریمِ بازی رو فقط بارِ اولی که کاربر واردش می‌شه می‌سازیم
-  if (!wrap.querySelector("iframe")) {
+  const src = joinCode ? `dooz.html?code=${encodeURIComponent(joinCode)}&role=${role === "guest" ? "guest" : "host"}` : "dooz.html";
+  const existingFrame = wrap.querySelector("iframe");
+  if (!existingFrame) {
     const doozFrame = document.createElement("iframe");
-    doozFrame.src = "dooz.html";
+    doozFrame.src = src;
     doozFrame.setAttribute("allow", "clipboard-write");
     doozFrame.setAttribute("title", "بازیِ دوز");
     wrap.appendChild(doozFrame);
+  } else if (joinCode) {
+    // یه بازیِ قبلی تو همین آی‌فریم بوده؛ برای پیوستن به رومِ دعوت مجبوریم دوباره لودش کنیم
+    existingFrame.src = src;
   }
 }
 
 // ضربدر: کاملاً می‌بنده و مستقیم برمی‌گرده به دهات (نه فقط به لیستِ بازی‌ها)
 function closeDoozOverlay() {
   document.getElementById("doozOverlay").classList.add("hidden");
+  document.getElementById("doozOverlay").classList.remove("dooz-minimized");
+  document.getElementById("doozMinimizedBubble").classList.add("hidden");
   switchView(lastView);
 }
+
+// مینی‌مایز: به‌جای بستنِ کامل، بازی (و اتصالِ وب‌ساکتش) زنده می‌مونه ولی از جلوِ چشم می‌ره کنار؛
+// یه حبابِ کوچیک شناور می‌مونه که هر وقت خواستی برگردی توش
+function minimizeDoozOverlay() {
+  document.getElementById("doozOverlay").classList.add("dooz-minimized");
+  document.getElementById("doozMinimizedBubble").classList.remove("hidden");
+}
+function restoreDoozOverlay() {
+  document.getElementById("doozOverlay").classList.remove("dooz-minimized");
+  document.getElementById("doozMinimizedBubble").classList.add("hidden");
+}
+
+// ---------- درگ‌وجابه‌جاییِ حبابِ شناورِ مینی‌مایز ----------
+// حبابِ پیش‌فرض گوشه‌ی پایین-چپه؛ کاربر می‌تونه بکشدش هرجایِ صفحه، موقعیتش تو localStorage
+// ذخیره می‌شه، و تشخیص می‌دیم که کاربر درگ کرده (نه تپِ ساده) تا موقعِ رهاکردن به‌اشتباه بازی باز نشه.
+(function setupDoozBubbleDrag() {
+  const bubble = document.getElementById("doozMinimizedBubble");
+  if (!bubble) return;
+  let dragging = false, moved = false, startX = 0, startY = 0, startLeft = 0, startTop = 0;
+
+  function applySavedPosition() {
+    try {
+      const saved = JSON.parse(localStorage.getItem("doozBubblePos") || "null");
+      if (saved && typeof saved.left === "number" && typeof saved.top === "number") {
+        bubble.style.left = saved.left + "px";
+        bubble.style.top = saved.top + "px";
+        bubble.style.bottom = "auto";
+      }
+    } catch (e) {}
+  }
+  applySavedPosition();
+
+  function onDown(e) {
+    dragging = true; moved = false;
+    const p = e.touches ? e.touches[0] : e;
+    const rect = bubble.getBoundingClientRect();
+    startX = p.clientX; startY = p.clientY; startLeft = rect.left; startTop = rect.top;
+    document.addEventListener("mousemove", onMove);
+    document.addEventListener("mouseup", onUp);
+    document.addEventListener("touchmove", onMove, { passive: false });
+    document.addEventListener("touchend", onUp);
+  }
+  function onMove(e) {
+    if (!dragging) return;
+    const p = e.touches ? e.touches[0] : e;
+    const dx = p.clientX - startX, dy = p.clientY - startY;
+    if (Math.abs(dx) > 5 || Math.abs(dy) > 5) moved = true;
+    if (!moved) return;
+    if (e.cancelable) e.preventDefault();
+    let newLeft = startLeft + dx, newTop = startTop + dy;
+    const maxLeft = window.innerWidth - bubble.offsetWidth - 6;
+    const maxTop = window.innerHeight - bubble.offsetHeight - 6;
+    newLeft = Math.min(Math.max(6, newLeft), maxLeft);
+    newTop = Math.min(Math.max(6, newTop), maxTop);
+    bubble.style.left = newLeft + "px";
+    bubble.style.top = newTop + "px";
+    bubble.style.bottom = "auto";
+  }
+  function onUp() {
+    dragging = false;
+    document.removeEventListener("mousemove", onMove);
+    document.removeEventListener("mouseup", onUp);
+    document.removeEventListener("touchmove", onMove);
+    document.removeEventListener("touchend", onUp);
+    if (moved) {
+      try {
+        localStorage.setItem("doozBubblePos", JSON.stringify({ left: parseFloat(bubble.style.left), top: parseFloat(bubble.style.top) }));
+      } catch (e) {}
+    }
+  }
+  bubble.addEventListener("mousedown", onDown);
+  bubble.addEventListener("touchstart", onDown, { passive: true });
+  bubble.addEventListener("click", (e) => {
+    if (moved) { e.preventDefault(); e.stopPropagation(); return; }
+    restoreDoozOverlay();
+  });
+})();
 
 // رفرش: برای وقتی بازی گیر کرد یا وصل نشد؛ فقط خودِ آی‌فریم رو دوباره لود می‌کنه، اورلی رو نمی‌بنده
 function refreshDoozOverlay() {
   const wrap = document.getElementById("doozOverlayFrameWrap");
   const frame = wrap.querySelector("iframe");
   if (frame) frame.src = frame.src;
+}
+
+// ==================== کادرِ کاربرانِ آنلاین + دعوت به دوز ====================
+// همه‌ی درخواست‌های این بخش مستقیم به deh-games (DOOZ_API_BASE) یا بک‌اندِ اصلی (WORKER_URL/presence) می‌رن.
+const onlineUsersState = { items: [], offset: 0, hasMore: true, loading: false };
+let outgoingDoozInvite = null; // { id, code, toUsername }
+let outgoingDoozInvitePollTimer = null;
+let incomingDoozInvite = null; // { id, code, fromUsername, fromAvatarFileId }
+let onlineUserMenuTarget = null; // { username, avatarFileId }
+const dismissedIncomingInviteIds = new Set();
+
+async function loadOnlineUsers(reset) {
+  if (!getToken() || onlineUsersState.loading) return;
+  if (reset) { onlineUsersState.items = []; onlineUsersState.offset = 0; onlineUsersState.hasMore = true; }
+  if (!onlineUsersState.hasMore) return;
+  onlineUsersState.loading = true;
+  try {
+    const res = await fetch(`${WORKER_URL}/api/presence/online?limit=20&offset=${onlineUsersState.offset}`, {
+      headers: { Authorization: `Bearer ${getToken()}` },
+    });
+    const data = await res.json();
+    if (res.ok && data.ok) {
+      onlineUsersState.items = onlineUsersState.items.concat(data.users || []);
+      onlineUsersState.hasMore = !!data.hasMore;
+      onlineUsersState.offset = data.nextOffset;
+    }
+  } catch (e) {}
+  onlineUsersState.loading = false;
+  renderOnlineUsersBox();
+}
+
+function renderOnlineUsersBox() {
+  const box = document.getElementById("onlineUsersBox");
+  const scroll = document.getElementById("onlineUsersScroll");
+  const countEl = document.getElementById("onlineUsersCount");
+  if (!box || !scroll) return;
+
+  if (onlineUsersState.items.length === 0) {
+    box.classList.add("hidden");
+    return;
+  }
+  box.classList.remove("hidden");
+  countEl.textContent = onlineUsersState.items.length + (onlineUsersState.hasMore ? "+" : "") + " نفر";
+
+  scroll.innerHTML = onlineUsersState.items.map((u) => `
+    <button class="online-user-item" onclick="openOnlineUserMenu('${escapeHtml(u.username)}', ${u.avatarFileId ? `'${escapeHtml(u.avatarFileId)}'` : "null"})">
+      <div class="online-user-avatar-wrap">
+        <div class="online-user-avatar">${avatarInnerHtml(u.avatarFileId, u.username)}</div>
+        <span class="online-user-dot"></span>
+      </div>
+      <span class="online-user-name">${escapeHtml(u.username)}</span>
+    </button>
+  `).join("") + (onlineUsersState.hasMore ? `<div class="online-users-loading-more" id="onlineUsersLoadingMore"><div class="mini-spinner"></div></div>` : "");
+}
+
+// اسکرولِ افقی نزدیکِ انتها شد → صفحه‌ی بعدیِ کاربرای آنلاین رو بیار (لیزی‌لود)
+document.addEventListener("scroll", (e) => {
+  if (e.target && e.target.id === "onlineUsersScroll") {
+    const el = e.target;
+    const nearEnd = el.scrollWidth - Math.abs(el.scrollLeft) - el.clientWidth < 90;
+    if (nearEnd) loadOnlineUsers(false);
+  }
+}, true);
+
+// هر ۱۵ ثانیه صفحه‌ی اول رو دوباره می‌گیریم تا لیست تازه بمونه (بدون دست‌زدن به اسکرولِ کاربر اگه صفحه‌ی بعدی رو لود کرده)
+async function refreshOnlineUsersFirstPage() {
+  if (!getToken() || onlineUsersState.loading) return;
+  if (document.getElementById("view-media")?.classList.contains("hidden")) return;
+  try {
+    const res = await fetch(`${WORKER_URL}/api/presence/online?limit=20&offset=0`, {
+      headers: { Authorization: `Bearer ${getToken()}` },
+    });
+    const data = await res.json();
+    if (res.ok && data.ok) {
+      const first = onlineUsersState.items.slice(onlineUsersState.items.length > 20 ? -9999 : 0, 20);
+      const changed = JSON.stringify((data.users || []).map((u) => u.username)) !== JSON.stringify(first.map((u) => u.username));
+      if (changed && onlineUsersState.items.length <= 20) {
+        onlineUsersState.items = data.users || [];
+        onlineUsersState.hasMore = !!data.hasMore;
+        onlineUsersState.offset = data.nextOffset;
+        renderOnlineUsersBox();
+      }
+    }
+  } catch (e) {}
+}
+
+function openOnlineUserMenu(username, avatarFileId) {
+  onlineUserMenuTarget = { username, avatarFileId };
+  document.getElementById("onlineUserMenuAvatar").innerHTML = avatarInnerHtml(avatarFileId, username);
+  document.getElementById("onlineUserMenuName").textContent = username;
+  document.getElementById("onlineUserMenuBackdrop").classList.remove("hidden");
+}
+function closeOnlineUserMenu() {
+  document.getElementById("onlineUserMenuBackdrop").classList.add("hidden");
+}
+function onlineUserMenuViewProfile() {
+  const target = onlineUserMenuTarget;
+  closeOnlineUserMenu();
+  if (target) openProfile(target.username);
+}
+function onlineUserMenuInviteDooz() {
+  const target = onlineUserMenuTarget;
+  closeOnlineUserMenu();
+  if (target) sendDoozInvite(target.username, target.avatarFileId);
+}
+
+async function sendDoozInvite(username, avatarFileId) {
+  try {
+    const res = await fetch(`${DOOZ_API_BASE}/api/dooz/invite`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${getToken()}` },
+      body: JSON.stringify({ toUsername: username }),
+    });
+    const data = await res.json();
+    if (!res.ok || !data.ok) { toast(data.error || "نشد دعوت بفرستیم", "error"); return; }
+
+    outgoingDoozInvite = { id: data.inviteId, code: data.code, toUsername: username };
+    document.getElementById("doozWaitingAvatar").innerHTML = avatarInnerHtml(avatarFileId, username);
+    document.getElementById("doozWaitingName").textContent = username;
+    document.getElementById("doozInviteWaitingBackdrop").classList.remove("hidden");
+
+    clearInterval(outgoingDoozInvitePollTimer);
+    outgoingDoozInvitePollTimer = setInterval(pollOutgoingDoozInviteStatus, 2000);
+  } catch (e) {
+    toast("مشکلی تو ارتباط با سرورِ بازی‌ها پیش اومد", "error");
+  }
+}
+
+async function pollOutgoingDoozInviteStatus() {
+  if (!outgoingDoozInvite) { clearInterval(outgoingDoozInvitePollTimer); return; }
+  try {
+    const res = await fetch(`${DOOZ_API_BASE}/api/dooz/invite/${encodeURIComponent(outgoingDoozInvite.id)}/status`, {
+      headers: { Authorization: `Bearer ${getToken()}` },
+    });
+    const data = await res.json();
+    if (!res.ok || !data.ok) return;
+    if (data.status === "accepted") {
+      clearInterval(outgoingDoozInvitePollTimer);
+      document.getElementById("doozInviteWaitingBackdrop").classList.add("hidden");
+      const code = outgoingDoozInvite.code;
+      outgoingDoozInvite = null;
+      openDoozGame(code, "host");
+    } else if (data.status === "declined") {
+      clearInterval(outgoingDoozInvitePollTimer);
+      document.getElementById("doozInviteWaitingBackdrop").classList.add("hidden");
+      toast(`${data.toUsername || "طرف"} دعوتو رد کرد`, "info");
+      outgoingDoozInvite = null;
+    } else if (data.status === "expired") {
+      clearInterval(outgoingDoozInvitePollTimer);
+      document.getElementById("doozInviteWaitingBackdrop").classList.add("hidden");
+      toast("دعوت منقضی شد؛ دوباره امتحان کن", "info");
+      outgoingDoozInvite = null;
+    }
+  } catch (e) {}
+}
+
+function cancelOutgoingDoozInvite() {
+  clearInterval(outgoingDoozInvitePollTimer);
+  const inv = outgoingDoozInvite;
+  outgoingDoozInvite = null;
+  document.getElementById("doozInviteWaitingBackdrop").classList.add("hidden");
+  if (inv) {
+    fetch(`${DOOZ_API_BASE}/api/dooz/invite/cancel`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${getToken()}` },
+      body: JSON.stringify({ inviteId: inv.id }),
+    }).catch(() => {});
+  }
+}
+
+// گیرنده: پولینگِ سبک برای دعوت‌های ورودی (هر ۵ ثانیه)
+async function pollIncomingDoozInvites() {
+  if (!getToken()) return;
+  if (incomingDoozInvite) return; // یکی الان رو صفحه‌ست؛ صبر کن جواب بده
+  if (!document.getElementById("doozOverlay").classList.contains("hidden")) return; // وسطِ یه بازیِ دیگه‌ست
+  try {
+    const res = await fetch(`${DOOZ_API_BASE}/api/dooz/invites/pending`, {
+      headers: { Authorization: `Bearer ${getToken()}` },
+    });
+    const data = await res.json();
+    if (!res.ok || !data.ok) return;
+    const fresh = (data.invites || []).find((inv) => !dismissedIncomingInviteIds.has(inv.id));
+    if (fresh) showIncomingDoozInvite(fresh);
+  } catch (e) {}
+}
+
+function showIncomingDoozInvite(inv) {
+  incomingDoozInvite = { id: inv.id, code: inv.code, fromUsername: inv.fromUsername };
+  document.getElementById("doozIncomingAvatar").innerHTML = avatarInnerHtml(inv.fromAvatarFileId, inv.fromUsername);
+  document.getElementById("doozIncomingName").textContent = inv.fromUsername;
+  document.getElementById("doozInviteIncomingBackdrop").classList.remove("hidden");
+}
+
+async function respondDoozInvite(action) {
+  if (!incomingDoozInvite) return;
+  const inv = incomingDoozInvite;
+  dismissedIncomingInviteIds.add(inv.id);
+  document.getElementById("doozInviteIncomingBackdrop").classList.add("hidden");
+  incomingDoozInvite = null;
+  try {
+    const res = await fetch(`${DOOZ_API_BASE}/api/dooz/invite/respond`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${getToken()}` },
+      body: JSON.stringify({ inviteId: inv.id, action }),
+    });
+    const data = await res.json();
+    if (!res.ok || !data.ok) { toast(data.error || "نشد جواب بدیم", "error"); return; }
+    if (action === "accept") openDoozGame(inv.code, "guest");
+  } catch (e) {
+    toast("مشکلی تو ارتباط با سرورِ بازی‌ها پیش اومد", "error");
+  }
+}
+
+async function loadDoozRoomsBox() {
+  if (!getToken()) return;
+  if (document.getElementById("view-media")?.classList.contains("hidden")) return;
+  try {
+    const res = await fetch(`${DOOZ_API_BASE}/api/dooz/rooms`, {
+      headers: { Authorization: `Bearer ${getToken()}` },
+    });
+    const data = await res.json();
+    renderDoozRoomsBox((data && data.rooms) || []);
+  } catch (e) {}
+}
+
+function renderDoozRoomsBox(rooms) {
+  const box = document.getElementById("doozRoomsBox");
+  const scroll = document.getElementById("doozRoomsScroll");
+  if (!box || !scroll) return;
+  if (!rooms.length) { box.classList.add("hidden"); return; }
+  box.classList.remove("hidden");
+  document.getElementById("doozRoomsCount").textContent = rooms.length + " روم";
+  scroll.innerHTML = rooms.map((r) => `
+    <div class="dooz-room-card">
+      <div class="online-user-avatar">${avatarInnerHtml(r.hostAvatarFileId, r.hostUsername)}</div>
+      <div class="dooz-room-card-name">${escapeHtml(r.hostUsername)}</div>
+      <button class="dooz-room-card-join" onclick="openDoozGame('${escapeHtml(r.code)}', 'guest')">ورود</button>
+    </div>
+  `).join("");
+}
+
+function startOnlineUsersFeature() {
+  if (!getToken()) return;
+  loadOnlineUsers(true);
+  loadDoozRoomsBox();
+  setInterval(refreshOnlineUsersFirstPage, 15000);
+  setInterval(loadDoozRoomsBox, 10000);
+  setInterval(pollIncomingDoozInvites, 5000);
 }
 
 // ---------- کافه‌رستوران: اورلیِ تمام‌صفحه، دقیقاً به سبکِ دوز ----------
@@ -19413,6 +19973,7 @@ async function bootstrapApp() {
   restorePlayerState();
   startGlobalChatBadgePolling();
   startLiveNotifPolling();
+  startOnlineUsersFeature();
   const minSplashTime = 500; // حداقل زمان نمایش اسپلش، تا حتی رو گوشی‌های سریع هم چشمک نزنه
   const elapsed = Date.now() - splashStart;
   setTimeout(hideAppSplash, Math.max(0, minSplashTime - elapsed));
