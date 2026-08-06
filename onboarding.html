@@ -21,12 +21,15 @@
 
   /* ---------- متغیرهای رنگیِ عمومیِ حالت روشن/تاریک (مستقل از رنگ‌بندیِ انتخابی) ---------- */
   html { --ob-text: #FFFFFF; --ob-subtext: #D9D2E8; --ob-dot: rgba(255,255,255,0.25); --ob-dot-active: #fff;
-    --ob-card-border: rgba(255,255,255,0.14); --ob-card-base: rgba(255,255,255,0.06); --ob-body-bg: #12081f; }
+    --ob-card-border: rgba(255,255,255,0.14); --ob-card-base: rgba(255,255,255,0.06); --ob-body-bg: #12081f;
+    /* فونتِ سایت: اگه خودِ سایت (صفحه‌ی میزبان) این متغیر رو از بیرون ست کنه، همه‌جا از همون فونت استفاده می‌شه؛
+       وگرنه فالبکِ پیش‌فرض وزیرمتنه */
+    --ob-font-family: 'Vazirmatn', Tahoma, sans-serif; }
   html[data-mode="light"] { --ob-text: #241243; --ob-subtext: #5B5470; --ob-dot: rgba(36,18,67,0.2); --ob-dot-active: #241243;
     --ob-card-border: rgba(36,18,67,0.12); --ob-card-base: rgba(255,255,255,0.55); --ob-body-bg: #FAF7FE; }
 
   body {
-    font-family: 'Vazirmatn', Tahoma, sans-serif;
+    font-family: var(--ob-font-family);
     color: var(--ob-text);
     background: var(--ob-body-bg);
     position: relative;
@@ -88,6 +91,9 @@
 
   /* ================= مرحله‌ی ۱: اینترو/خوش‌آمدگویی ================= */
   .intro-wrap { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 0 26px max(20px, env(safe-area-inset-bottom)); text-align: center; }
+  .intro-brand-tag { font-family: var(--ob-font-family); font-size: 26px; font-weight: 800; opacity: 0; margin: 0 0 14px;
+    letter-spacing: 0.3px; -webkit-text-stroke: 0.7px currentColor;
+    animation: introTextIn 0.7s ease forwards 0.15s; text-shadow: 0 2px 10px rgba(0,0,0,0.25); }
   .intro-badge-zone { position: relative; width: 190px; height: 190px; display: flex; align-items: center; justify-content: center; margin-bottom: 30px; }
   .intro-badge-glow {
     position: absolute; inset: -30px; border-radius: 50%; opacity: 0;
@@ -104,20 +110,40 @@
   @keyframes badgeIn { from { opacity: 0; transform: scale(0.55) rotate(-14deg); } to { opacity: 1; transform: scale(1) rotate(0); } }
   @keyframes badgeFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-7px); } }
   .intro-badge svg { width: 100%; height: 100%; display: block; filter: drop-shadow(0 10px 24px rgba(139,92,246,0.45)); }
-  .intro-badge-icon { transform-origin: 50% 55%; }
+  .intro-logo-plate { transform-origin: 50% 52%; }
+  .intro-logo-mark {
+    font-family: var(--ob-font-family); font-weight: 800;
+    transform: skewX(-13deg); transform-origin: 65px 66px;
+  }
 
-  .intro-title { font-size: 22px; font-weight: 800; margin: 0 0 10px; opacity: 0; animation: introTextIn 0.7s ease forwards 0.65s; text-shadow: 0 2px 12px rgba(0,0,0,0.2); }
-  .intro-sub { font-size: 14px; color: var(--ob-subtext); line-height: 2; max-width: 300px; margin: 0 0 34px; opacity: 0; animation: introTextIn 0.7s ease forwards 0.8s; transition: color 0.4s ease; }
+  .intro-title {
+    font-size: 22px; font-weight: 800; margin: 0 0 10px; opacity: 0;
+    animation: introTextIn 0.7s ease forwards 0.65s; text-shadow: 0 2px 12px rgba(0,0,0,0.2);
+    -webkit-text-stroke: 0.6px currentColor; letter-spacing: -0.2px;
+  }
+  .intro-sub { font-size: 14px; color: var(--ob-subtext); line-height: 2; max-width: 300px; margin: 0 0 22px; opacity: 0; animation: introTextIn 0.7s ease forwards 0.8s; transition: color 0.4s ease; }
   @keyframes introTextIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* ---------- کارتِ اطلاعاتیِ زیرِ نشان: تاریخ + پیامِ کوتاهِ خوش‌آمد (الهام‌گرفته از رفرنس) ---------- */
+  .intro-info-card {
+    width: 100%; max-width: 280px; padding: 14px 18px; margin: 0 0 30px; border-radius: 18px;
+    background: var(--ob-card-base); border: 1.5px solid var(--ob-card-border); backdrop-filter: blur(10px);
+    display: flex; flex-direction: column; gap: 5px; align-items: center;
+    opacity: 0; animation: introTextIn 0.7s ease forwards 0.92s;
+    transition: background 0.4s ease, border-color 0.4s ease;
+  }
+  .intro-info-date { font-size: 11px; color: var(--ob-subtext); opacity: 0.75; letter-spacing: 0.2px; transition: color 0.4s ease; }
+  .intro-info-text { font-size: 13px; line-height: 1.9; margin: 0; }
+
   .intro-start-btn {
-    padding: 15px 34px; border: none; border-radius: 999px; font-family: inherit; font-size: 15px; font-weight: 700;
-    color: #fff; cursor: pointer; background: linear-gradient(135deg, #8B5CF6, #A78BFA);
-    box-shadow: 0 10px 26px rgba(139,92,246,0.35); display: flex; align-items: center; gap: 8px;
-    opacity: 0; animation: introTextIn 0.7s ease forwards 0.98s;
+    padding: 15px 30px; border: none; border-radius: 999px; font-family: inherit; font-size: 15px; font-weight: 700;
+    color: #241243; cursor: pointer; background: #fff;
+    box-shadow: 0 10px 26px rgba(0,0,0,0.25); display: flex; align-items: center; gap: 8px;
+    opacity: 0; animation: introTextIn 0.7s ease forwards 1.12s;
     transition: transform 0.15s ease;
   }
   .intro-start-btn:active { transform: scale(0.96); }
-  .intro-start-btn svg { width: 16px; height: 16px; transform: scaleX(-1); }
+  .intro-start-btn svg { width: 16px; height: 16px; transform: scaleX(-1); color: #241243; }
 
   /* ================= مرحله‌های تم و فونت (کاروسلِ مشترک) ================= */
   .picker-wrap { flex: 1; display: flex; flex-direction: column; padding: 0 0 max(20px, env(safe-area-inset-bottom)) 0; min-height: 0; }
@@ -223,14 +249,15 @@
     <!-- ================= مرحله ۰: اینترو ================= -->
     <div class="step-panel">
       <div class="intro-wrap">
+        <p class="intro-brand-tag">دهات</p>
         <div class="intro-badge-zone">
           <div class="intro-badge-glow"></div>
           <div class="intro-badge">
             <svg viewBox="0 0 130 130" fill="none">
-              <path class="intro-badge-icon" d="M65 8c9 16 27 14 34 30 8 18-2 38-19 46-4 10-9 18-15 24-6-6-11-14-15-24-17-8-27-28-19-46 7-16 25-14 34-30Z"
-                fill="url(#obGrad)" stroke="rgba(255,255,255,0.5)" stroke-width="1.5"/>
-              <path d="M65 40c5 9 15 8 19 17 4 10-1 21-11 26-2 5-5 10-8 13-3-3-6-8-8-13-10-5-15-16-11-26 4-9 14-8 19-17Z" fill="rgba(255,255,255,0.22)"/>
-              <path d="M65 54l6 12 13 2-9 9 2 13-12-6-12 6 2-13-9-9 13-2 6-12Z" fill="#fff" opacity="0.95"/>
+              <circle class="intro-logo-plate" cx="65" cy="66" r="54" fill="url(#obGrad)" stroke="rgba(255,255,255,0.5)" stroke-width="1.5"/>
+              <ellipse cx="45" cy="38" rx="24" ry="15" fill="rgba(255,255,255,0.2)"/>
+              <text class="intro-logo-mark" x="67" y="87" text-anchor="middle" font-size="62"
+                fill="#fff" stroke="#fff" stroke-width="2.5" paint-order="stroke fill" stroke-linejoin="round">D:</text>
               <defs>
                 <linearGradient id="obGrad" x1="20" y1="10" x2="110" y2="120" gradientUnits="userSpaceOnUse">
                   <stop offset="0" stop-color="#A78BFA"/>
@@ -241,9 +268,13 @@
           </div>
         </div>
         <p class="intro-title">به دهات خوش اومدی!</p>
-        <p class="intro-sub">قبل از اینکه بریم تو ده، بذار حال‌وهوای خودتو بچینیم — رنگِ درِ خونه و فونتِ دلخواهتو انتخاب کن؛ هر وقت هم دلت خواست از تنظیمات عوضش می‌کنی.</p>
+        <p class="intro-sub">با اولین قدم، دروازه‌ی دهات برات باز شد</p>
+        <div class="intro-info-card">
+          <span class="intro-info-date" id="introInfoDate"></span>
+          <p class="intro-info-text">اینجا از هر خراب‌شده‌ای دوره راحت باش</p>
+        </div>
         <button type="button" class="intro-start-btn" id="introStartBtn">
-          <span>بزن بریم</span>
+          <span>بعدی</span>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
         </button>
       </div>
@@ -261,6 +292,12 @@
           <div class="carousel-track" id="themeTrack"></div>
         </div>
         <div class="dots" id="themeDots"></div>
+        <div class="footer">
+          <button type="button" class="confirm-btn" id="themeNextBtn">
+            <span>بعدی</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+          </button>
+        </div>
       </div>
     </div>
 
@@ -564,7 +601,10 @@ themeCarousel.updateConfirmColor = function () {
   const hue = HUES.find((h) => h.id === activeHueId);
   if (!hue) return;
   const c = hue[currentMode];
-  document.getElementById("confirmBtn").style.background = `linear-gradient(135deg, ${c.accent}, ${c.accentHover})`;
+  const grad = `linear-gradient(135deg, ${c.accent}, ${c.accentHover})`;
+  document.getElementById("confirmBtn").style.background = grad;
+  const themeNextBtn = document.getElementById("themeNextBtn");
+  if (themeNextBtn) themeNextBtn.style.background = grad;
 };
 themeCarousel.refreshColors();
 
@@ -615,7 +655,17 @@ function goToStep(step) {
   if (currentStep === 2) setTimeout(() => { refreshFontCardColors(); fontCarousel.render(false); }, 60);
 }
 document.getElementById("introStartBtn").addEventListener("click", () => goToStep(1));
+document.getElementById("themeNextBtn").addEventListener("click", () => goToStep(2));
 backBtn.addEventListener("click", () => goToStep(currentStep - 1));
+
+// ---------- تاریخِ امروز روی کارتِ اطلاعاتیِ اینترو ----------
+(function setIntroDate() {
+  const el = document.getElementById("introInfoDate");
+  if (!el) return;
+  try {
+    el.textContent = new Date().toLocaleDateString("fa-IR", { year: "numeric", month: "long", day: "numeric" });
+  } catch (e) {}
+})();
 
 // جهتِ RTL: چون کلِ اسکرول‌تِرَک با translateX درصدیِ منفی/مثبت مدیریت می‌شه، صریحاً LTR منطقی می‌کنیمش
 // که رفتارِ درصدها با جهتِ چیدمانِ صفحه قاطی نشه؛ ظاهرِ متنی همچنان RTL می‌مونه چون از body ارث می‌بره
@@ -640,6 +690,9 @@ document.querySelectorAll(".step-panel").forEach((p) => { p.style.direction = "r
 })();
 
 // ---------- ثبتِ نهایی ----------
+// نسخه‌ی اصلی/تولید: تماسِ واقعی با ورکر (WORKER_URL) و ریدایرکتِ واقعی فعاله
+const PREVIEW_MODE = false;
+
 function markSeen() {
   try { localStorage.setItem(seenKey(), "1"); } catch (e) {}
 }
@@ -650,30 +703,42 @@ confirmBtn.addEventListener("click", async () => {
   const theme = `${activeHueId}-${currentMode}`;
   confirmBtn.classList.add("saving");
   confirmBtnText.textContent = "چند لحظه...";
-  await Promise.allSettled([
-    fetch(`${WORKER_URL}/api/theme`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${getToken()}` },
-      body: JSON.stringify({ theme }),
-    }),
-    fetch(`${WORKER_URL}/api/font`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${getToken()}` },
-      body: JSON.stringify({ font: activeFontId }),
-    }),
-  ]);
+
+  if (!PREVIEW_MODE) {
+    await Promise.allSettled([
+      fetch(`${WORKER_URL}/api/theme`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${getToken()}` },
+        body: JSON.stringify({ theme }),
+      }),
+      fetch(`${WORKER_URL}/api/font`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${getToken()}` },
+        body: JSON.stringify({ font: activeFontId }),
+      }),
+    ]);
+  } else {
+    await new Promise((r) => setTimeout(r, 500)); // فقط برای حسِ لودینگ در پریویو
+  }
+
   // اگه اینترنت لحظه‌ای قطع بود هم مهم نیست؛ تم/فونت رو محلی ذخیره می‌کنیم و کاربر معطلِ سرور نمی‌مونه
   try {
     localStorage.setItem("theme", theme);
     localStorage.setItem("font", activeFontId);
   } catch (e) {}
   markSeen();
-  window.location.href = nextUrl();
+
+  if (PREVIEW_MODE) {
+    confirmBtnText.textContent = "ثبت شد ✓";
+    console.log("Preview: theme/font saved locally →", theme, activeFontId);
+  } else {
+    window.location.href = nextUrl();
+  }
 });
 
 document.getElementById("skipBtn").addEventListener("click", () => {
   markSeen();
-  window.location.href = nextUrl();
+  if (!PREVIEW_MODE) window.location.href = nextUrl();
 });
 </script>
 </body>
