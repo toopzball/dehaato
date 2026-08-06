@@ -9,6 +9,12 @@
   @font-face { font-family: 'Vazirmatn'; font-style: normal; font-weight: 500; font-display: swap; src: url('/fonts/Vazirmatn-Medium.woff2') format('woff2'); }
   @font-face { font-family: 'Vazirmatn'; font-style: normal; font-weight: 700; font-display: swap; src: url('/fonts/Vazirmatn-Bold.woff2') format('woff2'); }
   @font-face { font-family: 'Vazirmatn'; font-style: normal; font-weight: 800; font-display: swap; src: url('/fonts/Vazirmatn-ExtraBold.woff2') format('woff2'); }
+  @font-face { font-family: 'IBMPlexArabic'; font-style: normal; font-weight: 400; font-display: swap; src: url('/fonts/IBMPlexSansArabic-Regular.ttf') format('truetype'); }
+  @font-face { font-family: 'IBMPlexArabic'; font-style: normal; font-weight: 500; font-display: swap; src: url('/fonts/IBMPlexSansArabic-Medium.ttf') format('truetype'); }
+  @font-face { font-family: 'IBMPlexArabic'; font-style: normal; font-weight: 700; font-display: swap; src: url('/fonts/IBMPlexSansArabic-Bold.ttf') format('truetype'); }
+  @font-face { font-family: 'Handjet'; font-style: normal; font-weight: 400; font-display: swap; src: url('/fonts/Handjet-Regular.ttf') format('truetype'); }
+  @font-face { font-family: 'Handjet'; font-style: normal; font-weight: 500; font-display: swap; src: url('/fonts/Handjet-Medium.ttf') format('truetype'); }
+  @font-face { font-family: 'Handjet'; font-style: normal; font-weight: 700; font-display: swap; src: url('/fonts/Handjet-Bold.ttf') format('truetype'); }
 
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   html, body { margin: 0; height: 100%; overflow: hidden; }
@@ -27,7 +33,7 @@
     transition: color 0.4s ease;
   }
 
-  /* ---------- پس‌زمینه‌ی تمام‌صفحه: دو لایه برای کراس‌فیدِ نرم بینِ تم‌ها/حالت‌ها موقعِ اسکرول یا تاگل ---------- */
+  /* ---------- پس‌زمینه‌ی تمام‌صفحه: دو لایه برای کراس‌فیدِ نرم بینِ تم‌ها/حالت‌ها موقعِ تغییرِ کارت ---------- */
   .bg-layer {
     position: fixed; inset: 0; opacity: 0; transition: opacity 0.9s ease;
     background-color: var(--ob-body-bg);
@@ -37,14 +43,12 @@
     background: radial-gradient(120% 90% at 50% 100%, rgba(5,2,10,0.55) 0%, rgba(5,2,10,0.15) 45%, transparent 70%); }
   html[data-mode="light"] .bg-scrim { background: radial-gradient(120% 90% at 50% 100%, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0.14) 45%, transparent 70%); }
 
-  .wrap { position: relative; z-index: 2; height: 100%; display: flex; flex-direction: column; padding: 0 0 max(20px, env(safe-area-inset-bottom)) 0; }
-
   /* ---------- تاگلِ حالت روشن/تاریک ---------- */
   .mode-toggle {
-    position: fixed; top: max(20px, env(safe-area-inset-top)); left: 18px; z-index: 5;
+    position: fixed; top: max(20px, env(safe-area-inset-top)); left: 18px; z-index: 6;
     width: 62px; height: 32px; border-radius: 999px; padding: 3px;
     background: rgba(255,255,255,0.12); border: 1.5px solid rgba(255,255,255,0.18);
-    backdrop-filter: blur(8px); display: flex; align-items: center; position: fixed;
+    backdrop-filter: blur(8px); display: flex; align-items: center;
     transition: background 0.4s ease, border-color 0.4s ease;
   }
   html[data-mode="light"] .mode-toggle { background: rgba(36,18,67,0.08); border-color: rgba(36,18,67,0.14); }
@@ -64,26 +68,72 @@
   .mode-btn.active { color: #12081f; }
   html[data-mode="light"] .mode-btn.active { color: #fff; }
 
-  /* ---------- ردِ بالا: عنوانِ شوخ‌طبعانه ---------- */
-  .head { padding: max(28px, env(safe-area-inset-top)) 22px 8px; text-align: center; flex-shrink: 0; }
-  .head-emoji { font-size: 30px; margin-bottom: 6px; }
-  .head-title { font-size: 21px; font-weight: 800; margin: 0 0 8px; text-shadow: 0 2px 12px rgba(0,0,0,0.2); }
-  .head-sub { font-size: 13.5px; color: var(--ob-subtext); margin: 0 auto; max-width: 320px; line-height: 1.9; opacity: 0.9; transition: color 0.4s ease; }
-
-  /* ---------- ناحیه‌ی اسکرولِ افقیِ کارت‌ها ---------- */
-  .cards-viewport { flex: 1; display: flex; align-items: center; min-height: 0; }
-  .cards-track {
-    display: flex; align-items: center; gap: 16px;
-    overflow-x: auto; overflow-y: hidden; width: 100%;
-    scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch;
-    scrollbar-width: none; padding: 10px 0;
+  /* ---------- دکمه‌ی برگشت به مرحله‌ی قبل ---------- */
+  .back-btn {
+    position: fixed; top: max(20px, env(safe-area-inset-top)); right: 18px; z-index: 6;
+    width: 32px; height: 32px; border-radius: 50%; border: 1.5px solid rgba(255,255,255,0.18);
+    background: rgba(255,255,255,0.12); backdrop-filter: blur(8px); color: var(--ob-text);
+    display: flex; align-items: center; justify-content: center; cursor: pointer;
+    opacity: 0; pointer-events: none; transform: translateX(6px);
+    transition: opacity 0.3s ease, transform 0.3s ease, background 0.4s ease, border-color 0.4s ease;
   }
-  .cards-track::-webkit-scrollbar { display: none; }
-  .spacer { flex: 0 0 calc(50% - 100px); scroll-snap-align: none; }
+  .back-btn.visible { opacity: 1; pointer-events: auto; transform: translateX(0); }
+  html[data-mode="light"] .back-btn { background: rgba(36,18,67,0.08); border-color: rgba(36,18,67,0.14); }
+  .back-btn svg { width: 15px; height: 15px; }
 
-  .theme-card {
-    flex: 0 0 200px; width: 200px; height: 260px;
-    scroll-snap-align: center;
+  /* ---------- کانتینرِ اصلیِ سه مرحله (اینترو / تم / فونت)، هرکدوم تمامِ صفحه ---------- */
+  .steps-outer { position: relative; z-index: 2; height: 100%; overflow: hidden; }
+  .steps-track { display: flex; height: 100%; width: 300%; transition: transform 0.55s cubic-bezier(.22,.85,.32,1); }
+  .step-panel { width: calc(100% / 3); height: 100%; flex-shrink: 0; display: flex; flex-direction: column; }
+
+  /* ================= مرحله‌ی ۱: اینترو/خوش‌آمدگویی ================= */
+  .intro-wrap { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 0 26px max(20px, env(safe-area-inset-bottom)); text-align: center; }
+  .intro-badge-zone { position: relative; width: 190px; height: 190px; display: flex; align-items: center; justify-content: center; margin-bottom: 30px; }
+  .intro-badge-glow {
+    position: absolute; inset: -30px; border-radius: 50%; opacity: 0;
+    background: radial-gradient(circle, rgba(167,139,250,0.55) 0%, rgba(139,92,246,0.18) 45%, transparent 72%);
+    animation: badgeGlowIn 1.1s ease forwards 0.15s, badgeGlowPulse 3.2s ease-in-out infinite 1.3s;
+  }
+  html[data-mode="light"] .intro-badge-glow { background: radial-gradient(circle, rgba(167,139,250,0.4) 0%, rgba(139,92,246,0.12) 45%, transparent 72%); }
+  @keyframes badgeGlowIn { from { opacity: 0; transform: scale(0.7); } to { opacity: 1; transform: scale(1); } }
+  @keyframes badgeGlowPulse { 0%, 100% { opacity: 0.65; transform: scale(1); } 50% { opacity: 1; transform: scale(1.08); } }
+  .intro-badge {
+    position: relative; width: 130px; height: 130px; opacity: 0;
+    animation: badgeIn 0.85s cubic-bezier(.2,.8,.2,1) forwards 0.3s, badgeFloat 4.5s ease-in-out infinite 1.3s;
+  }
+  @keyframes badgeIn { from { opacity: 0; transform: scale(0.55) rotate(-14deg); } to { opacity: 1; transform: scale(1) rotate(0); } }
+  @keyframes badgeFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-7px); } }
+  .intro-badge svg { width: 100%; height: 100%; display: block; filter: drop-shadow(0 10px 24px rgba(139,92,246,0.45)); }
+  .intro-badge-icon { transform-origin: 50% 55%; }
+
+  .intro-title { font-size: 22px; font-weight: 800; margin: 0 0 10px; opacity: 0; animation: introTextIn 0.7s ease forwards 0.65s; text-shadow: 0 2px 12px rgba(0,0,0,0.2); }
+  .intro-sub { font-size: 14px; color: var(--ob-subtext); line-height: 2; max-width: 300px; margin: 0 0 34px; opacity: 0; animation: introTextIn 0.7s ease forwards 0.8s; transition: color 0.4s ease; }
+  @keyframes introTextIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  .intro-start-btn {
+    padding: 15px 34px; border: none; border-radius: 999px; font-family: inherit; font-size: 15px; font-weight: 700;
+    color: #fff; cursor: pointer; background: linear-gradient(135deg, #8B5CF6, #A78BFA);
+    box-shadow: 0 10px 26px rgba(139,92,246,0.35); display: flex; align-items: center; gap: 8px;
+    opacity: 0; animation: introTextIn 0.7s ease forwards 0.98s;
+    transition: transform 0.15s ease;
+  }
+  .intro-start-btn:active { transform: scale(0.96); }
+  .intro-start-btn svg { width: 16px; height: 16px; transform: scaleX(-1); }
+
+  /* ================= مرحله‌های تم و فونت (کاروسلِ مشترک) ================= */
+  .picker-wrap { flex: 1; display: flex; flex-direction: column; padding: 0 0 max(20px, env(safe-area-inset-bottom)) 0; min-height: 0; }
+  .head { padding: max(28px, env(safe-area-inset-top)) 22px 8px; text-align: center; flex-shrink: 0; }
+  .head-emoji { font-size: 28px; margin-bottom: 6px; }
+  .head-title { font-size: 20px; font-weight: 800; margin: 0 0 8px; text-shadow: 0 2px 12px rgba(0,0,0,0.2); }
+  .head-sub { font-size: 13px; color: var(--ob-subtext); margin: 0 auto; max-width: 320px; line-height: 1.9; opacity: 0.9; transition: color 0.4s ease; }
+
+  /* ---------- کاروسلِ کارت‌ها: یه سوایپ/یه چرخِ ماوس = دقیقاً یه کارت، هم موبایل هم PC ---------- */
+  .carousel-viewport { flex: 1; display: flex; align-items: center; min-height: 0; overflow: hidden; touch-action: pan-y; cursor: grab; }
+  .carousel-viewport.dragging { cursor: grabbing; }
+  .carousel-track { display: flex; align-items: center; will-change: transform; }
+  .carousel-track.animating { transition: transform 0.38s cubic-bezier(.22,.85,.32,1); }
+
+  .theme-card, .font-card {
+    flex-shrink: 0; width: 200px; height: 252px; margin-inline-end: 16px;
     border-radius: 26px; padding: 22px 16px;
     display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px;
     text-align: center; cursor: pointer; user-select: none;
@@ -93,7 +143,7 @@
     transition: transform 0.35s cubic-bezier(.2,.8,.2,1), border-color 0.35s ease, box-shadow 0.35s ease, background 0.35s ease;
     transform: scale(0.86); opacity: 0.55;
   }
-  .theme-card.active {
+  .theme-card.active, .font-card.active {
     transform: scale(1); opacity: 1;
     box-shadow: 0 14px 34px rgba(0,0,0,0.25);
   }
@@ -110,16 +160,20 @@
   .card-check {
     width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
     opacity: 0; transform: scale(0.5); transition: opacity 0.25s ease, transform 0.25s ease, background 0.35s ease;
+    background: #ffffff33;
   }
-  .theme-card.active .card-check { opacity: 1; transform: scale(1); }
+  .theme-card.active .card-check, .font-card.active .card-check { opacity: 1; transform: scale(1); }
   .card-check svg { width: 12px; height: 12px; }
+
+  .font-card-sample { font-size: 42px; font-weight: 700; line-height: 1; }
+  .font-card .card-title { margin-top: 2px; }
 
   /* ---------- نقطه‌های پیجینیشن ---------- */
   .dots { display: flex; justify-content: center; gap: 7px; padding: 4px 0 2px; flex-shrink: 0; }
   .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--ob-dot); transition: all 0.3s ease, background 0.4s ease; }
   .dot.active { width: 18px; background: var(--ob-dot-active); }
 
-  /* ---------- پایین: دکمه‌ی تایید + رد کردن ---------- */
+  /* ---------- پایین: دکمه‌ی تایید/بعدی + رد کردن ---------- */
   .footer { padding: 14px 22px 6px; display: flex; flex-direction: column; align-items: center; gap: 12px; flex-shrink: 0; }
   .confirm-btn {
     width: 100%; max-width: 320px; padding: 15px 20px; border: none; border-radius: 999px;
@@ -139,8 +193,7 @@
   .skip-link:active { opacity: 0.5; }
 
   @media (max-width: 340px) {
-    .theme-card { flex-basis: 176px; width: 176px; height: 244px; }
-    .spacer { flex-basis: calc(50% - 88px); }
+    .theme-card, .font-card { width: 176px; height: 236px; }
   }
 </style>
 </head>
@@ -160,25 +213,79 @@
   </button>
 </div>
 
-<div class="wrap">
-  <div class="head">
-    <div class="head-emoji">👋</div>
-    <p class="head-title">به دهات خوش اومدی!</p>
-    <p class="head-sub">قبل از اینکه بریم تو ده، بذار رنگِ درِ خونه‌تو انتخاب کنیم — هر وقت دلت خواست هم از تنظیمات عوضش می‌کنی.</p>
-  </div>
+<button type="button" class="back-btn" id="backBtn" aria-label="برگشت">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M11 6l-6 6 6 6"/></svg>
+</button>
 
-  <div class="cards-viewport">
-    <div class="cards-track" id="cardsTrack"></div>
-  </div>
+<div class="steps-outer">
+  <div class="steps-track" id="stepsTrack">
 
-  <div class="dots" id="dots"></div>
+    <!-- ================= مرحله ۰: اینترو ================= -->
+    <div class="step-panel">
+      <div class="intro-wrap">
+        <div class="intro-badge-zone">
+          <div class="intro-badge-glow"></div>
+          <div class="intro-badge">
+            <svg viewBox="0 0 130 130" fill="none">
+              <path class="intro-badge-icon" d="M65 8c9 16 27 14 34 30 8 18-2 38-19 46-4 10-9 18-15 24-6-6-11-14-15-24-17-8-27-28-19-46 7-16 25-14 34-30Z"
+                fill="url(#obGrad)" stroke="rgba(255,255,255,0.5)" stroke-width="1.5"/>
+              <path d="M65 40c5 9 15 8 19 17 4 10-1 21-11 26-2 5-5 10-8 13-3-3-6-8-8-13-10-5-15-16-11-26 4-9 14-8 19-17Z" fill="rgba(255,255,255,0.22)"/>
+              <path d="M65 54l6 12 13 2-9 9 2 13-12-6-12 6 2-13-9-9 13-2 6-12Z" fill="#fff" opacity="0.95"/>
+              <defs>
+                <linearGradient id="obGrad" x1="20" y1="10" x2="110" y2="120" gradientUnits="userSpaceOnUse">
+                  <stop offset="0" stop-color="#A78BFA"/>
+                  <stop offset="1" stop-color="#6D28D9"/>
+                </linearGradient>
+              </defs>
+            </svg>
+          </div>
+        </div>
+        <p class="intro-title">به دهات خوش اومدی!</p>
+        <p class="intro-sub">قبل از اینکه بریم تو ده، بذار حال‌وهوای خودتو بچینیم — رنگِ درِ خونه و فونتِ دلخواهتو انتخاب کن؛ هر وقت هم دلت خواست از تنظیمات عوضش می‌کنی.</p>
+        <button type="button" class="intro-start-btn" id="introStartBtn">
+          <span>بزن بریم</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </button>
+      </div>
+    </div>
 
-  <div class="footer">
-    <button class="confirm-btn" id="confirmBtn">
-      <span id="confirmBtnText">بریم تو دهات</span>
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
-    </button>
-    <button class="skip-link" id="skipBtn">فعلاً رد شو، بعداً از تنظیمات عوضش می‌کنم</button>
+    <!-- ================= مرحله ۱: انتخاب تم ================= -->
+    <div class="step-panel">
+      <div class="picker-wrap">
+        <div class="head">
+          <div class="head-emoji">🎨</div>
+          <p class="head-title">رنگِ درِ خونه‌تو انتخاب کن</p>
+          <p class="head-sub">با یه سوایپ یا اسکرول، کارت بعدی/قبلی رو ببین — روی هرکدوم که خواستی بمونی، بزن بعدی</p>
+        </div>
+        <div class="carousel-viewport" id="themeViewport">
+          <div class="carousel-track" id="themeTrack"></div>
+        </div>
+        <div class="dots" id="themeDots"></div>
+      </div>
+    </div>
+
+    <!-- ================= مرحله ۲: انتخاب فونت ================= -->
+    <div class="step-panel">
+      <div class="picker-wrap">
+        <div class="head">
+          <div class="head-emoji">🔤</div>
+          <p class="head-title">فونتِ دلخواهتو انتخاب کن</p>
+          <p class="head-sub">همین رنگ‌بندی که چیدی، حالا با کدوم فونت بهتر می‌شینه؟</p>
+        </div>
+        <div class="carousel-viewport" id="fontViewport">
+          <div class="carousel-track" id="fontTrack"></div>
+        </div>
+        <div class="dots" id="fontDots"></div>
+        <div class="footer">
+          <button class="confirm-btn" id="confirmBtn">
+            <span id="confirmBtnText">بریم تو دهات</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+          </button>
+          <button class="skip-link" id="skipBtn">فعلاً رد شو، بعداً از تنظیمات عوضش می‌کنم</button>
+        </div>
+      </div>
+    </div>
+
   </div>
 </div>
 
@@ -275,70 +382,25 @@ const HUES = [
   }
 ];
 
-const track = document.getElementById("cardsTrack");
-const dotsWrap = document.getElementById("dots");
+// ---------- فونت‌های سایت (دقیقاً همون‌هایی که تو تنظیماتِ ظاهریِ خودِ اپ هست) ----------
+const FONTS = [
+  { id: "vazirmatn", title: "وزیرمتن", sub: "پیش‌فرضِ خودِ دهات، ساده و خوانا", family: "'Vazirmatn', Tahoma, sans-serif" },
+  { id: "plex", title: "پلکس عربی", sub: "مدرن و خوش‌فرم", family: "'IBMPlexArabic', Tahoma, sans-serif" },
+  { id: "handjet", title: "هندجت", sub: "حس‌وحالِ دیجیتال/رترو", family: "'Handjet', Tahoma, sans-serif" }
+];
+
 const bgLayerA = document.getElementById("bgLayerA");
 const bgLayerB = document.getElementById("bgLayerB");
 let bgActiveIsA = true;
-let activeHueId = null;
-let currentMode = "dark"; // پیش‌فرضِ خودِ سایت هم دارک هست
+let currentMode = "dark";
+let activeHueId = "purple";
+let activeFontId = "vazirmatn";
 
 function buildIconSvg(pathMarkup) {
   return `<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${pathMarkup}</svg>`;
 }
 
-// ---------- ساختنِ کارت‌ها ----------
-const spacerStart = document.createElement("div");
-spacerStart.className = "spacer";
-track.appendChild(spacerStart);
-
-HUES.forEach((hue) => {
-  const card = document.createElement("div");
-  card.className = "theme-card";
-  card.dataset.hue = hue.id;
-  card.innerHTML = `
-    <div class="card-icon-badge">${buildIconSvg(hue.icon)}</div>
-    <p class="card-title">${hue.title}</p>
-    <p class="card-sub">${hue.sub}</p>
-    <div class="card-check">
-      <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L19 7"/></svg>
-    </div>
-  `;
-  card.addEventListener("click", () => {
-    card.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
-  });
-  track.appendChild(card);
-
-  const dot = document.createElement("div");
-  dot.className = "dot";
-  dot.dataset.hue = hue.id;
-  dotsWrap.appendChild(dot);
-});
-
-const spacerEnd = document.createElement("div");
-spacerEnd.className = "spacer";
-track.appendChild(spacerEnd);
-
-// ---------- رنگ‌آمیزیِ کارت‌ها بر اساسِ رنگ‌بندی + حالتِ فعلی (روشن/تاریک) ----------
-function refreshCardColors() {
-  document.querySelectorAll(".theme-card").forEach((card) => {
-    const hue = HUES.find((h) => h.id === card.dataset.hue);
-    if (!hue) return;
-    const c = hue[currentMode];
-    card.style.background = `linear-gradient(160deg, ${c.card}CC, var(--ob-card-base))`;
-    const badge = card.querySelector(".card-icon-badge");
-    if (badge) badge.style.background = `linear-gradient(135deg, ${c.accent}, ${c.accentHover})`;
-    const check = card.querySelector(".card-check");
-    if (check) check.style.background = c.accentHover;
-  });
-  if (activeHueId) {
-    const hue = HUES.find((h) => h.id === activeHueId);
-    const c = hue[currentMode];
-    document.getElementById("confirmBtn").style.background = `linear-gradient(135deg, ${c.accent}, ${c.accentHover})`;
-  }
-}
-
-// ---------- کراس‌فیدِ نرمِ پس‌زمینه (موقعِ عوض‌شدنِ رنگ‌بندی یا موقعِ تاگلِ روشن/تاریک) ----------
+// ---------- کراس‌فیدِ نرمِ پس‌زمینه (موقعِ عوض‌شدنِ رنگ‌بندی یا تاگلِ روشن/تاریک) ----------
 function paintBackground(hueId, animate) {
   const hue = HUES.find((h) => h.id === hueId);
   if (!hue) return;
@@ -357,64 +419,224 @@ function paintBackground(hueId, animate) {
   bgActiveIsA = !bgActiveIsA;
 }
 
-function setActiveHue(hueId, animate) {
-  if (hueId === activeHueId) return;
-  const hue = HUES.find((h) => h.id === hueId);
-  if (!hue) return;
-  activeHueId = hueId;
-
-  paintBackground(hueId, animate);
-
-  document.querySelectorAll(".theme-card").forEach((el) => el.classList.toggle("active", el.dataset.hue === hueId));
-  document.querySelectorAll(".dot").forEach((el) => el.classList.toggle("active", el.dataset.hue === hueId));
-
-  const c = hue[currentMode];
-  document.getElementById("confirmBtn").style.background = `linear-gradient(135deg, ${c.accent}, ${c.accentHover})`;
-}
-
 // ---------- تاگلِ حالتِ روشن/تاریک ----------
 function setMode(mode, animate) {
   if (mode !== "light" && mode !== "dark") return;
   currentMode = mode;
   document.documentElement.setAttribute("data-mode", mode);
   document.querySelectorAll(".mode-btn").forEach((b) => b.classList.toggle("active", b.dataset.m === mode));
-  refreshCardColors();
-  if (activeHueId) paintBackground(activeHueId, animate !== false);
+  themeCarousel.refreshColors();
+  paintBackground(activeHueId, animate !== false);
+  themeCarousel.updateConfirmColor();
 }
-
 document.querySelectorAll(".mode-btn").forEach((btn) => {
   btn.addEventListener("click", () => setMode(btn.dataset.m, true));
 });
 
-// ---------- رنگ‌آمیزیِ اولیه‌ی کارت‌ها با حالتِ پیش‌فرض (قبل از خوندنِ تمِ ذخیره‌شده) ----------
-refreshCardColors();
+/* =====================================================================
+   کاروسلِ عمومیِ کارت‌ها: transform-based، نه scroll-snap — چون هدف اینه
+   که هر ژستِ سوایپ/درگ (موبایل) یا هر تیکِ چرخِ ماوس/تِرَک‌پد (PC) دقیقاً
+   یه کارت جابه‌جا کنه، نه چندتا رو یهو رد کنه.
+   ===================================================================== */
+function createCarousel({ viewportEl, trackEl, dotsEl, items, cardWidth, gap, onChange }) {
+  let index = 0;
+  const step = cardWidth + gap;
+  let dragging = false, dragStartX = 0, dragBaseTranslate = 0, dragDelta = 0;
+  let wheelLocked = false, wheelAccum = 0;
 
-// ---------- تشخیصِ کارتِ وسط با IntersectionObserver (مستقل از جهتِ RTL موقعِ اسکرول) ----------
-const ratios = new Map();
-const io = new IntersectionObserver(
-  (entries) => {
-    entries.forEach((e) => ratios.set(e.target.dataset.hue, e.intersectionRatio));
-    let best = null, bestRatio = 0;
-    ratios.forEach((r, id) => { if (r > bestRatio) { bestRatio = r; best = id; } });
-    if (best) setActiveHue(best, true);
-  },
-  { root: track, threshold: [0, 0.25, 0.5, 0.75, 0.9, 1] }
-);
-document.querySelectorAll(".theme-card").forEach((el) => io.observe(el));
+  dotsEl.innerHTML = items.map(() => `<div class="dot"></div>`).join("");
+  const dots = Array.from(dotsEl.children);
 
-// شروعِ اولیه: اگه قبلاً تم/حالتی انتخاب شده بود همون رو نشون بده، وگرنه بنفشِ تاریک (پیش‌فرضِ خودِ سایت)
-(function initFromStoredTheme() {
+  function centerOffset() {
+    return viewportEl.getBoundingClientRect().width / 2 - cardWidth / 2;
+  }
+  function translateForIndex(i) {
+    return centerOffset() - i * step;
+  }
+  function render(animate) {
+    trackEl.classList.toggle("animating", animate !== false);
+    trackEl.style.transform = `translateX(${translateForIndex(index)}px)`;
+    Array.from(trackEl.children).forEach((el, i) => el.classList.toggle("active", i === index));
+    dots.forEach((d, i) => d.classList.toggle("active", i === index));
+  }
+  function goTo(i, animate) {
+    i = Math.max(0, Math.min(items.length - 1, i));
+    const changed = i !== index;
+    index = i;
+    render(animate);
+    if (changed && onChange) onChange(items[index], index);
+  }
+
+  // ---------- درگ/سوایپِ لمسی و ماوسی (هر دو پلتفرم با یه منطق) ----------
+  viewportEl.addEventListener("pointerdown", (e) => {
+    dragging = true; dragDelta = 0;
+    dragStartX = e.clientX;
+    dragBaseTranslate = translateForIndex(index);
+    trackEl.classList.remove("animating");
+    viewportEl.classList.add("dragging");
+    viewportEl.setPointerCapture(e.pointerId);
+  });
+  viewportEl.addEventListener("pointermove", (e) => {
+    if (!dragging) return;
+    dragDelta = e.clientX - dragStartX;
+    trackEl.style.transform = `translateX(${dragBaseTranslate + dragDelta}px)`;
+  });
+  function endDrag() {
+    if (!dragging) return;
+    dragging = false;
+    viewportEl.classList.remove("dragging");
+    const threshold = cardWidth * 0.18;
+    if (dragDelta > threshold) goTo(index - 1, true);
+    else if (dragDelta < -threshold) goTo(index + 1, true);
+    else render(true);
+  }
+  viewportEl.addEventListener("pointerup", endDrag);
+  viewportEl.addEventListener("pointercancel", endDrag);
+
+  // ---------- چرخِ ماوس/ترک‌پدِ دسکتاپ: هر «تیک» دقیقاً یه کارت، با یه قفلِ کوتاه تا گسِ ژست چندبار حساب نشه ----------
+  viewportEl.addEventListener("wheel", (e) => {
+    e.preventDefault();
+    if (wheelLocked) return;
+    const delta = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
+    wheelAccum += delta;
+    const wheelThreshold = 40;
+    if (Math.abs(wheelAccum) > wheelThreshold) {
+      goTo(index + (wheelAccum > 0 ? 1 : -1), true);
+      wheelAccum = 0;
+      wheelLocked = true;
+      setTimeout(() => { wheelLocked = false; }, 480);
+    }
+  }, { passive: false });
+
+  // ---------- صفحه‌کلید (دسترس‌پذیری) ----------
+  viewportEl.tabIndex = 0;
+  viewportEl.addEventListener("keydown", (e) => {
+    if (e.key === "ArrowLeft") goTo(index - 1, true);
+    else if (e.key === "ArrowRight") goTo(index + 1, true);
+  });
+
+  window.addEventListener("resize", () => render(false));
+
+  return { goTo, render, get index() { return index; } };
+}
+
+// ---------- ساختِ کارت‌های تم ----------
+const themeTrack = document.getElementById("themeTrack");
+HUES.forEach((hue) => {
+  const card = document.createElement("div");
+  card.className = "theme-card";
+  card.dataset.hue = hue.id;
+  card.innerHTML = `
+    <div class="card-icon-badge">${buildIconSvg(hue.icon)}</div>
+    <p class="card-title">${hue.title}</p>
+    <p class="card-sub">${hue.sub}</p>
+    <div class="card-check">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L19 7"/></svg>
+    </div>`;
+  card.addEventListener("click", () => themeCarousel.goTo(HUES.indexOf(hue), true));
+  themeTrack.appendChild(card);
+});
+
+const themeCarousel = createCarousel({
+  viewportEl: document.getElementById("themeViewport"),
+  trackEl: themeTrack,
+  dotsEl: document.getElementById("themeDots"),
+  items: HUES, cardWidth: 200, gap: 16,
+  onChange: (hue) => {
+    activeHueId = hue.id;
+    paintBackground(hue.id, true);
+    themeCarousel.updateConfirmColor();
+  }
+});
+themeCarousel.refreshColors = function () {
+  document.querySelectorAll(".theme-card").forEach((card) => {
+    const hue = HUES.find((h) => h.id === card.dataset.hue);
+    if (!hue) return;
+    const c = hue[currentMode];
+    card.style.background = `linear-gradient(160deg, ${c.card}CC, var(--ob-card-base))`;
+    const badge = card.querySelector(".card-icon-badge");
+    if (badge) badge.style.background = `linear-gradient(135deg, ${c.accent}, ${c.accentHover})`;
+    const check = card.querySelector(".card-check");
+    if (check) check.style.background = c.accentHover;
+  });
+};
+themeCarousel.updateConfirmColor = function () {
+  const hue = HUES.find((h) => h.id === activeHueId);
+  if (!hue) return;
+  const c = hue[currentMode];
+  document.getElementById("confirmBtn").style.background = `linear-gradient(135deg, ${c.accent}, ${c.accentHover})`;
+};
+themeCarousel.refreshColors();
+
+// ---------- ساختِ کارت‌های فونت ----------
+const fontTrack = document.getElementById("fontTrack");
+FONTS.forEach((f) => {
+  const card = document.createElement("div");
+  card.className = "font-card";
+  card.dataset.font = f.id;
+  card.style.fontFamily = f.family;
+  card.innerHTML = `
+    <div class="font-card-sample">Aa</div>
+    <p class="card-title">${f.title}</p>
+    <p class="card-sub">${f.sub}</p>
+    <div class="card-check">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L19 7"/></svg>
+    </div>`;
+  card.addEventListener("click", () => fontCarousel.goTo(FONTS.indexOf(f), true));
+  fontTrack.appendChild(card);
+});
+function refreshFontCardColors() {
+  const hue = HUES.find((h) => h.id === activeHueId);
+  if (!hue) return;
+  const c = hue[currentMode];
+  document.querySelectorAll(".font-card").forEach((card) => {
+    card.style.background = `linear-gradient(160deg, ${c.card}CC, var(--ob-card-base))`;
+    const check = card.querySelector(".card-check");
+    if (check) check.style.background = c.accentHover;
+  });
+}
+const fontCarousel = createCarousel({
+  viewportEl: document.getElementById("fontViewport"),
+  trackEl: fontTrack,
+  dotsEl: document.getElementById("fontDots"),
+  items: FONTS, cardWidth: 200, gap: 16,
+  onChange: (f) => { activeFontId = f.id; }
+});
+
+// ---------- ناوبریِ بین سه مرحله (اینترو / تم / فونت) ----------
+const stepsTrack = document.getElementById("stepsTrack");
+const backBtn = document.getElementById("backBtn");
+let currentStep = 0;
+function goToStep(step) {
+  currentStep = Math.max(0, Math.min(2, step));
+  stepsTrack.style.transform = `translateX(${currentStep * (100 / 3)}%)`;
+  backBtn.classList.toggle("visible", currentStep > 0);
+  if (currentStep === 1) setTimeout(() => themeCarousel.render(false), 60);
+  if (currentStep === 2) setTimeout(() => { refreshFontCardColors(); fontCarousel.render(false); }, 60);
+}
+document.getElementById("introStartBtn").addEventListener("click", () => goToStep(1));
+backBtn.addEventListener("click", () => goToStep(currentStep - 1));
+
+// جهتِ RTL: چون کلِ اسکرول‌تِرَک با translateX درصدیِ منفی/مثبت مدیریت می‌شه، صریحاً LTR منطقی می‌کنیمش
+// که رفتارِ درصدها با جهتِ چیدمانِ صفحه قاطی نشه؛ ظاهرِ متنی همچنان RTL می‌مونه چون از body ارث می‌بره
+stepsTrack.style.direction = "ltr";
+document.querySelectorAll(".step-panel").forEach((p) => { p.style.direction = "rtl"; });
+
+// شروعِ اولیه: اگه قبلاً تم/فونت/حالتی انتخاب شده بود همون رو نشون بده، وگرنه پیش‌فرض (بنفشِ تاریک + وزیرمتن)
+(function initFromStored() {
   const stored = (localStorage.getItem("theme") || "purple-dark").split("-");
   const storedHue = stored[0];
   const storedMode = stored[1] === "light" ? "light" : "dark";
-  const startHue = HUES.some((h) => h.id === storedHue) ? storedHue : "purple";
+  const startHueIndex = HUES.findIndex((h) => h.id === storedHue);
+  const storedFont = localStorage.getItem("font") || "vazirmatn";
+  const startFontIndex = FONTS.findIndex((f) => f.id === storedFont);
 
   setMode(storedMode, false);
-  setActiveHue(startHue, false);
-  requestAnimationFrame(() => {
-    const el = track.querySelector(`.theme-card[data-hue="${startHue}"]`);
-    if (el) el.scrollIntoView({ behavior: "auto", inline: "center", block: "nearest" });
-  });
+  themeCarousel.goTo(startHueIndex >= 0 ? startHueIndex : 0, false);
+  paintBackground(activeHueId, false);
+  fontCarousel.goTo(startFontIndex >= 0 ? startFontIndex : 0, false);
+  refreshFontCardColors();
+  themeCarousel.updateConfirmColor();
 })();
 
 // ---------- ثبتِ نهایی ----------
@@ -425,20 +647,26 @@ function markSeen() {
 const confirmBtn = document.getElementById("confirmBtn");
 const confirmBtnText = document.getElementById("confirmBtnText");
 confirmBtn.addEventListener("click", async () => {
-  if (!activeHueId) return;
   const theme = `${activeHueId}-${currentMode}`;
   confirmBtn.classList.add("saving");
   confirmBtnText.textContent = "چند لحظه...";
-  try {
-    await fetch(`${WORKER_URL}/api/theme`, {
+  await Promise.allSettled([
+    fetch(`${WORKER_URL}/api/theme`, {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${getToken()}` },
       body: JSON.stringify({ theme }),
-    });
-  } catch (e) {
-    // اگه اینترنت لحظه‌ای قطع بود هم مهم نیست؛ تم رو محلی ذخیره می‌کنیم و کاربر معطلِ سرور نمی‌مونه
-  }
-  try { localStorage.setItem("theme", theme); } catch (e) {}
+    }),
+    fetch(`${WORKER_URL}/api/font`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${getToken()}` },
+      body: JSON.stringify({ font: activeFontId }),
+    }),
+  ]);
+  // اگه اینترنت لحظه‌ای قطع بود هم مهم نیست؛ تم/فونت رو محلی ذخیره می‌کنیم و کاربر معطلِ سرور نمی‌مونه
+  try {
+    localStorage.setItem("theme", theme);
+    localStorage.setItem("font", activeFontId);
+  } catch (e) {}
   markSeen();
   window.location.href = nextUrl();
 });
