@@ -5738,6 +5738,20 @@
   <div class="dooz-overlay-frame-wrap" id="restaurantOverlayFrameWrap"></div>
 </div>
 
+<!-- تستِ onboarding.html داخلِ آی‌فریم (فقط برای Aghey، از بخشِ «تست قابلیت‌ها»): دقیقاً همون
+     الگویِ اورلیِ دوز/رستوران، فقط آدرسِ آی‌فریم onboarding.html هستش -->
+<div class="dooz-overlay hidden" id="onboardingTestOverlay">
+  <div class="dooz-overlay-topbar">
+    <button class="dooz-overlay-refresh" onclick="refreshOnboardingTestOverlay()" aria-label="تازه‌سازیِ onboarding">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10"/><path d="M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+    </button>
+    <button class="dooz-overlay-close" onclick="closeOnboardingTestOverlay()" aria-label="بستنِ تست و برگشت به دهات">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+    </button>
+  </div>
+  <div class="dooz-overlay-frame-wrap" id="onboardingTestOverlayFrameWrap"></div>
+</div>
+
 <script>
 // ---------- تعیینِ خودکارِ آدرسِ ورکر بر اساسِ دامنه‌ای که کاربر باهاش وارد شده ----------
 // دهات از دو مسیر در دسترسه: یکی از پشتِ Cloudflare Pages (که یه Pages Function جلوش داره و
@@ -14352,6 +14366,30 @@ function refreshRestaurantOverlay() {
   if (frame) frame.src = frame.src;
 }
 
+// ---------- تستِ onboarding.html: اورلیِ تمام‌صفحه، دقیقاً به سبکِ دوز/رستوران ----------
+// هر بار که باز می‌شه، آی‌فریم رو از نو می‌سازه (نه فقط اولین‌بار) چون onboarding.html خودش
+// یه فلوی چندمرحله‌ایه و بهتره هر تستِ جدید از مرحله‌ی اول شروع بشه.
+function openOnboardingTestOverlay() {
+  if (!isSuperAdmin) return;
+  document.getElementById("onboardingTestOverlay").classList.remove("hidden");
+  const wrap = document.getElementById("onboardingTestOverlayFrameWrap");
+  wrap.innerHTML = "";
+  const frame = document.createElement("iframe");
+  frame.src = "onboarding.html";
+  frame.setAttribute("title", "تستِ onboarding");
+  wrap.appendChild(frame);
+}
+
+function closeOnboardingTestOverlay() {
+  document.getElementById("onboardingTestOverlay")?.classList.add("hidden");
+}
+
+function refreshOnboardingTestOverlay() {
+  const wrap = document.getElementById("onboardingTestOverlayFrameWrap");
+  const frame = wrap.querySelector("iframe");
+  if (frame) frame.src = frame.src;
+}
+
 function mahzarBack() {
   if (mahzarView === "home") {
     closeMahzarOverlay();
@@ -18601,6 +18639,10 @@ function renderSettingsDevTest() {
       <button class="settings-item" onclick="testLiveNotifPopup()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
         تست پاپ‌آپ اعلان زنده
+      </button>
+      <button class="settings-item" onclick="openOnboardingTestOverlay()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>
+        تست onboarding
       </button>
     </div>`;
 }
