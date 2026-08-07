@@ -33,11 +33,35 @@
 <textarea id="result" class="hidden" readonly placeholder="لیستِ نهایی این‌جا نمایش داده می‌شه..."></textarea>
 
 <script>
-const WORKER_DIRECT_URL = "https://api-7x2.pages.dev";
-// این ابزار همیشه مستقیم به آدرسِ کاملِ بک‌اند وصل می‌شه (نه مسیرِ نسبی)، چون ممکنه از دامنه‌ای
-// باز بشه که پروکسیِ Pages Function روش فعال نیست (مثلاً dehaat.aghey.faggott.fun که یه پروژه‌ی
-// جداست). این دامنه از قبل تو ALLOWED_ORIGINS ورکر هست، پس از نظرِ CORS مشکلی نداره.
-const WORKER_URL = WORKER_DIRECT_URL;
+// این ابزار همیشه از مسیرِ نسبی (هم‌مبدأ، از پشتِ پروکسیِ dehaat.aghey.faggott.fun) استفاده می‌کنه.
+// هرگز نباید مستقیم به آدرسِ pages.dev ورکرِ اصلی وصل بشه، چون طبقِ طراحیِ خودِ پروکسی، اون آدرس
+// فقط برای فراخوانیِ سرور-به-سرور (که فیلترینگِ ایران روش اثر نداره) درنظر گرفته شده؛ اگه مستقیم
+// از مرورگرِ کاربر صداش بزنیم، ممکنه از پشتِ فیلترینگ بلاک بشه.
+async function callResetEndpoint(body) {
+  try {
+    const res = await fetch("/api/admin/reset-all-passwords", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer " + token,
+      },
+      body: JSON.stringify(body),
+    });
+    const text = await res.text();
+    let data;
+    try {
+      data = JSON.parse(text);
+    } catch (parseErr) {
+      throw new Error(
+        "پاسخِ JSON نبود (احتمالاً بک‌اندِ اصلی هنوز نسخه‌ی جدید رو نداره، یا MAIN_WORKER_URL درست تنظیم نشده). چندتا حرفِ اولِ پاسخ: " +
+        text.slice(0, 80)
+      );
+    }
+    return { status: res.status, data };
+  } catch (networkErr) {
+    throw networkErr;
+  }
+}
 
 const token = localStorage.getItem("token");
 const username = localStorage.getItem("username");
@@ -57,22 +81,16 @@ if (!token) {
 step1El.addEventListener("click", async () => {
   statusEl.textContent = "در حالِ ارسالِ درخواستِ آزمایشی (بدونِ confirm، پس چیزی تغییر نمی‌کنه)...";
   try {
-    const res = await fetch(WORKER_URL + "/api/admin/reset-all-passwords", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": "Bearer " + token,
-      },
-      body: JSON.stringify({}), // بدونِ confirm صحیح؛ باید خطای ۴۰۰ برگردونه، یعنی مسیر و توکن درسته
-    });
-    const data = await res.json();
-    if (res.status === 400 && data.error) {
+    const { status, data } = await callResetEndpoint({});
+    if (status === 400 && data.error) {
       statusEl.textContent = "اتصال و توکن درسته (پیامِ سرور: «" + data.error + "»). حالا می‌تونی مرحله‌ی ۲ رو بزنی.";
       step2El.classList.remove("hidden");
-    } else if (res.status === 403) {
+    } else if (status === 403) {
       statusEl.textContent = "دسترسی رد شد: این اکانت Aghey نیست یا توکن معتبر نیست.";
+    } else if (status === 404) {
+      statusEl.textContent = "مسیر پیدا نشد (۴۰۴): یعنی بک‌اندِ اصلی (پشتِ MAIN_WORKER_URL) هنوز نسخه‌ی جدید با اندپوینتِ reset-all-passwords رو نداره. اول اونو دیپلوی کن.";
     } else {
-      statusEl.textContent = "پاسخِ غیرمنتظره (status " + res.status + "): " + JSON.stringify(data);
+      statusEl.textContent = "پاسخِ غیرمنتظره (status " + status + "): " + JSON.stringify(data);
     }
   } catch (err) {
     statusEl.textContent = "خطا در اتصال: " + err.message;
@@ -84,15 +102,7 @@ step2El.addEventListener("click", async () => {
   statusEl.textContent = "در حالِ اجرا... (ممکنه چند ثانیه طول بکشه)";
   step2El.disabled = true;
   try {
-    const res = await fetch(WORKER_URL + "/api/admin/reset-all-passwords", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": "Bearer " + token,
-      },
-      body: JSON.stringify({ confirm: "RESET_ALL_PASSWORDS" }),
-    });
-    const data = await res.json();
+    const { data } = await callResetEndpoint({ confirm: "RESET_ALL_PASSWORDS" });
     if (data.ok) {
       statusEl.textContent = "انجام شد. تعدادِ کاربرهای تغییریافته: " + data.count;
       resultEl.classList.remove("hidden");
