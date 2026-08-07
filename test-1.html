@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>تستِ خمیدگیِ واقعیِ صفحه — دهات</title>
+<style>
+  :root {
+    --bg:#14071a; --card:#2a0f14; --surface:#3a1218; --card-gradient:linear-gradient(160deg,#35141a,#24090f);
+    --border:#5a2530; --text:#f2e6e8; --subtext:#b98a92; --accent:#e0475a;
+  }
+  * { box-sizing: border-box; }
+  body {
+    background: radial-gradient(circle at 20% 10%, #1a2260, transparent 40%),
+                radial-gradient(circle at 85% 30%, #5a1420, transparent 40%), #0d0616;
+    margin: 0; padding: 16px; font-family: Tahoma, "Vazirmatn", sans-serif; color: var(--text);
+    min-height: 100vh;
+  }
+  h1 { font-size: 16px; text-align: center; margin: 4px 0 2px; }
+  .note {
+    max-width: 640px; margin: 0 auto 14px; background: rgba(255,255,255,0.06);
+    border: 1px solid var(--border); border-radius: 10px; padding: 10px 14px;
+    font-size: 13px; line-height: 1.9; color: var(--subtext);
+  }
+  .note b { color: var(--text); }
+  .controls {
+    max-width: 640px; margin: 0 auto 18px; display: flex; align-items: center;
+    justify-content: center; gap: 14px; flex-wrap: wrap; font-size: 13px;
+  }
+  .controls label { display: flex; align-items: center; gap: 6px; cursor: pointer; user-select: none; }
+  .controls button {
+    background: var(--surface); color: var(--text); border: 1px solid var(--border);
+    border-radius: 8px; padding: 7px 14px; font-family: inherit; font-size: 13px; cursor: pointer;
+  }
+  .controls button:active { transform: scale(0.96); }
+  #bookHolder {
+    width: 100%; max-width: 720px; margin: 0 auto; position: relative;
+    display: flex; justify-content: center;
+  }
+  #mirrorWrap { transform: scaleX(1); transition: none; }
+  #mirrorWrap.mirrored { transform: scaleX(-1); }
+  .demo-page {
+    background: var(--card-gradient); color: var(--text); overflow: hidden;
+    display: flex; flex-direction: column; padding: 16px 14px;
+  }
+  .demo-page-num {
+    font-size: 34px; font-weight: bold; color: var(--accent); text-align: center; margin-top: 10px;
+  }
+  .demo-page-label {
+    text-align: center; font-size: 13px; color: var(--subtext); margin-top: 4px;
+  }
+  .demo-entry {
+    margin-top: 16px; border-top: 1px dashed var(--border); padding-top: 12px;
+    font-size: 13px; line-height: 1.9;
+  }
+  .mirrored .demo-page-inner { transform: scaleX(-1); } /* برگردوندنِ خودِ محتوا، چون کلِ کتاب آینه شده */
+  .status {
+    max-width: 640px; margin: 14px auto 0; text-align: center; font-size: 12.5px; color: var(--subtext);
+  }
+  .status b { color: var(--accent); }
+</style>
+</head>
+<body>
+
+<h1>🧪 تستِ خمیدگیِ واقعیِ کاغذ (کتابخونه‌ی page-flip)</h1>
+<div class="note">
+  این یه پروتوتایپِ مجزا برای تستِ حسِ واقعیِ ورق‌خوردن (خمیدگیِ نرمِ کاغذ، نه چرخشِ صاف) قبل از اینکه
+  ببرمش تو دفترِ اصلی. <b>مهم:</b> این کتابخونه بومیِ راست‌به‌چپ نیست، برای همینم یه سوییچِ «حالتِ آینه‌ای»
+  گذاشتم. با هردو حالت تست کن و ببین کدومش درسته: <b>صفحه‌ی ۱ باید همون اول (وقتی کتاب تازه بازشده) سمتِ
+  راست باشه و ورق‌زدنِ روبه‌جلو باید از راست به چپ بره</b> (دقیقاً مثلِ خودِ عکس‌هایی که فرستادی). هرکدوم
+  از این دو حالت که این‌شکلی بود رو بهم بگو تا همونو تو دفترِ اصلی پیاده کنم.
+</div>
+<div class="controls">
+  <label><input type="checkbox" id="mirrorToggle"> حالتِ آینه‌ای</label>
+  <button id="prevBtn">◀ صفحه‌ی قبل</button>
+  <button id="nextBtn">صفحه‌ی بعد ▶</button>
+</div>
+
+<div id="bookHolder">
+  <div id="mirrorWrap">
+    <div id="book"></div>
+  </div>
+</div>
+
+<div class="status">صفحه‌ی فعلی: <b id="curPageLabel">—</b> — با کشیدنِ گوشه‌ی صفحه هم می‌تونی ورق بزنی</div>
+
+<script src="https://cdn.jsdelivr.net/npm/page-flip@2.0.7/dist/js/page-flip.browser.js"></script>
+<script>
+(function () {
+  const sampleTexts = [
+    "این متنِ نمونه‌ی صفحه‌ی یکه — همینو باز که می‌کنی باید همینو ببینی.",
+    "این صفحه‌ی دوئه؛ تو حالتِ درست باید بعدِ صفحه‌ی یک، سمتِ چپ باشه.",
+    "یه یادداشتِ کوتاه رویِ صفحه‌ی سه، برای تستِ کشیدن و ورق‌زدن.",
+    "صفحه‌ی چهار — اگه تا اینجا اومدی یعنی ورق‌زدن درست کار می‌کنه.",
+    "صفحه‌ی پنج، یه متنِ کمی بلندتر برای دیدنِ اینکه محتوا چطوری تو کادر جا می‌شه و اسکرول لازم داره یا نه.",
+    "صفحه‌ی شیش — آخرین صفحه‌ی این پروتوتایپِ نمونه.",
+  ];
+
+  function buildPages() {
+    document.querySelectorAll(".demo-page").forEach((el) => el.remove());
+    const book = document.getElementById("book");
+    const frag = document.createDocumentFragment();
+    sampleTexts.forEach((text, i) => {
+      const num = i + 1;
+      const page = document.createElement("div");
+      page.className = "demo-page";
+      page.innerHTML = `
+        <div class="demo-page-inner">
+          <div class="demo-page-num">${num.toLocaleString("fa-IR")}</div>
+          <div class="demo-page-label">صفحه‌ی ${num.toLocaleString("fa-IR")}</div>
+          <div class="demo-entry">${text}</div>
+        </div>`;
+      frag.appendChild(page);
+    });
+    book.innerHTML = "";
+    book.appendChild(frag);
+    return book.querySelectorAll(".demo-page");
+  }
+
+  let pageFlip = null;
+
+  function computeSize() {
+    const holderWidth = Math.min(720, window.innerWidth - 32);
+    const singleW = Math.max(260, Math.min(380, holderWidth / 2 - 10));
+    const h = Math.round(singleW * 1.35);
+    return { w: singleW, h };
+  }
+
+  function initBook() {
+    if (pageFlip) { pageFlip.destroy(); pageFlip = null; }
+    const pages = buildPages();
+    const { w, h } = computeSize();
+    pageFlip = new St.PageFlip(document.getElementById("book"), {
+      width: w,
+      height: h,
+      size: "stretch",
+      minWidth: 220,
+      maxWidth: 480,
+      minHeight: 300,
+      maxHeight: 640,
+      showCover: false,
+      maxShadowOpacity: 0.5,
+      flippingTime: 700,
+      usePortrait: false,
+      mobileScrollSupport: false,
+    });
+    pageFlip.loadFromHTML(pages);
+    pageFlip.on("flip", (e) => {
+      updateLabel();
+    });
+    updateLabel();
+  }
+
+  function updateLabel() {
+    if (!pageFlip) return;
+    const idx = pageFlip.getCurrentPageIndex();
+    document.getElementById("curPageLabel").textContent = (idx + 1).toLocaleString("fa-IR");
+  }
+
+  document.getElementById("mirrorToggle").addEventListener("change", (e) => {
+    document.getElementById("mirrorWrap").classList.toggle("mirrored", e.target.checked);
+  });
+  document.getElementById("nextBtn").addEventListener("click", () => pageFlip && pageFlip.flipNext());
+  document.getElementById("prevBtn").addEventListener("click", () => pageFlip && pageFlip.flipPrev());
+  window.addEventListener("resize", () => { initBook(); });
+
+  initBook();
+})();
+</script>
+</body>
+</html>
