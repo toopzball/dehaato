@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ریکاوری رمز Aghey</title>
+<style>
+  body {
+    font-family: Tahoma, sans-serif;
+    background: #14141a;
+    color: #eee;
+    padding: 24px;
+    max-width: 480px;
+    margin: 0 auto;
+  }
+  h1 { font-size: 18px; }
+  label { display: block; margin-top: 16px; margin-bottom: 6px; font-size: 14px; }
+  input {
+    width: 100%;
+    padding: 10px;
+    box-sizing: border-box;
+    border-radius: 8px;
+    border: 1px solid #444;
+    background: #1e1e26;
+    color: #fff;
+    font-size: 16px;
+  }
+  button {
+    margin-top: 20px;
+    width: 100%;
+    padding: 12px;
+    border-radius: 8px;
+    border: none;
+    background: #6c5ce7;
+    color: #fff;
+    font-size: 16px;
+    font-weight: bold;
+  }
+  button:disabled { opacity: 0.5; }
+  #result {
+    margin-top: 20px;
+    padding: 12px;
+    border-radius: 8px;
+    font-size: 14px;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+  .ok { background: #1b3d2f; color: #7ee8a7; }
+  .err { background: #3d1b1b; color: #ff8a8a; }
+</style>
+</head>
+<body>
+  <h1>ریکاوری اضطراری رمز Aghey</h1>
+  <p style="font-size:13px; color:#aaa;">این صفحه فقط یک‌بار مصرفه. بعد از موفقیت، حتماً کدِ مسیرِ ریکاوری رو از worker.js حذف کن.</p>
+
+  <label>آدرس ورکر</label>
+  <input id="workerUrl" value="https://VLC.alipviv8698.workers.dev" />
+
+  <label>INTERNAL_KEY</label>
+  <input id="internalKey" type="password" placeholder="مقدار INTERNAL_KEY" />
+
+  <label>رمز جدید (حداقل ۸ کاراکتر، حرف + عدد)</label>
+  <input id="newPassword" type="password" placeholder="رمز جدید" />
+
+  <button id="submitBtn" onclick="doReset()">تغییر رمز</button>
+
+  <div id="result"></div>
+
+<script>
+async function doReset() {
+  const btn = document.getElementById('submitBtn');
+  const resultEl = document.getElementById('result');
+  resultEl.className = '';
+  resultEl.textContent = '';
+
+  const workerUrl = document.getElementById('workerUrl').value.trim().replace(/\/$/, '');
+  const internalKey = document.getElementById('internalKey').value;
+  const newPassword = document.getElementById('newPassword').value;
+
+  if (!workerUrl || !internalKey || !newPassword) {
+    resultEl.className = 'err';
+    resultEl.textContent = 'همه‌ی فیلدها لازمه.';
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'در حال ارسال...';
+
+  try {
+    const res = await fetch(workerUrl + '/api/recovery/owner-password', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ internalKey, newPassword })
+    });
+    const data = await res.json().catch(() => ({}));
+
+    if (res.ok && data.ok) {
+      resultEl.className = 'ok';
+      resultEl.textContent = 'موفق شد! حالا با رمز جدید لاگین کن، و یادت نره کدِ مسیرِ ریکاوری رو از worker.js حذف و دوباره دیپلوی کنی.';
+    } else {
+      resultEl.className = 'err';
+      resultEl.textContent = 'خطا: ' + (data.error || res.status);
+    }
+  } catch (e) {
+    resultEl.className = 'err';
+    resultEl.textContent = 'خطای شبکه: ' + e.message;
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'تغییر رمز';
+  }
+}
+</script>
+</body>
+</html>
