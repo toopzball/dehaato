@@ -53,8 +53,8 @@
   <h1>ریکاوری اضطراری رمز Aghey</h1>
   <p style="font-size:13px; color:#aaa;">این صفحه فقط یک‌بار مصرفه. بعد از موفقیت، حتماً کدِ مسیرِ ریکاوری رو از worker.js حذف کن.</p>
 
-  <label>آدرس ورکر</label>
-  <input id="workerUrl" value="https://VLC.alipviv8698.workers.dev" />
+  <label>مسیر API (خالی بذار مگه اینکه بخوای مستقیم به ورکر بزنی)</label>
+  <input id="workerUrl" value="" placeholder="مثلاً خالی، یا https://VLC.alipviv8698.workers.dev" />
 
   <label>INTERNAL_KEY</label>
   <input id="internalKey" type="password" placeholder="مقدار INTERNAL_KEY" />
@@ -77,7 +77,7 @@ async function doReset() {
   const internalKey = document.getElementById('internalKey').value;
   const newPassword = document.getElementById('newPassword').value;
 
-  if (!workerUrl || !internalKey || !newPassword) {
+  if (!internalKey || !newPassword) {
     resultEl.className = 'err';
     resultEl.textContent = 'همه‌ی فیلدها لازمه.';
     return;
