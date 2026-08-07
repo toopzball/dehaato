@@ -34,9 +34,10 @@
 
 <script>
 const WORKER_DIRECT_URL = "https://api-7x2.pages.dev";
-const WORKER_PAGES_PROXY_URL = "";
-const IS_GITHUB_HOST = /(^|\.)github\.io$/.test(location.hostname) || location.hostname === "dehaat.bbboi.ir";
-const WORKER_URL = IS_GITHUB_HOST ? WORKER_DIRECT_URL : WORKER_PAGES_PROXY_URL;
+// این ابزار همیشه مستقیم به آدرسِ کاملِ بک‌اند وصل می‌شه (نه مسیرِ نسبی)، چون ممکنه از دامنه‌ای
+// باز بشه که پروکسیِ Pages Function روش فعال نیست (مثلاً dehaat.aghey.faggott.fun که یه پروژه‌ی
+// جداست). این دامنه از قبل تو ALLOWED_ORIGINS ورکر هست، پس از نظرِ CORS مشکلی نداره.
+const WORKER_URL = WORKER_DIRECT_URL;
 
 const token = localStorage.getItem("token");
 const username = localStorage.getItem("username");
