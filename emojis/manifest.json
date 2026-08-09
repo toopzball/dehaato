@@ -1,0 +1,87 @@
+{
+  "packs": [
+    {
+      "id": "kermit",
+      "label": "کرمیت",
+      "items": [
+        "1155-kermit-what.png",
+        "1309-delete-that-kermit.png",
+        "2097-kermitbrickt.png",
+        "2288-evilkermit.gif",
+        "2435-kermit-wtf.png",
+        "2720-no.png",
+        "3600_kermit_sips_tea.gif",
+        "3604-yasuo-tpose.png",
+        "3719-kermitpinged.png",
+        "3916-kermit-sip.png",
+        "4535_Kermit_Hi.png",
+        "4625-kermit-worried.png",
+        "4842-infinitekermit.gif",
+        "4896_kermitcoke.png",
+        "62043-kermit.gif",
+        "6313-kermit-happy.png",
+        "6435-kermitwot.png",
+        "6451-kermithmm.png",
+        "7100-justcuz.png",
+        "7535-kermit-sleep.png",
+        "7631_kermit_love.png",
+        "8424-kermit-gun.gif",
+        "86475-kermit-window.gif",
+        "8951-kermit.png",
+        "9002-kermit-yeehaw.png",
+        "9435-distraughtkermit.png",
+        "KermitWut.png"
+      ]
+    },
+    {
+      "id": "meme-collab",
+      "label": "میم‌های جمعی",
+      "items": [
+        "225823-feelsgood.png",
+        "312785-doakes.png",
+        "340365-chud.png",
+        "438340-meinchambles.gif",
+        "486326-speed-happyplace.png",
+        "528057-bugsbunnyyesgif.gif",
+        "529330-ai-baby.gif",
+        "560081-distress.png",
+        "572887-im-done.png",
+        "672068-evilplanning.png",
+        "720199-same-think.gif",
+        "731212-dog-laughing-at-you.png",
+        "796253-allroadsleadtorome.gif",
+        "913111-sukuna-googoogaga.png",
+        "9297-rahhh.gif"
+      ]
+    },
+    {
+      "id": "ok-ig",
+      "label": "بلو لاک",
+      "items": [
+        "121079-hiori.png",
+        "129403-flowersforyou.png",
+        "139941-rin.png",
+        "196324-tetodrill.png",
+        "207687-otoya.png",
+        "226002-chigiri.png",
+        "226280-catnoted.png",
+        "233828-stinky.png",
+        "25784-otayaeita.png",
+        "376063-ness.png",
+        "384079-reo.png",
+        "398962-isagi.png",
+        "44921-sweetchocolatecake.png",
+        "59263-pleadingcrying.png",
+        "638942-nagi.png",
+        "639179-ragebait.png",
+        "714803-drinkwater.gif",
+        "736199-ring.png",
+        "794021-shidou.png",
+        "866921-waga.gif",
+        "887343-67.png",
+        "941170-sae.png",
+        "985315-tetojudge.png"
+      ]
+    }
+  ]
+}
