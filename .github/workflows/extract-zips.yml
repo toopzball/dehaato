@@ -1,0 +1,64 @@
+name: Extract & remove uploaded zip packs
+
+# با هر پوشی که فایلِ .zip توش تغییر کرده (اضافه/آپدیت) اجرا می‌شه، اون زیپ رو کنارِ خودش
+# اکسترکت می‌کنه (مثلاً emojis-for-repo.zip -> پوشه‌ی emojis/ ساخته می‌شه)، بعد خودِ زیپ رو پاک
+# می‌کنه و نتیجه رو با یه کامیتِ جدید پوش می‌کنه.
+on:
+  push:
+    branches: [main]
+    paths:
+      - "**/*.zip"
+
+permissions:
+  contents: write
+
+jobs:
+  extract:
+    runs-on: ubuntu-latest
+    # کامیت‌های خودِ همین Action همیشه [skip-extract] دارن، تا لوپ نیفته
+    if: "!contains(github.event.head_commit.message, '[skip-extract]')"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Find zip files changed in this push
+        id: find_zips
+        run: |
+          ZIPS=$(git diff --name-only --diff-filter=ACM "${{ github.event.before }}" "${{ github.sha }}" -- '*.zip' 2>/dev/null || true)
+          # پوشِ اولِ برنچ (before همه صفره) یا هر خطای دیگه: به‌جاش هر زیپِ باقی‌مونده تویِ ریپو رو در نظر بگیر
+          if [ -z "$ZIPS" ]; then
+            ZIPS=$(git ls-files '*.zip')
+          fi
+          echo "زیپ‌های پیدا شده:"
+          echo "$ZIPS"
+          {
+            echo 'zips<<EOF'
+            echo "$ZIPS"
+            echo 'EOF'
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Extract each zip next to itself, then delete it
+        if: steps.find_zips.outputs.zips != ''
+        run: |
+          echo "${{ steps.find_zips.outputs.zips }}" | while IFS= read -r zip; do
+            [ -z "$zip" ] && continue
+            [ -f "$zip" ] || continue
+            dest_dir=$(dirname "$zip")
+            echo "در حال اکسترکتِ $zip داخلِ $dest_dir ..."
+            unzip -o -q "$zip" -d "$dest_dir"
+            rm -f "$zip"
+          done
+
+      - name: Commit extracted files
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "چیزی برای کامیت نیست"
+          else
+            git commit -m "chore: auto-extract uploaded zip pack(s) [skip-extract]"
+            git push
+          fi
