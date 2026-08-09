@@ -281,7 +281,7 @@
       <div class="me-chip" id="meChip"></div>
     </div>
     <div class="card">
-      <div class="setup-title">مهره‌ات رو نقاشی کن 🎨</div>
+      <div class="setup-title" id="setupTitle">مهره‌ات رو نقاشی کن 🎨</div>
       <div class="setup-sub">هر چی می‌خوای بکش؛ همینه که تو جدولِ بازی جای مهره‌ت می‌شینه. بعداً هم می‌تونی عوضش کنی.</div>
 
       <div class="piece-canvas-wrap" id="pieceCanvasWrap">
@@ -508,6 +508,13 @@ async function api(path, opts) {
 
 let ME = { username: null, avatarFileId: null };
 
+// ---------- پارامترهای ورودی از ایندکس: کدِ روم/نقش (دعوت یا ورودِ مستقیم به روم)، یا edit=1
+// (دکمه‌ی «ویرایشِ مهره») برای بازکردنِ مستقیمِ استودیوی نقاشی ----------
+const urlParams = new URLSearchParams(location.search);
+const inviteCode = (urlParams.get("code") || "").trim().toUpperCase() || null;
+const inviteRole = urlParams.get("role") === "guest" ? "guest" : "host";
+const forceEditPiece = urlParams.get("edit") === "1";
+
 async function boot() {
   // ۱. باید داخلِ آی‌فریمِ هم‌مبدأ باز شده باشه (نه مستقیم، نه تو دامنه‌ی دیگه)
   let inFrame = false, sameOrigin = false;
@@ -539,11 +546,39 @@ async function boot() {
     return;
   }
 
+  // ۲. مهره‌ی از قبل‌ساخته‌شده رو (اگه باشه) از سرور می‌گیریم؛ کاربر فقط بارِ اولش نقاشی می‌کنه
+  let savedPiece = null;
+  try {
+    const res = await api("/api/dooz/piece");
+    savedPiece = (res && res.piece) || null;
+  } catch (e) {
+    savedPiece = null;
+  }
+
   renderMeChips();
-  initPieceStudio();
+  initPieceStudio(savedPiece);
   initLobby();
   initGameHandlers();
-  showScreen("screenSetup");
+
+  if (savedPiece && !forceEditPiece) {
+    // مهره از قبل آماده‌ست و کاربر خواستِ ویرایش نداشته؛ دیگه لازم نیست دوباره نقاشی کنه
+    piece.dataUrl = savedPiece;
+    proceedAfterPiece();
+  } else {
+    // یا اصلاً مهره‌ای نداره (بارِ اول)، یا از دکمه‌ی «ویرایشِ مهره» اومده؛ استودیو رو نشون بده
+    $("#setupTitle").textContent = savedPiece ? "مهره‌ات رو ویرایش کن ✏️" : "مهره‌ات رو نقاشی کن 🎨";
+    showScreen("screenSetup");
+  }
+}
+
+// بعدِ آماده‌شدنِ مهره (چه از سرور، چه تازه نقاشی‌شده): اگه از طریقِ دعوت/کد یا ورودِ مستقیم به
+// یه روم اومده بودیم مستقیم بهش وصل می‌شیم (بدونِ رد شدن از لابی)، وگرنه لابیِ عادی رو نشون بده
+function proceedAfterPiece() {
+  if (inviteCode) {
+    connectRoom(inviteCode, inviteRole === "host");
+  } else {
+    goToLobby();
+  }
 }
 
 function renderMeChips() {
@@ -562,7 +597,7 @@ function renderMeChips() {
    ============================================================ */
 let piece = { dataUrl: null };
 
-function initPieceStudio() {
+function initPieceStudio(existingPieceUrl) {
   const canvas = $("#pieceCanvas");
   const ctx = canvas.getContext("2d");
   const guide = $("#pieceGuide");
@@ -703,14 +738,29 @@ function initPieceStudio() {
 
   updateUndoRedoState();
 
-  $("#btnSavePiece").addEventListener("click", () => {
-    piece.dataUrl = exportPieceImage(canvas);
-    goToLobby();
-  });
-  $("#btnSkipDefault").addEventListener("click", () => {
-    piece.dataUrl = defaultPieceDataUrl();
-    goToLobby();
-  });
+  // اگه از قبل مهره‌ای داشته (مثلاً از دکمه‌ی «ویرایشِ مهره» اومده)، همونو رو بومِ نقاشی می‌کشیم
+  // تا از صفر شروع نکنه؛ فقط ویرایشش کنه
+  if (existingPieceUrl) {
+    const img = new Image();
+    img.onload = () => { ctx.clearRect(0, 0, canvas.width, canvas.height); ctx.drawImage(img, 0, 0, canvas.width, canvas.height); checkHasContent(); };
+    img.src = existingPieceUrl;
+  }
+
+  async function saveAndProceed(dataUrl) {
+    piece.dataUrl = dataUrl;
+    const btn = $("#btnSavePiece"), ghostBtn = $("#btnSkipDefault");
+    btn.disabled = true; ghostBtn.disabled = true;
+    try {
+      await api("/api/dooz/piece", { method: "POST", body: JSON.stringify({ data: dataUrl }) });
+    } catch (e) {
+      showToast(e.message || "ذخیره‌ی مهره نشد؛ دوباره امتحان کن");
+    }
+    btn.disabled = false; ghostBtn.disabled = false;
+    proceedAfterPiece();
+  }
+
+  $("#btnSavePiece").addEventListener("click", () => saveAndProceed(exportPieceImage(canvas)));
+  $("#btnSkipDefault").addEventListener("click", () => saveAndProceed(defaultPieceDataUrl()));
 }
 
 // خروجیِ نهاییِ مهره رو کوچیک می‌کنیم (۹۶×۹۶) تا حجمِ پیامِ وب‌ساکت معقول بمونه
