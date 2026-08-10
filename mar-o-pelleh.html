@@ -121,7 +121,7 @@
   .player-chip { display: flex; align-items: center; gap: 8px; padding: 7px 10px 7px 7px; border-radius: 999px; background: var(--card); border: 1px solid var(--border); max-width: 46%; transition: border-color .3s ease, box-shadow .3s ease; }
   .player-chip.turn { border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 30%, transparent); animation: chipTurnPop .35s ease; }
   @keyframes chipTurnPop { 0%{ transform: scale(1); } 40%{ transform: scale(1.06); } 100%{ transform: scale(1); } }
-  .player-chip img, .player-chip .avatar-fallback { width: 28px; height: 28px; flex-shrink: 0; }
+  .player-chip img, .player-chip .avatar-fallback { width: 28px; height: 28px; flex-shrink: 0; border-radius: 50%; object-fit: cover; }
   .player-chip .pc-info { min-width: 0; }
   .player-chip .pc-name { font-size: 11.5px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 84px; }
   .player-chip .pc-status { font-size: 9.5px; color: var(--subtext); }
@@ -132,12 +132,15 @@
   .leave-fab svg { width: 16px; height: 16px; }
 
   .board-wrap { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 0; gap: 12px; }
-  .board { width: min(92vw, 400px); height: min(92vw, 400px); display: grid; grid-template-columns: repeat(10,1fr); grid-template-rows: repeat(10,1fr); gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; position: relative; }
+  .board { width: min(98vw, 480px); height: min(98vw, 480px); display: grid; grid-template-columns: repeat(10,1fr); grid-template-rows: repeat(10,1fr); gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; position: relative; }
   .sq { background: var(--card); position: relative; display: flex; align-items: flex-start; justify-content: flex-end; }
   .sq:nth-child(odd) { background: color-mix(in srgb, var(--card) 88%, var(--surface)); }
   .sq-num { font-size: 6.5px; color: var(--subtext); padding: 1px 2px; opacity: .75; }
+  .me-badge { text-align: center; font-size: 11px; font-weight: 700; color: #B45309; background: color-mix(in srgb, #F59E0B 18%, var(--card)); border: 1px solid #F59E0B; border-radius: 999px; padding: 3px 10px; margin: 4px auto 0; width: fit-content; animation: mePulse 1.6s ease-in-out infinite; }
+  .me-badge.hidden { display: none; }
+  @keyframes mePulse { 0%,100%{ opacity: .85; } 50%{ opacity: 1; } }
   .sq-tag { position: absolute; bottom: 1px; left: 1px; font-size: 8px; line-height: 1; }
-  .sq-tag.tag-misfortune { animation: tagPulse 1.8s ease-in-out infinite; }
+  .sq-tag.tag-misfortune { position: absolute; bottom: 1px; left: 1px; right: 1px; text-align: center; font-size: 6.5px; font-weight: 800; color: var(--error); letter-spacing: -.3px; animation: tagPulse 1.8s ease-in-out infinite; }
   @keyframes tagPulse { 0%,100%{ opacity: .75; transform: scale(1); } 50%{ opacity: 1; transform: scale(1.35); } }
   .sq.start { background: color-mix(in srgb, var(--success) 22%, var(--card)); }
   .sq.finish { background: color-mix(in srgb, var(--accent) 30%, var(--card)); }
@@ -163,6 +166,10 @@
   @keyframes snakeSlither { to { stroke-dashoffset: -18; } }
   .snake-head { fill: url(#snakeGrad); }
   .snake-eye { fill: #fff; }
+  .snake-body-me { stroke: url(#snakeGradMe); stroke-width: 3; fill: none; stroke-linecap: round; stroke-dasharray: 4 3; animation: meDash 1s linear infinite; }
+  .snake-body-glow-me { stroke: #F59E0B; stroke-width: 5.5; fill: none; stroke-linecap: round; opacity: .3; stroke-dasharray: 2 7; animation: snakeSlither 1.4s linear infinite; }
+  @keyframes meDash { to { stroke-dashoffset: -14; } }
+  .snake-head-me { fill: url(#snakeGradMe); }
 
   .dice-row { display: flex; align-items: center; justify-content: center; gap: 14px; flex-shrink: 0; }
   .dice-face { width: 52px; height: 52px; border-radius: 14px; background: var(--card); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: 800; }
@@ -184,20 +191,26 @@
   .modal-actions { display: flex; gap: 10px; }
 
   /* ---------- گردونه‌ی فلاکت ---------- */
-  .wheel-emoji { font-size: 54px; display: block; margin-bottom: 10px; animation: wheelSpin 1s ease-out; }
-  @keyframes wheelSpin { from { transform: rotate(0deg); } to { transform: rotate(900deg); } }
+  .wheel-emoji { font-size: 54px; display: block; margin-bottom: 10px; }
+  .wheel-emoji.spin-anim { animation: wheelSpin 2.2s cubic-bezier(.2,.85,.3,1); }
+  @keyframes wheelSpin { from { transform: rotate(0deg); } to { transform: rotate(1440deg); } }
   .wheel-options { display: flex; flex-direction: column; gap: 6px; margin: 12px 0; }
-  .wheel-opt { padding: 9px; border-radius: 10px; background: var(--surface); border: 1px solid var(--border); font-size: 12.5px; }
+  .wheel-opt { padding: 9px; border-radius: 10px; background: var(--surface); border: 1px solid var(--border); font-size: 12.5px; transition: background .12s ease, color .12s ease, border-color .12s ease; }
   .wheel-opt.picked { background: var(--accent-gradient); color: #fff; font-weight: 800; border-color: transparent; }
 
   /* ---------- مینی‌گیم: سیم‌شوک ---------- */
-  .buzz-wrap { width: 100%; height: 280px; margin: 6px 0 14px; touch-action: none; position: relative; background: var(--surface); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
+  .buzz-wrap { width: 100%; height: 130px; margin: 6px 0 10px; touch-action: none; position: relative; background: var(--surface); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
   .buzz-wrap.buzz { animation: buzzFlash .15s ease; }
   @keyframes buzzFlash { 0%,100%{ background: var(--surface);} 50%{ background: color-mix(in srgb, var(--error) 40%, var(--surface)); } }
-  .buzz-ring { position: absolute; width: 22px; height: 22px; border-radius: 50%; border: 3px solid var(--accent-hover); background: transparent; transform: translate(-50%,-50%); }
+  .buzz-ring { position: absolute; width: 20px; height: 20px; border-radius: 50%; border: 3px solid var(--accent-hover); background: transparent; transform: translate(-50%,-50%); transition: left .05s linear, top .05s linear; }
+  .buzz-pad { position: relative; width: 100%; height: 90px; margin: 0 0 14px; touch-action: none; background: var(--card); border: 1.5px dashed var(--border); border-radius: 14px; display: flex; align-items: center; justify-content: center; }
+  .buzz-pad-hint { font-size: 11.5px; color: var(--subtext); pointer-events: none; transition: opacity .2s; }
+  .buzz-pad-hint.hidden { opacity: 0; }
+  .buzz-pad-handle { position: absolute; width: 26px; height: 26px; border-radius: 50%; background: var(--accent-gradient); box-shadow: 0 4px 12px -4px var(--accent); transform: translate(-50%,-50%); left: 50%; top: 50%; opacity: 0; transition: opacity .15s; pointer-events: none; }
+  .buzz-pad-handle.active { opacity: 1; }
 
   /* ---------- مینی‌گیم: پازلِ عاقی ---------- */
-  .jigsaw-grid { display: grid; grid-template-columns: repeat(3,1fr); grid-template-rows: repeat(3,1fr); gap: 3px; width: 220px; height: 220px; margin: 6px auto 12px; }
+  .jigsaw-grid { display: grid; grid-template-columns: repeat(3,1fr); grid-template-rows: repeat(3,1fr); gap: 3px; width: 220px; height: 220px; margin: 6px auto 12px; direction: ltr; }
   .jigsaw-tile { border-radius: 6px; cursor: pointer; border: 2px solid transparent; background-size: 300% 300%; position: relative; }
   .jigsaw-tile-num { position: absolute; top: 2px; left: 2px; min-width: 15px; height: 15px; padding: 0 2px; background: rgba(0,0,0,0.6); color: #fff; font-size: 10px; line-height: 15px; text-align: center; border-radius: 4px; pointer-events: none; }
   .jigsaw-tile.selected { border-color: var(--accent); }
@@ -296,10 +309,11 @@
     </div>
     <div class="board-wrap">
       <div class="board" id="board"><div class="token-layer" id="tokenLayer"></div></div>
+      <div class="me-badge hidden" id="middleEastBadge"></div>
       <div class="turn-hint" id="turnHint">—</div>
       <div class="dice-row">
         <div class="dice-face" id="diceFace">🎲</div>
-        <button class="btn-roll" id="btnRoll">تاس بزن</button>
+        <button class="btn-roll" id="btnRoll"><span id="btnRollLabel">تاس بزن</span></button>
       </div>
     </div>
   </div>
@@ -325,7 +339,7 @@
     <span class="wheel-emoji" id="wheelEmoji">🎡</span>
     <h3>رسیدی به یه خونه‌ی فلاکت!</h3>
     <div class="wheel-options" id="wheelOptions"></div>
-    <button class="btn-primary" id="btnWheelGo" style="width:100%;">بریم</button>
+    <button class="btn-primary" id="btnWheelGo" style="width:100%;" disabled>بریم</button>
   </div>
 </div>
 
@@ -333,10 +347,14 @@
 <div class="modal-backdrop" id="modalShock">
   <div class="modal-box">
     <h3>سیم‌شوک ⚡</h3>
-    <p>حلقه رو بدونِ اینکه به سیم بخوره، از بالا تا پایین ببر</p>
+    <p>با کادرِ پایین، حلقه رو بدونِ اینکه به سیم بخوره از چپ تا راست ببر</p>
     <div class="buzz-wrap" id="buzzWrap">
-      <svg id="buzzSvg" viewBox="0 0 260 280" style="width:100%; height:100%; position:absolute; inset:0;"></svg>
+      <svg id="buzzSvg" viewBox="0 0 300 130" preserveAspectRatio="none" style="width:100%; height:100%; position:absolute; inset:0;"></svg>
       <div class="buzz-ring" id="buzzRing"></div>
+    </div>
+    <div class="buzz-pad" id="buzzPad">
+      <div class="buzz-pad-hint" id="buzzPadHint">اینجا رو لمس کن و بکش</div>
+      <div class="buzz-pad-handle" id="buzzPadHandle"></div>
     </div>
     <button class="btn-ghost" id="btnShockGiveUp" style="width:100%;">بی‌خیالش، نوبتمو از دست می‌دم</button>
   </div>
@@ -418,6 +436,14 @@ function avatarNode(fileId, username) {
     const img = document.createElement("img");
     img.src = mediaUrl(fileId);
     img.alt = "";
+    img.onerror = () => {
+      // اگه آواتار به هر دلیلی لود نشد (لینکِ منقضی، فایلِ حذف‌شده و...)، بجایِ آیکونِ شکسته
+      // همون فالبکِ حرفِ اول رو بذار، تا حداقل چیزی خالی/خراب دیده نشه
+      const fb = document.createElement("div");
+      fb.className = "avatar-fallback";
+      fb.textContent = ((username || "?")[0] || "?").toUpperCase();
+      img.replaceWith(fb);
+    };
     return img;
   }
   const fb = document.createElement("div");
@@ -437,6 +463,26 @@ async function api(path, opts) {
 }
 
 let ME = { username: null, avatarFileId: null };
+
+// نکته: قبلاً آواتارِ خودِ کاربر از localStorage.getItem("avatarFileId") خونده می‌شد، ولی خودِ
+// سایتِ اصلی هیچ‌وقت همچین کلیدی رو ذخیره نمی‌کنه (چک شد)، پس همیشه null بود و چیپِ آواتار
+// همیشه فالبکِ حرفِ اول رو نشون می‌داد. حالا مستقیم از اندپوینتِ عمومیِ خودِ سایت می‌گیریمش.
+async function loadMyAvatar() {
+  if (!ME.username) return;
+  try {
+    const res = await fetch(`${API_BASE}/api/profile?username=${encodeURIComponent(ME.username)}`, {
+      headers: { "Authorization": "Bearer " + (getToken() || "") },
+    });
+    const data = await res.json().catch(() => null);
+    if (res.ok && data && data.profile) {
+      ME.avatarFileId = data.profile.avatar_file_id || data.profile.avatarFileId || null;
+      try { localStorage.setItem("avatarFileId", ME.avatarFileId || ""); } catch (e) {}
+    }
+  } catch (e) {
+    // اگه گرفتنِ آواتار شکست خورد، همون فالبکِ حرفی نشون داده می‌شه؛ چیزِ دیگه‌ای خراب نمی‌شه
+  }
+  renderMeChip();
+}
 
 async function boot() {
   let inFrame = false, sameOrigin = false;
@@ -459,13 +505,12 @@ async function boot() {
   try {
     // توکن رو با یه فراخوانیِ سبک به وُرکرِ بازی تایید می‌کنیم (خودِ create/rooms هم توکن رو verify
     // می‌کنن؛ اینجا فقط برای نمایشِ نامِ کاربر تو چیپ لازمه)
-    const res = await api("/api/marpelleh/rooms");
-    // (نامِ کاربر رو مستقیم از localStorage می‌خونیم چون وُرکرِ بازی برای «me» اندپوینتِ جدا نداره)
-    ME.username = (function () { try { return localStorage.getItem("username"); } catch (e) { return null; } })();
-    ME.avatarFileId = (function () { try { return localStorage.getItem("avatarFileId"); } catch (e) { return null; } })();
+    await api("/api/marpelleh/rooms");
   } catch (e) {
     // حتی اگه گرفتنِ لیستِ روم‌ها شکست بخوره، بذار کاربر وارد لابی بشه؛ خطاهای بعدی جدا گزارش می‌شن
   }
+  ME.username = (function () { try { return localStorage.getItem("username"); } catch (e) { return null; } })();
+  await loadMyAvatar();
   renderMeChip();
   initLobby();
   initGameHandlers();
@@ -664,10 +709,13 @@ function onWheelResult(msg) {
   const key = msg.username + ":" + Date.now();
   if (msg.username === ME.username) {
     if (msg.type === "gozar") { showInfo("گذار کردی، راحت رد شدی 🎉"); return; }
+    if (msg.type === "middle_east") { showInfo("افتادی تو خاورمیانه 🌍 دو نوبت مواظبِ مارهای اضافه باش!"); return; }
     openWheelModal(msg.type);
   } else {
-    const labels = { shock_wire: "سیم‌شوک", aghi_puzzle: "پازلِ عاقی", hamster_combat: "همستر کامبت", gozar: "گذار" };
-    showInfo(msg.type === "gozar" ? "حریف گذار کرد و رد شد" : `حریف گیر افتاد تو فلاکت (${labels[msg.type] || msg.type})`);
+    const labels = { shock_wire: "سیم‌شوک", aghi_puzzle: "پازلِ عاقی", hamster_combat: "همستر کامبت", gozar: "گذار", middle_east: "خاورمیانه" };
+    if (msg.type === "gozar") { showInfo("حریف گذار کرد و رد شد"); return; }
+    if (msg.type === "middle_east") { showInfo("حریف افتاد تو خاورمیانه 🌍 (این مارهای اضافه فقط خودشو می‌گیره)"); return; }
+    showInfo(`حریف گیر افتاد تو فلاکت (${labels[msg.type] || msg.type})`);
   }
 }
 
@@ -708,7 +756,7 @@ function buildBoardCells(boardInfo) {
     let tag = "", tagClass = "";
     if (boardInfo.snakes[square]) tag = "🐍";
     else if (boardInfo.ladders[square]) tag = "🪜";
-    else if (boardInfo.misfortune.includes(square)) { tag = "⚡"; tagClass = " tag-misfortune"; }
+    else if (boardInfo.misfortune.includes(square)) { tag = "فلاکت"; tagClass = " tag-misfortune"; }
     if (tag) { const t = document.createElement("span"); t.className = "sq-tag" + tagClass; t.textContent = tag; sq.appendChild(t); }
     boardEl.insertBefore(sq, tokenLayer);
   }
@@ -740,11 +788,18 @@ function buildBoardLinesOverlay(boardInfo, boardEl, tokenLayer) {
     '</linearGradient>' +
     '<linearGradient id="snakeGrad" x1="0" y1="0" x2="1" y2="1">' +
       '<stop offset="0" stop-color="#EF4444"/><stop offset="1" stop-color="#F97316"/>' +
+    '</linearGradient>' +
+    '<linearGradient id="snakeGradMe" x1="0" y1="0" x2="1" y2="1">' +
+      '<stop offset="0" stop-color="#B45309"/><stop offset="1" stop-color="#F59E0B"/>' +
     '</linearGradient>';
   svg.appendChild(defs);
 
   Object.entries(boardInfo.ladders).forEach(([from, to]) => drawLadder(svg, +from, +to));
   Object.entries(boardInfo.snakes).forEach(([from, to]) => drawSnake(svg, +from, +to));
+
+  const meLayer = document.createElementNS(SVG_NS, "g");
+  meLayer.id = "middleEastLayer";
+  svg.appendChild(meLayer);
 
   boardEl.insertBefore(svg, tokenLayer);
 }
@@ -783,8 +838,10 @@ function drawLadder(svg, fromSquare, toSquare) {
   svg.appendChild(glow);
   svg.appendChild(g);
 }
-function drawSnake(svg, fromSquare, toSquare) {
+function drawSnake(container, fromSquare, toSquare, variant) {
   // fromSquare = خونه‌یِ سر (بالاتر)، toSquare = خونه‌یِ دُم (پایین‌تر)
+  // variant: "" برایِ مارهای ثابتِ نقشه، "me" برایِ مارهای موقتِ «خاورمیانه» (رنگ/آیکونِ جدا)
+  const suf = variant ? "-" + variant : "";
   const a = squareAnchorPct(fromSquare), b = squareAnchorPct(toSquare);
   const dx = b.left - a.left, dy = b.top - a.top;
   const len = Math.hypot(dx, dy) || 1;
@@ -795,27 +852,27 @@ function drawSnake(svg, fromSquare, toSquare) {
   const d = `M ${a.left} ${a.top} C ${c1x} ${c1y}, ${c2x} ${c2y}, ${b.left} ${b.top}`;
 
   const glow = document.createElementNS(SVG_NS, "path");
-  glow.setAttribute("class", "snake-body-glow");
+  glow.setAttribute("class", "snake-body-glow" + suf);
   glow.setAttribute("d", d);
-  svg.appendChild(glow);
+  container.appendChild(glow);
 
   const body = document.createElementNS(SVG_NS, "path");
-  body.setAttribute("class", "snake-body");
+  body.setAttribute("class", "snake-body" + suf);
   body.setAttribute("d", d);
-  svg.appendChild(body);
+  container.appendChild(body);
 
   const head = document.createElementNS(SVG_NS, "ellipse");
-  head.setAttribute("class", "snake-head");
+  head.setAttribute("class", "snake-head" + suf);
   head.setAttribute("cx", a.left); head.setAttribute("cy", a.top);
   head.setAttribute("rx", "3"); head.setAttribute("ry", "2.4");
-  svg.appendChild(head);
+  container.appendChild(head);
   [-1, 1].forEach((side) => {
     const eye = document.createElementNS(SVG_NS, "circle");
     eye.setAttribute("class", "snake-eye");
     eye.setAttribute("cx", a.left + nx * 1.3 * side);
     eye.setAttribute("cy", a.top + ny * 1.3 * side);
     eye.setAttribute("r", "0.6");
-    svg.appendChild(eye);
+    container.appendChild(eye);
   });
 }
 
@@ -827,12 +884,14 @@ function renderGame(room) {
   fillChip("#chipP2", p2, room);
 
   renderTokens(room.players, room);
+  renderMiddleEast(room.middleEast);
 
   const myTurn = room.turn === ME.username;
   const me = room.players.find((p) => p.username === ME.username);
   const iAmStuck = me && me.pendingChallenge;
-  $("#btnRoll").disabled = room.status !== "playing" || !myTurn || !!iAmStuck;
-  $("#diceFace").textContent = room.lastRoll ? String(room.lastRoll.roll) : "🎲";
+  $("#btnRoll").disabled = !canRollNow(room);
+  if (Date.now() >= rollCooldownUntil) updateRollLabel();
+  $("#diceFace").textContent = "🎲";
 
   if (room.status === "finished") {
     $("#turnHint").textContent = room.winner ? `${room.winner} برد! 🏆` : "بازی تموم شد";
@@ -951,6 +1010,28 @@ function resetTokenAnimState() {
   Object.keys(prevPositions).forEach((u) => delete prevPositions[u]);
   animatingUsers.clear();
 }
+let lastMiddleEastSignature = null;
+function renderMiddleEast(middleEast) {
+  const badge = $("#middleEastBadge");
+  const layer = $("#middleEastLayer");
+  const signature = middleEast ? `${middleEast.username}:${middleEast.turnsLeft}:${Object.keys(middleEast.snakes).length}` : null;
+  if (!middleEast) {
+    if (badge) badge.classList.add("hidden");
+    if (layer && lastMiddleEastSignature !== null) layer.innerHTML = "";
+    lastMiddleEastSignature = null;
+    return;
+  }
+  if (badge) {
+    badge.classList.remove("hidden");
+    const who = middleEast.username === ME.username ? "خودت" : middleEast.username;
+    badge.textContent = `🌍 خاورمیانه فعاله رو ${who} — ${middleEast.turnsLeft} نوبت مونده`;
+  }
+  if (layer && signature !== lastMiddleEastSignature) {
+    layer.innerHTML = "";
+    Object.entries(middleEast.snakes).forEach(([from, to]) => drawSnake(layer, +from, +to, "me"));
+  }
+  lastMiddleEastSignature = signature;
+}
 function renderTokens(players, room) {
   const known = new Set();
   players.forEach((p, idx) => {
@@ -971,15 +1052,44 @@ function renderTokens(players, room) {
   });
 }
 
+const ROLL_COOLDOWN_MS = 3000;
+let rollCooldownUntil = 0, rollCooldownTimer = null;
+function canRollNow(room) {
+  if (!room || room.status !== "playing") return false;
+  if (room.turn !== ME.username) return false;
+  const me = room.players.find((p) => p.username === ME.username);
+  if (me && me.pendingChallenge) return false;
+  return Date.now() >= rollCooldownUntil;
+}
+function updateRollLabel() {
+  const label = $("#btnRollLabel");
+  if (!label) return;
+  const remain = Math.ceil((rollCooldownUntil - Date.now()) / 1000);
+  label.textContent = remain > 0 ? `${remain} ثانیه صبر کن` : "تاس بزن";
+}
+function startRollCooldown() {
+  rollCooldownUntil = Date.now() + ROLL_COOLDOWN_MS;
+  $("#btnRoll").disabled = true;
+  updateRollLabel();
+  clearInterval(rollCooldownTimer);
+  rollCooldownTimer = setInterval(() => {
+    updateRollLabel();
+    if (Date.now() >= rollCooldownUntil) {
+      clearInterval(rollCooldownTimer);
+      if (currentRoom) $("#btnRoll").disabled = !canRollNow(currentRoom);
+    }
+  }, 250);
+}
 const DICE_FACES = ["⚀", "⚁", "⚂", "⚃", "⚄", "⚅"];
 function initGameHandlers() {
   $("#btnRoll").addEventListener("click", () => {
-    if (!ws) return;
+    if (!ws || !currentRoom || !canRollNow(currentRoom)) return;
     const face = $("#diceFace");
     face.classList.add("rolling");
     const cycle = setInterval(() => { face.textContent = DICE_FACES[Math.floor(Math.random() * 6)]; }, 70);
-    setTimeout(() => { clearInterval(cycle); face.classList.remove("rolling"); }, 500);
+    setTimeout(() => { clearInterval(cycle); face.classList.remove("rolling"); face.textContent = "🎲"; }, 500);
     ws.send(JSON.stringify({ t: "rollDice" }));
+    startRollCooldown();
   });
 }
 
@@ -994,22 +1104,59 @@ function closeOverModal() { $("#modalOver").classList.remove("open"); }
 /* ============================================================
    ۵) گردونه‌ی فلاکت + راه‌اندازیِ مینی‌گیمِ منتخب
    ============================================================ */
-const WHEEL_LABELS = { shock_wire: "سیم‌شوک ⚡", aghi_puzzle: "پازلِ عاقی 🧩", hamster_combat: "همستر کامبت 🐹", gozar: "گذار 🚶" };
+const WHEEL_LABELS = { shock_wire: "سیم‌شوک ⚡", aghi_puzzle: "پازلِ عاقی 🧩", hamster_combat: "همستر کامبت 🐹", gozar: "گذار 🚶", middle_east: "خاورمیانه 🌍" };
 let pendingWheelType = null;
 
 function openWheelModal(type) {
   pendingWheelType = type;
   const opts = $("#wheelOptions");
   opts.innerHTML = "";
+  const optEls = {};
   Object.entries(WHEEL_LABELS).forEach(([key, label]) => {
     const div = document.createElement("div");
-    div.className = "wheel-opt" + (key === type ? " picked" : "");
+    div.className = "wheel-opt";
     div.textContent = label;
     opts.appendChild(div);
+    optEls[key] = div;
   });
   $("#modalWheel").classList.add("open");
+  spinWheelReveal(type, optEls);
 }
+
+// چرخوندنِ گردونه: قبلِ اینکه معلوم بشه کدوم فلاکته، بینِ گزینه‌ها می‌چرخه و کم‌کم
+// کند می‌شه تا دقیقاً رویِ نتیجه‌ی واقعی بایسته؛ تا قبلِ از پایانِ چرخش دکمه‌ی «بریم» غیرفعاله
+function spinWheelReveal(type, optEls) {
+  const goBtn = $("#btnWheelGo");
+  goBtn.disabled = true;
+  const emoji = $("#wheelEmoji");
+  emoji.classList.remove("spin-anim");
+  void emoji.offsetWidth; // ری‌استارتِ انیمیشن
+  emoji.classList.add("spin-anim");
+
+  const keys = Object.keys(WHEEL_LABELS);
+  const targetIdx = keys.indexOf(type);
+  const totalSteps = keys.length * 3 + targetIdx + 1; // دقیقاً رویِ نتیجه‌ی واقعی می‌ایسته
+  let step = 0, prevEl = null;
+
+  function tick() {
+    const idx = step % keys.length;
+    if (prevEl) prevEl.classList.remove("picked");
+    const curEl = optEls[keys[idx]];
+    curEl.classList.add("picked");
+    prevEl = curEl;
+    step++;
+    if (step < totalSteps) {
+      const progress = step / totalSteps;
+      setTimeout(tick, 55 + progress * progress * 230); // کم‌کم کندتر می‌شه
+    } else {
+      goBtn.disabled = false; // فقط الان مشخص می‌شه فلاکت چیه
+    }
+  }
+  tick();
+}
+
 $("#btnWheelGo").addEventListener("click", () => {
+  if ($("#btnWheelGo").disabled) return;
   $("#modalWheel").classList.remove("open");
   launchMinigame(pendingWheelType);
 });
@@ -1018,7 +1165,7 @@ $("#btnWheelGo").addEventListener("click", () => {
 // وصل‌شدنِ دوباره)، مستقیم مینی‌گیم رو دوباره باز کن بدونِ نمایشِ گردونه
 function maybeOpenChallengeModal(room) {
   const me = room.players.find((p) => p.username === ME.username);
-  if (!me || !me.pendingChallenge || room.turn !== ME.username) return;
+  if (!me || !me.pendingChallenge) return;
   const anyOpen = $$(".modal-backdrop.open").length > 0;
   if (anyOpen) return;
   launchMinigame(me.pendingChallenge);
@@ -1034,10 +1181,10 @@ function sendChallengeResult(success) {
 }
 
 /* ============================================================
-   ۶) مینی‌گیمِ ۱: سیم‌شوک
+   ۶) مینی‌گیمِ ۱: سیم‌شوک (افقی، با یه کادرِ کنترلِ جدا زیرِ پنجره‌ی گیم)
    ============================================================ */
-const SHOCK_W = 260, SHOCK_H = 280, SHOCK_AMP = 78, SHOCK_LOOPS = 3, SHOCK_TOL = 20;
-function shockPathX(t) { return SHOCK_W / 2 + SHOCK_AMP * Math.sin(t * Math.PI * 2 * SHOCK_LOOPS); }
+const SHOCK_W = 300, SHOCK_H = 130, SHOCK_AMP = 42, SHOCK_LOOPS = 3, SHOCK_TOL = 15;
+function shockPathY(t) { return SHOCK_H / 2 + SHOCK_AMP * Math.sin(t * Math.PI * 2 * SHOCK_LOOPS); }
 let shockDragging = false, shockT = 0;
 
 function initShockGame() {
@@ -1045,7 +1192,7 @@ function initShockGame() {
   svg.setAttribute("viewBox", `0 0 ${SHOCK_W} ${SHOCK_H}`);
   let d = "";
   for (let i = 0; i <= 100; i++) {
-    const t = i / 100, y = t * SHOCK_H, x = shockPathX(t);
+    const t = i / 100, x = t * SHOCK_W, y = shockPathY(t);
     d += (i === 0 ? "M" : "L") + x.toFixed(1) + " " + y.toFixed(1) + " ";
   }
   const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
@@ -1058,12 +1205,15 @@ function initShockGame() {
 
   const wrap = $("#buzzWrap");
   const ring = $("#buzzRing");
+  const pad = $("#buzzPad");
+  const handle = $("#buzzPadHandle");
+  const hint = $("#buzzPadHint");
 
-  function setRingPos(x, y) {
-    ring.style.left = (x / SHOCK_W * 100) + "%";
+  function setRingPos(t, y) {
+    ring.style.left = (t * 100) + "%";
     ring.style.top = (y / SHOCK_H * 100) + "%";
   }
-  function resetRing() { shockT = 0; setRingPos(shockPathX(0), 0); }
+  function resetRing() { shockT = 0; setRingPos(0, shockPathY(0)); }
   resetRing();
 
   function buzz() {
@@ -1071,41 +1221,46 @@ function initShockGame() {
     playTone(140, 150, "square");
     resetRing();
   }
-  function pointerToLocal(evt) {
-    const rect = wrap.getBoundingClientRect();
+  // چون کنترل از رویِ خودِ سیم برداشته شده، مختصاتِ لمس رو نسبت به کادرِ کنترلِ پایین می‌گیریم
+  // و با همون نسبت (نه پیکسل‌به‌پیکسل) رو بومِ سیم که بالاست منعکسش می‌کنیم؛ این‌جوری انگشت
+  // دیگه رویِ خودِ سیم و حلقه رو نمی‌گیره و دیدِ کاربر به مسیر همیشه باز می‌مونه
+  function padToLocal(evt) {
+    const rect = pad.getBoundingClientRect();
     const clientX = evt.touches ? evt.touches[0].clientX : evt.clientX;
     const clientY = evt.touches ? evt.touches[0].clientY : evt.clientY;
-    return { x: (clientX - rect.left) / rect.width * SHOCK_W, y: (clientY - rect.top) / rect.height * SHOCK_H };
+    const px = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+    const py = Math.max(0, Math.min(1, (clientY - rect.top) / rect.height));
+    return { px, py };
   }
   function onMove(evt) {
     if (!shockDragging) return;
-    const { x, y } = pointerToLocal(evt);
-    const t = Math.max(0, Math.min(1, y / SHOCK_H));
-    const expectedX = shockPathX(t);
-    if (Math.abs(x - expectedX) > SHOCK_TOL) { buzz(); return; }
+    const { px, py } = padToLocal(evt);
+    handle.style.left = (px * 100) + "%";
+    handle.style.top = (py * 100) + "%";
+    const t = px;
+    const y = py * SHOCK_H;
+    const expectedY = shockPathY(t);
+    if (Math.abs(y - expectedY) > SHOCK_TOL) { buzz(); return; }
     shockT = t;
-    setRingPos(x, y);
+    setRingPos(t, y);
     if (t >= 0.985) {
       shockDragging = false;
+      handle.classList.remove("active");
       playTone(660, 220, "sine");
       $("#modalShock").classList.remove("open");
       sendChallengeResult(true);
     }
   }
-  wrap.addEventListener("pointerdown", (evt) => {
-    const { x, y } = pointerToLocal(evt);
-    // هندل رو از هرجایِ پاپ‌آپ که لمسش کردی می‌گیریم؛ لازم نیست دقیقاً روی دایره‌ی کوچیک بزنی —
-    // فاصله رو از موقعیتِ فعلیِ خودِ حلقه (هرجا که باشه) با تلورانسِ بزرگ‌تر می‌سنجیم
-    const curX = shockPathX(shockT), curY = shockT * SHOCK_H;
-    const GRAB_RADIUS = 46;
-    if (Math.hypot(x - curX, y - curY) < GRAB_RADIUS) {
-      shockDragging = true;
-      try { wrap.setPointerCapture(evt.pointerId); } catch (e) {}
-    }
+  pad.addEventListener("pointerdown", (evt) => {
+    shockDragging = true;
+    hint.classList.add("hidden");
+    handle.classList.add("active");
+    try { pad.setPointerCapture(evt.pointerId); } catch (e) {}
+    onMove(evt);
   });
-  wrap.addEventListener("pointermove", onMove);
-  wrap.addEventListener("pointerup", () => { shockDragging = false; });
-  wrap.addEventListener("pointercancel", () => { shockDragging = false; });
+  pad.addEventListener("pointermove", onMove);
+  pad.addEventListener("pointerup", () => { shockDragging = false; handle.classList.remove("active"); });
+  pad.addEventListener("pointercancel", () => { shockDragging = false; handle.classList.remove("active"); });
 
   $("#btnShockGiveUp").addEventListener("click", () => {
     $("#modalShock").classList.remove("open");
@@ -1117,6 +1272,9 @@ function initShockGame() {
 function startShockGame() {
   shockDragging = false;
   if (initShockGame._reset) initShockGame._reset();
+  const hint = $("#buzzPadHint"), handle = $("#buzzPadHandle");
+  if (hint) hint.classList.remove("hidden");
+  if (handle) { handle.classList.remove("active"); handle.style.left = "50%"; handle.style.top = "50%"; }
   $("#modalShock").classList.add("open");
 }
 
