@@ -588,14 +588,20 @@ function connectRoom(code, isHost) {
     else if (msg.t === "wheelResult") onWheelResult(msg);
     else if (msg.t === "error") showToast(msg.message || "خطا");
   });
-  ws.addEventListener("close", () => {
+  ws.addEventListener("close", (evt) => {
     clearInterval(wsPing);
     if (currentRoom && currentRoom.status !== "finished" && screenIsGameOrWaiting()) {
       showToast("اتصال قطع شد؛ در حالِ اتصالِ دوباره...");
       setTimeout(() => { if (myCurrentCode === code) connectRoom(code, isHost); }, 1500);
+    } else if (!currentRoom) {
+      // اتصالِ اولیه اصلاً برقرار نشد؛ قبلاً اینجا کاملاً بی‌صدا بود، حالا حداقل کدِ بستنِ
+      // وب‌ساکت رو نشون می‌ده تا معلوم بشه مشکل کجاست (۱۰۰۶ یعنی اصلاً به سرور نرسیده)
+      showToast(`اتصال به روم برقرار نشد (کد ${evt && evt.code != null ? evt.code : "؟"})`);
     }
   });
-  ws.addEventListener("error", () => {});
+  ws.addEventListener("error", () => {
+    if (!currentRoom) showToast("خطا تو اتصال به سرورِ بازی");
+  });
 }
 function closeConnection() {
   clearInterval(wsPing);
