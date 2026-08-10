@@ -889,8 +889,7 @@ function renderGame(room) {
   const myTurn = room.turn === ME.username;
   const me = room.players.find((p) => p.username === ME.username);
   const iAmStuck = me && me.pendingChallenge;
-  $("#btnRoll").disabled = !canRollNow(room);
-  if (Date.now() >= rollCooldownUntil) updateRollLabel();
+  refreshRollButtonState();
   $("#diceFace").textContent = "🎲";
 
   if (room.status === "finished") {
@@ -971,6 +970,7 @@ function spawnBoardFx(square, emoji) {
 function animateTokenMove(tok, from, to, idx, username, room) {
   if (from === to) return;
   animatingUsers.add(username);
+  refreshRollButtonState();
   const roll = (room && room.lastRoll && room.lastRoll.username === username) ? room.lastRoll.roll : null;
   let mid = to;
   if (roll && from + roll <= 100) mid = from + roll;
@@ -997,11 +997,13 @@ function animateTokenMove(tok, from, to, idx, username, room) {
         setTimeout(() => {
           tok.classList.remove("token-ladder", "token-snake", "token-moving");
           animatingUsers.delete(username);
+          refreshRollButtonState();
         }, SLIDE_MS);
       }, 30);
     } else {
       tok.classList.remove("token-moving");
       animatingUsers.delete(username);
+      refreshRollButtonState();
     }
   }
   hopNext();
@@ -1052,33 +1054,20 @@ function renderTokens(players, room) {
   });
 }
 
-const ROLL_COOLDOWN_MS = 3000;
-let rollCooldownUntil = 0, rollCooldownTimer = null;
+// کول‌داونِ تاس دیگه یه زمانِ ثابت نیست؛ دقیقاً تا وقتی طول می‌کشه که انیمیشنِ حرکتِ روی
+// تخته (چه خودم چه رقیب) تموم بشه — همین که انیمیشن تموم شد و نوبتم بود، فوراً می‌تونم تاس بزنم
 function canRollNow(room) {
   if (!room || room.status !== "playing") return false;
   if (room.turn !== ME.username) return false;
   const me = room.players.find((p) => p.username === ME.username);
   if (me && me.pendingChallenge) return false;
-  return Date.now() >= rollCooldownUntil;
+  if (animatingUsers.size > 0) return false; // تا انیمیشنِ حرکتِ رویِ تخته تموم نشه صبر کن
+  return true;
 }
-function updateRollLabel() {
+function refreshRollButtonState() {
+  $("#btnRoll").disabled = !canRollNow(currentRoom);
   const label = $("#btnRollLabel");
-  if (!label) return;
-  const remain = Math.ceil((rollCooldownUntil - Date.now()) / 1000);
-  label.textContent = remain > 0 ? `${remain} ثانیه صبر کن` : "تاس بزن";
-}
-function startRollCooldown() {
-  rollCooldownUntil = Date.now() + ROLL_COOLDOWN_MS;
-  $("#btnRoll").disabled = true;
-  updateRollLabel();
-  clearInterval(rollCooldownTimer);
-  rollCooldownTimer = setInterval(() => {
-    updateRollLabel();
-    if (Date.now() >= rollCooldownUntil) {
-      clearInterval(rollCooldownTimer);
-      if (currentRoom) $("#btnRoll").disabled = !canRollNow(currentRoom);
-    }
-  }, 250);
+  if (label) label.textContent = animatingUsers.size > 0 ? "صبر کن..." : "تاس بزن";
 }
 const DICE_FACES = ["⚀", "⚁", "⚂", "⚃", "⚄", "⚅"];
 function initGameHandlers() {
@@ -1089,7 +1078,7 @@ function initGameHandlers() {
     const cycle = setInterval(() => { face.textContent = DICE_FACES[Math.floor(Math.random() * 6)]; }, 70);
     setTimeout(() => { clearInterval(cycle); face.classList.remove("rolling"); face.textContent = "🎲"; }, 500);
     ws.send(JSON.stringify({ t: "rollDice" }));
-    startRollCooldown();
+    $("#btnRoll").disabled = true; // تا رسیدنِ وضعیتِ جدید و شروعِ انیمیشن، فوراً غیرفعال بمونه
   });
 }
 
