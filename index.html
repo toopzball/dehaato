@@ -2790,7 +2790,101 @@
     html[data-music-skin="apple"] .full-player .reels-center { padding-top: calc(56px + var(--safe-top)); }
   }
 
-  /* ---------- انتخابگرِ تمِ سگ‌تونز تو تنظیمات: دو کارتِ پیش‌نمایش (پیش‌فرض/اپل موزیک) ---------- */
+  /* ================================================================
+     تمِ «موج» برای سگ‌تونز — data-music-skin="wave" — الهام از یاندکس‌موزیک:
+     پس‌زمینه‌ی تمام‌صفحه‌ی گرم/شعله‌ای بجایِ بلابِ رنگیِ برگرفته از کاور، دکمه‌ی
+     پخشِ اصلیِ سفیدِ توپر، و لهجه‌ی رنگیِ نارنجی-زرد رویِ بقیه‌ی دکمه‌ها. ---------------- */
+  html[data-music-skin="wave"] .full-player .bg-blur { background: linear-gradient(160deg,#3a0a00,#7a1d00 35%,#ff7a00 68%,#ffcf3f 100%); }
+  html[data-music-skin="wave"] .full-player .ambient-blob.b1 { background: #ff5a1f; }
+  html[data-music-skin="wave"] .full-player .ambient-blob.b2 { background: #ffb300; }
+  html[data-music-skin="wave"] .full-player .ambient-blob.b3 { background: #ff2d55; }
+  html[data-music-skin="wave"] .full-player .ambient-vignette { background: radial-gradient(ellipse at center, rgba(20,5,0,0.12) 30%, rgba(15,3,0,0.6) 75%, rgba(6,1,0,0.92) 100%); }
+  html[data-music-skin="wave"] .reels-art-wrap { border-radius: 14px; box-shadow: 0 14px 40px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,255,255,0.08); }
+  html[data-music-skin="wave"] .reels-ctrl-btn.reels-ctrl-main { background: #fff; color: #241000; box-shadow: 0 6px 20px rgba(0,0,0,0.4); }
+  html[data-music-skin="wave"] .reels-ctrl-btn { background: rgba(0,0,0,0.32); border-color: rgba(255,255,255,0.16); }
+  html[data-music-skin="wave"] .reels-ctrl-btn.reels-toggle.active { background: #ffcc4d; color: #241000; border-color: transparent; }
+  html[data-music-skin="wave"] .reels-seek { background: rgba(255,255,255,0.22); }
+  html[data-music-skin="wave"] .reels-seek::-webkit-slider-thumb, html[data-music-skin="wave"] .reels-seek::-moz-range-thumb { background: #ffcc4d; }
+  html[data-music-skin="wave"] .reels-title { font-weight: 800; }
+  html[data-music-skin="wave"] .reels-close, html[data-music-skin="wave"] .reels-download,
+  html[data-music-skin="wave"] .reels-queue-btn, html[data-music-skin="wave"] .reels-engage-item {
+    background: rgba(0,0,0,0.35); border-color: rgba(255,255,255,0.16);
+  }
+  html[data-music-skin="wave"] .reels-engage-item.active, html[data-music-skin="wave"] .reels-engage-btn.active { color: #ffcc4d; }
+  html[data-music-skin="wave"] .audio-play-btn, html[data-music-skin="wave"] .music-row-play, html[data-music-skin="wave"] .mini-player-play {
+    background: linear-gradient(135deg,#ff8a00,#ff2d55); color: #fff;
+  }
+  html[data-music-skin="wave"] .music-fab { background: linear-gradient(135deg,#ff8a00,#ff2d55); color: #fff; box-shadow: 0 6px 18px rgba(255,80,20,0.4); }
+  html[data-music-skin="wave"] #view-music .media-sort-indicator { background: linear-gradient(135deg,#ff8a00,#ffcc4d); }
+  html[data-music-skin="wave"] .music-search-row { border-radius: 999px; }
+  html[data-music-skin="wave"] .music-row-cover, html[data-music-skin="wave"] .music-home-card-cover, html[data-music-skin="wave"] .queue-item-cover { border-radius: 12px; }
+  html[data-music-skin="wave"] .mini-player { background: rgba(28,10,0,0.92); border-color: rgba(255,150,60,0.18); }
+
+  /* ================================================================
+     تمِ «طیف» برای سگ‌تونز — data-music-skin="spectrum" — پلیرِ تمام‌صفحه با
+     پس‌زمینه‌ی روشن، کاورِ دایره‌ای با هاله‌ی رنگیِ چندلایه دورش، و دکمه‌های
+     صورتی/قرمزِ گرادیانی؛ دقیقاً زبانِ بصریِ رفرنسِ روشن-پاستلی. ---------------- */
+  html[data-music-skin="spectrum"] .full-player .bg-blur { background: linear-gradient(160deg,#f5f1fb,#eef2fb 45%,#fdeef2 100%); }
+  html[data-music-skin="spectrum"] .full-player .ambient-blob { opacity: 0.3; filter: blur(70px); }
+  html[data-music-skin="spectrum"] .full-player .ambient-vignette { background: radial-gradient(ellipse at center, transparent 30%, rgba(255,255,255,0.55) 78%, rgba(255,255,255,0.85) 100%); }
+  html[data-music-skin="spectrum"] .reels-art-wrap {
+    border-radius: 50%;
+    box-shadow: 0 0 0 6px #fff, 0 0 0 11px rgba(255,140,60,0.55), 0 0 0 15px rgba(230,60,140,0.4), 0 0 0 18px rgba(120,80,220,0.3), 0 20px 50px rgba(0,0,0,0.22);
+  }
+  html[data-music-skin="spectrum"] .reels-ctrl-btn.reels-ctrl-main { background: linear-gradient(135deg,#ff5f5f,#ff2d78); color: #fff; box-shadow: 0 8px 22px rgba(255,45,120,0.4); }
+  html[data-music-skin="spectrum"] .reels-ctrl-btn { background: rgba(20,20,30,0.06); border-color: rgba(20,20,30,0.08); color: #2b2b33; }
+  html[data-music-skin="spectrum"] .reels-ctrl-btn.reels-toggle.active { background: linear-gradient(135deg,#ff5f5f,#ff2d78); color: #fff; border-color: transparent; }
+  html[data-music-skin="spectrum"] .reels-title, html[data-music-skin="spectrum"] .reels-seek-time { color: #201f26; }
+  html[data-music-skin="spectrum"] .reels-performer { color: #6b6b78; }
+  html[data-music-skin="spectrum"] .reels-seek { background: rgba(20,20,30,0.12); }
+  html[data-music-skin="spectrum"] .reels-seek::-webkit-slider-thumb, html[data-music-skin="spectrum"] .reels-seek::-moz-range-thumb { background: #ff2d78; }
+  html[data-music-skin="spectrum"] .reels-close, html[data-music-skin="spectrum"] .reels-download,
+  html[data-music-skin="spectrum"] .reels-queue-btn, html[data-music-skin="spectrum"] .reels-engage-item {
+    background: rgba(20,20,30,0.06); border-color: rgba(20,20,30,0.08); color: #2b2b33;
+  }
+  html[data-music-skin="spectrum"] .reels-engage-count { color: #2b2b33; }
+  html[data-music-skin="spectrum"] .reels-engage-item.active, html[data-music-skin="spectrum"] .reels-engage-btn.active { color: #ff2d78; }
+  html[data-music-skin="spectrum"] .audio-play-btn, html[data-music-skin="spectrum"] .music-row-play, html[data-music-skin="spectrum"] .mini-player-play {
+    background: linear-gradient(135deg,#ff5f5f,#ff2d78); color: #fff;
+  }
+  html[data-music-skin="spectrum"] .music-fab { background: linear-gradient(135deg,#ff5f5f,#ff2d78); color: #fff; }
+  html[data-music-skin="spectrum"] .music-row-cover, html[data-music-skin="spectrum"] .music-home-card-cover, html[data-music-skin="spectrum"] .queue-item-cover { border-radius: 16px; }
+  @media (max-width: 480px), (max-height: 700px) {
+    html[data-music-skin="spectrum"] .reels-art-wrap { box-shadow: 0 0 0 5px #fff, 0 0 0 9px rgba(255,140,60,0.55), 0 0 0 12px rgba(230,60,140,0.4), 0 14px 34px rgba(0,0,0,0.22); }
+  }
+
+  /* ================================================================
+     تمِ «قوس» برای سگ‌تونز — data-music-skin="arc" — کاورِ قدی با پایینِ
+     گِردشده (شکلِ طاقی)، دکمه‌ی پخشِ اصلیِ دایره‌ی توپرِ مشکی، و پس‌زمینه‌ی
+     روشنِ مینیمال؛ دقیقاً زبانِ بصریِ رفرنسِ تیره-مینیمالِ ارسالی. ---------------- */
+  html[data-music-skin="arc"] .full-player .bg-blur { background: linear-gradient(180deg,#eef0f5,#e2e5ec); }
+  html[data-music-skin="arc"] .full-player .ambient-blob { opacity: 0.2; }
+  html[data-music-skin="arc"] .full-player .ambient-vignette { background: radial-gradient(ellipse at center, transparent 30%, rgba(255,255,255,0.6) 78%, rgba(255,255,255,0.9) 100%); }
+  html[data-music-skin="arc"] .reels-art-wrap {
+    width: 230px; height: 270px; border-radius: 26px 26px 50% 50%;
+    box-shadow: 0 18px 40px rgba(20,20,26,0.3);
+  }
+  @media (max-width: 480px), (max-height: 700px) {
+    html[data-music-skin="arc"] .reels-art-wrap { width: 168px; height: 200px; border-radius: 20px 20px 50% 50%; }
+  }
+  html[data-music-skin="arc"] .reels-ctrl-btn.reels-ctrl-main { background: #14141a; color: #fff; box-shadow: 0 8px 20px rgba(0,0,0,0.3); }
+  html[data-music-skin="arc"] .reels-ctrl-btn { background: rgba(20,20,26,0.06); border-color: rgba(20,20,26,0.1); color: #14141a; }
+  html[data-music-skin="arc"] .reels-ctrl-btn.reels-toggle.active { background: #14141a; color: #fff; border-color: transparent; }
+  html[data-music-skin="arc"] .reels-title, html[data-music-skin="arc"] .reels-seek-time { color: #14141a; }
+  html[data-music-skin="arc"] .reels-performer { color: #6b6b78; }
+  html[data-music-skin="arc"] .reels-seek { background: rgba(20,20,26,0.12); }
+  html[data-music-skin="arc"] .reels-seek::-webkit-slider-thumb, html[data-music-skin="arc"] .reels-seek::-moz-range-thumb { background: #14141a; }
+  html[data-music-skin="arc"] .reels-close, html[data-music-skin="arc"] .reels-download,
+  html[data-music-skin="arc"] .reels-queue-btn, html[data-music-skin="arc"] .reels-engage-item {
+    background: rgba(20,20,26,0.06); border-color: rgba(20,20,26,0.1); color: #14141a;
+  }
+  html[data-music-skin="arc"] .reels-engage-count { color: #14141a; }
+  html[data-music-skin="arc"] .reels-engage-item.active, html[data-music-skin="arc"] .reels-engage-btn.active { color: #14141a; }
+  html[data-music-skin="arc"] .audio-play-btn, html[data-music-skin="arc"] .music-row-play, html[data-music-skin="arc"] .mini-player-play { background: #14141a; color: #fff; }
+  html[data-music-skin="arc"] .music-fab { background: #14141a; color: #fff; }
+  html[data-music-skin="arc"] .music-row-cover, html[data-music-skin="arc"] .music-home-card-cover, html[data-music-skin="arc"] .queue-item-cover { border-radius: 14px; }
+
+  /* ---------- انتخابگرِ تمِ سگ‌تونز تو تنظیمات: پنج کارتِ پیش‌نمایش ---------- */
   .music-skin-list { display: flex; flex-direction: column; gap: 12px; }
   .music-skin-card {
     display: flex; align-items: center; gap: 14px; padding: 14px; border-radius: 16px;
@@ -2813,6 +2907,26 @@
   }
   .music-skin-card-preview.preview-apple::after {
     content: ""; position: absolute; inset: 16px; border-radius: 50%; background: #fff;
+  }
+  .music-skin-card-preview.preview-wave {
+    background: linear-gradient(160deg, #3a0a00, #ff5a1f 55%, #ffcf3f 100%);
+  }
+  .music-skin-card-preview.preview-wave::after {
+    content: ""; position: absolute; inset: 18px; border-radius: 6px; background: #fff;
+  }
+  .music-skin-card-preview.preview-spectrum {
+    background: linear-gradient(135deg, #f5f1fb, #fdeef2);
+  }
+  .music-skin-card-preview.preview-spectrum::after {
+    content: ""; position: absolute; inset: 15px; border-radius: 50%;
+    background: linear-gradient(135deg,#ff5f5f,#ff2d78);
+    box-shadow: 0 0 0 4px #fff, 0 0 0 7px rgba(255,140,60,0.55), 0 0 0 9px rgba(120,80,220,0.35);
+  }
+  .music-skin-card-preview.preview-arc {
+    background: #e2e5ec;
+  }
+  .music-skin-card-preview.preview-arc::after {
+    content: ""; position: absolute; inset: 12px 18px; border-radius: 12px 12px 50% 50%; background: #14141a;
   }
   .music-skin-card-text { flex: 1; min-width: 0; }
   .music-skin-card-title { font-size: 14.5px; font-weight: 700; color: var(--text); display: flex; align-items: center; gap: 6px; }
@@ -7186,10 +7300,11 @@ async function selectFont(font) {
   }
 }
 
-// ---------- تمِ ظاهریِ سگ‌تونز (مستقل از تمِ رنگیِ سایت): "default" یا "apple" ----------
-let currentMusicSkin = localStorage.getItem("musicSkin") === "apple" ? "apple" : "default";
+// ---------- تمِ ظاهریِ سگ‌تونز (مستقل از تمِ رنگیِ سایت): "default"/"apple"/"wave"/"spectrum"/"arc" ----------
+const MUSIC_SKIN_IDS = ["default", "apple", "wave", "spectrum", "arc"];
+let currentMusicSkin = MUSIC_SKIN_IDS.includes(localStorage.getItem("musicSkin")) ? localStorage.getItem("musicSkin") : "default";
 function applyMusicSkin(skin) {
-  skin = skin === "apple" ? "apple" : "default";
+  skin = MUSIC_SKIN_IDS.includes(skin) ? skin : "default";
   currentMusicSkin = skin;
   if (skin === "default") document.documentElement.removeAttribute("data-music-skin");
   else document.documentElement.setAttribute("data-music-skin", skin);
@@ -22607,15 +22722,18 @@ function renderSettingsChatSkin() {
 const MUSIC_SKIN_INFO = {
   default: { title: "پیش‌فرض دهات", desc: "همون طراحیِ فعلیِ سگ‌تونز، با گرادیانِ رنگیِ تمِ سایت روی دکمه‌های پخش." },
   apple: { title: "اپل موزیک", desc: "کاورهای گردتر، کپسول/دایره‌ی سفیدِ توپر برای دکمه‌ی پخش، هماهنگ با رنگ‌بندیِ تمِ سایت." },
+  wave: { title: "موج", desc: "پس‌زمینه‌ی گرم و شعله‌ای پشتِ پلیرِ تمام‌صفحه، دکمه‌ی پخشِ سفیدِ توپر و لهجه‌ی نارنجی-قرمز." },
+  spectrum: { title: "طیف", desc: "پلیرِ تمام‌صفحه با زمینه‌ی روشن، کاورِ دایره‌ای با هاله‌ی رنگیِ چندلایه دورش و دکمه‌های صورتی." },
+  arc: { title: "قوس", desc: "کاورِ قدی با پایینِ گردشده (طاقی)، زمینه‌ی روشنِ مینیمال و دکمه‌ی پخشِ دایره‌ای مشکی." },
 };
 function renderSettingsDogTones() {
-  const rows = ["default", "apple"].map((id) => {
+  const rows = MUSIC_SKIN_IDS.map((id) => {
     const info = MUSIC_SKIN_INFO[id];
     return `
       <button type="button" class="music-skin-card${currentMusicSkin === id ? " active" : ""}" data-skin="${id}" onclick="selectMusicSkin('${id}')">
         <span class="music-skin-card-preview preview-${id}"></span>
         <span class="music-skin-card-text">
-          <span class="music-skin-card-title">${info.title}${id === "apple" ? ` <span class="settings-item-soon-badge">تستی</span>` : ""}</span>
+          <span class="music-skin-card-title">${info.title}${id !== "default" ? ` <span class="settings-item-soon-badge">تستی</span>` : ""}</span>
           <span class="music-skin-card-desc">${escapeHtml(info.desc)}</span>
         </span>
         <span class="music-skin-card-check">
@@ -24233,12 +24351,19 @@ async function bootstrapApp() {
   ["mediaCol0", "mediaCol1", "mediaCol2"].forEach((id) => { document.getElementById(id).innerHTML = ""; });
   document.getElementById("mediaFeedFooter").innerHTML = `<div class="empty-state">در حال بارگذاری...</div>`;
 
+  // منیفستِ ایموجی رو همزمان با فچِ بوت‌استرپ شروع می‌کنیم (نه بعدش)، تا وقتی فیدِ اول رندر می‌شه
+  // شورت‌کدهای ایموجی (:e:pack:name:) از قبل قابلِ resolve باشن؛ قبلاً این فراخوانی بعد از
+  // renderMediaFeedPage بود و چون رندر یه‌بارِ متن رو به HTML تبدیل می‌کنه و دیگه دوباره رندر نمی‌شه،
+  // شورت‌کدهای پستِ اول همیشه به‌صورتِ متنِ خام (مثلِ ":e:pesar-busken:79:") گیر می‌کردن.
+  const emojiReady = ensureEmojiManifestLoaded();
+
   try {
     const res = await fetch(`${WORKER_URL}/api/bootstrap?pageSize=${PAGE_SIZE}`, {
       headers: { "Authorization": `Bearer ${getToken()}` },
     });
     if (!res.ok) throw new Error("bootstrap failed");
     const data = await res.json();
+    await emojiReady; // تضمینِ اینکه قبل از رندرِ فید، منیفستِ ایموجی آماده‌ست
 
     applyAdminStatus(data);
     adminBadgeMap = data.admin_badges || {};
@@ -24247,7 +24372,6 @@ async function bootstrapApp() {
     renderMediaFeedPage(data.feed, true);
     initReferralStatus();
     initBirthdayPopup();
-    ensureEmojiManifestLoaded(); // پیش‌بارگذاریِ پک‌های ایموجی تا موقعِ رندرِ کامنت/چت از قبل آماده باشه
     if (data.changelog && !data.changelog.seen) {
       showChangelogModal(data.changelog.entries);
     }
