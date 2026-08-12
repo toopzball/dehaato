@@ -1,0 +1,58 @@
+# این ورک‌فلو رو دستی از تبِ Actions تویِ گیت‌هاب اجرا می‌کنی (نه خودکار روی هر پوش).
+# موقعِ اجرا، یه اینپوت به اسمِ «filename» ازت می‌خواد — اسمِ فایلی که تویِ ریپو نوشتی
+# (مثلاً index-wave.html)؛ اون فایل رو به‌جایِ index.html فعلی می‌ذاره:
+# ۱) index.html قبلی حذف می‌شه
+# ۲) فایلی که اسمش رو دادی، rename می‌شه به index.html
+# ۳) تغییر commit و پوش می‌شه رویِ همون شاخه‌ای که ورک‌فلو رویِ Actions ران شده
+name: Set index.html from file
+
+on:
+  workflow_dispatch:
+    inputs:
+      filename:
+        description: "اسمِ فایلی که می‌خوای بشه index.html (مثلاً index-wave.html)"
+        required: true
+        type: string
+
+jobs:
+  rename-to-index:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Rename file to index.html
+        run: |
+          set -e
+          SRC="${{ inputs.filename }}"
+
+          if [ ! -f "$SRC" ]; then
+            echo "فایلِ «$SRC» تویِ ریپو پیدا نشد."
+            exit 1
+          fi
+
+          if [ "$SRC" = "index.html" ]; then
+            echo "فایلِ داده‌شده همین الان هم index.html هست، کاری لازم نیست."
+            exit 0
+          fi
+
+          # اگه index.html قبلی وجود داشت حذفش کن
+          if [ -f "index.html" ]; then
+            git rm -f "index.html"
+          fi
+
+          # فایلِ انتخاب‌شده رو به index.html تغییرِ اسم بده
+          git mv "$SRC" "index.html"
+
+      - name: Commit and push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          if git diff --cached --quiet; then
+            echo "تغییری برای کامیت نبود."
+          else
+            git commit -m "index.html <- ${{ inputs.filename }}"
+            git push
+          fi
