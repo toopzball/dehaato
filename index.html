@@ -2862,27 +2862,50 @@
 
   html[data-music-skin="wave"] .reels-ctrl-btn.reels-toggle { display: none; }
 
-  /* ---------------- کپسولِ «موجِ شما» بالایِ تبِ سگ‌تونز (وضعیتِ همیشه‌بودنِ نوارِ پخشِ فعلی) ---------------- */
+  /* ================================================================
+     حالتِ تمام‌صفحه‌ی «موج»: با انتخابِ اسکینِ wave، تبِ سگ‌تونز دیگه یه تبِ معمولی
+     نیست — هدرِ سایت و نوارِ ناوبریِ بالا کامل مخفی می‌شن و به‌جاش یه نوارِ بالاییِ
+     مخصوص با دکمه‌ی بازگشت میاد؛ کلاسِ wave-immersive رویِ body با updateWaveImmersiveMode
+     کنترل می‌شه (تویِ switchView و applyMusicSkin صدا زده می‌شه). ---------------------------- */
+  body.wave-immersive header, body.wave-immersive .top-nav { display: none !important; }
+  body.wave-immersive .wrap { padding-top: 0; }
+  .wave-immersive-topbar { display: none; }
+  body.wave-immersive .wave-immersive-topbar {
+    display: flex; align-items: center; gap: 10px; position: sticky; z-index: 45;
+    top: 0; margin: 0 -2px 12px; padding: calc(10px + var(--safe-top)) 4px 8px;
+    background: var(--bg, var(--surface));
+  }
+  .wave-topbar-btn {
+    flex-shrink: 0; width: 36px; height: 36px; border-radius: 50%; border: none; cursor: pointer;
+    background: var(--card); color: var(--text); display: flex; align-items: center; justify-content: center;
+  }
+  .wave-topbar-btn svg { width: 18px; height: 18px; }
+  .wave-topbar-label {
+    flex: 1; min-width: 0; text-align: center; font-size: 13.5px; font-weight: 700; color: var(--text);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    background: var(--card); border-radius: 999px; padding: 9px 14px;
+  }
+  @media (max-width: 480px), (max-height: 700px) {
+    body.wave-immersive .wave-immersive-topbar { padding-top: calc(6px + var(--safe-top)); }
+  }
+
+  /* ---------------- کپسولِ «موجِ شما» زیرِ نوارِ بالا (وضعیتِ همیشه‌بودنِ نوارِ پخشِ فعلی) ---------------- */
   html:not([data-music-skin="wave"]) .wave-now-playing { display: none !important; }
   .wave-now-playing {
-    position: sticky; top: calc(6px + var(--safe-top)); z-index: 40;
+    position: sticky; top: 54px; z-index: 40;
     margin: 2px 2px 16px; border-radius: 22px; overflow: hidden;
     background: linear-gradient(155deg,#3a0b00,#8a2200 40%,#ff7a00 85%,#ffcf3f 120%);
     background-size: 200% 200%; animation: waveFlameShift 16s ease-in-out infinite;
     box-shadow: 0 10px 26px rgba(120,30,0,0.28);
   }
   .wave-now-playing.hidden { display: none; }
-  .wave-capsule-label {
-    display: flex; align-items: center; justify-content: space-between; gap: 8px;
-    padding: 10px 14px 0; font-size: 12px; font-weight: 700; color: #ffe4bf;
-  }
-  .wave-capsule-label span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .wave-capsule-close {
-    flex-shrink: 0; width: 22px; height: 22px; border-radius: 50%; border: none; cursor: pointer;
-    background: rgba(0,0,0,0.3); color: #ffe4bf; display: flex; align-items: center; justify-content: center;
+    position: absolute; top: 8px; inset-inline-end: 8px; z-index: 2;
+    width: 22px; height: 22px; border-radius: 50%; border: none; cursor: pointer;
+    background: rgba(0,0,0,0.32); color: #ffe4bf; display: flex; align-items: center; justify-content: center;
   }
   .wave-capsule-close svg { width: 12px; height: 12px; }
-  .wave-capsule-body { display: flex; align-items: center; gap: 10px; padding: 10px 12px 12px; cursor: pointer; }
+  .wave-capsule-body { display: flex; align-items: center; gap: 10px; padding: 12px; cursor: pointer; }
   .wave-capsule-cover {
     position: relative; flex-shrink: 0; width: 46px; height: 46px; border-radius: 10px; overflow: hidden;
     background: rgba(0,0,0,0.35); box-shadow: 0 0 0 2px rgba(255,235,200,0.35);
@@ -5922,6 +5945,18 @@
 
   <!-- بخش سگ‌تونز: لیست همه‌ی آهنگ‌های آپلود شده تو سایت -->
   <div id="view-music" class="view hidden">
+    <!-- نوارِ بالایِ حالتِ تمام‌صفحه‌ی «موج»: دکمه‌ی بازگشت (به‌جای نوارِ ناوبری) + برچسب + جستجو —
+         فقط وقتی اسکینِ فعال wave باشه دیده می‌شه (کلاسِ wave-immersive رویِ body کنترلش می‌کنه) -->
+    <div class="wave-immersive-topbar" id="waveImmersiveTopbar">
+      <button type="button" class="wave-topbar-btn wave-topbar-back" onclick="exitWaveImmersive()" aria-label="بازگشت" title="بازگشت">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      </button>
+      <div class="wave-topbar-label" id="waveTopbarLabel">سگ‌تونز</div>
+      <button type="button" class="wave-topbar-btn wave-topbar-search" onclick="focusMusicSearchFromWave()" aria-label="جستجو" title="جستجو">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+      </button>
+    </div>
+
     <!-- کپسولِ «موجِ شما» — فقط تو اسکینِ wave و فقط وقتی آهنگی در حالِ پخشه نشون داده می‌شه (با JS پر می‌شه) -->
     <div id="waveNowPlayingCapsule" class="wave-now-playing hidden"></div>
 
@@ -7472,6 +7507,25 @@ function applyMusicSkin(skin) {
   localStorage.setItem("musicSkin", skin);
   markActiveMusicSkin(skin);
   updateWaveNowPlayingCapsule();
+  updateWaveImmersiveMode();
+}
+
+// ---------- حالتِ تمام‌صفحه‌ی «موج»: با اسکینِ wave، تبِ سگ‌تونز به‌جایِ نوارِ ناوبریِ بالا و
+// هدرِ سایت، یه صفحه‌ی مستقل با دکمه‌ی بازگشتِ خودش می‌شه — دقیقاً حسِ یه اپِ جدا، نه یه تب ----------
+function updateWaveImmersiveMode() {
+  const musicView = document.getElementById("view-music");
+  const active = currentMusicSkin === "wave" && musicView && !musicView.classList.contains("hidden");
+  document.body.classList.toggle("wave-immersive", !!active);
+}
+// دکمه‌ی بازگشتِ نوارِ بالا: به‌جایِ اینکه کاربر مجبور باشه از نوارِ ناوبریِ (که الان مخفیه) یه
+// بخشِ دیگه رو بزنه، همینجا مستقیم برمی‌گردونتش به فیدِ رسانه (همون رفتارِ باز کردنِ اولِ اپ)
+function exitWaveImmersive() { switchView("media"); }
+// آیکونِ ذره‌بینِ نوارِ بالا: کادرِ جستجویِ همیشه‌موجودِ خودِ سگ‌تونز رو اسکرول می‌کنه بالا و فوکوس می‌کنه
+function focusMusicSearchFromWave() {
+  const input = document.getElementById("musicSearchInput");
+  if (!input) return;
+  input.scrollIntoView({ behavior: "smooth", block: "center" });
+  setTimeout(() => input.focus(), 260);
 }
 
 // ---------- کپسولِ «موجِ شما» (اسکینِ wave): بالایِ تبِ سگ‌تونز، شبیهِ نوارِ «Моя волна»یِ
@@ -7487,31 +7541,31 @@ function dismissWaveCapsule(e) {
 }
 function updateWaveNowPlayingCapsule() {
   const box = document.getElementById("waveNowPlayingCapsule");
+  const topbarLabel = document.getElementById("waveTopbarLabel");
   if (!box) return;
   if (currentMusicSkin !== "wave" || !currentAudio) {
     box.classList.add("hidden");
     box.innerHTML = "";
     waveCapsuleLastSafeId = null;
+    if (topbarLabel) topbarLabel.textContent = "سگ‌تونز";
     return;
   }
   if (waveCapsuleLastSafeId !== currentAudio.safeId) {
     waveCapsuleDismissed = false;
     waveCapsuleLastSafeId = currentAudio.safeId;
   }
-  if (waveCapsuleDismissed) { box.classList.add("hidden"); return; }
   const meta = audioMetaRegistry[currentAudio.safeId];
-  if (!meta) { box.classList.add("hidden"); return; }
+  if (!meta) { box.classList.add("hidden"); if (topbarLabel) topbarLabel.textContent = "سگ‌تونز"; return; }
+  if (topbarLabel) topbarLabel.textContent = `موجِ شما بر اساسِ «${meta.title || "این آهنگ"}»`;
+  if (waveCapsuleDismissed) { box.classList.add("hidden"); return; }
   const playing = !currentAudio.audioEl.paused;
   const coverHtml = meta.thumbFileId
     ? `<img src="${mediaUrl(meta.thumbFileId)}" alt="" />`
     : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>`;
   box.innerHTML = `
-    <div class="wave-capsule-label">
-      <span>موجِ شما بر اساسِ «${escapeHtml(meta.title || "این آهنگ")}»</span>
-      <button type="button" class="wave-capsule-close" onclick="dismissWaveCapsule(event)" aria-label="بستن">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
-      </button>
-    </div>
+    <button type="button" class="wave-capsule-close" onclick="dismissWaveCapsule(event)" aria-label="بستن">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+    </button>
     <div class="wave-capsule-body" onclick="openFullPlayer()">
       <div class="wave-capsule-cover">${coverHtml}<span class="wave-capsule-target"></span></div>
       <div class="wave-capsule-info">
@@ -8127,6 +8181,7 @@ function switchView(name, forceReload = false) {
     resumePostCooldownUI();
     initUploadRoute();
   }
+  updateWaveImmersiveMode();
 }
 
 // ---------- کپسول ناوبری بالای صفحه: پس‌زمینه‌ی مشترکِ متحرک، دقیقاً هم‌اندازه‌ی دکمه‌ی فعال ----------
