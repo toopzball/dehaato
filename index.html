@@ -2871,14 +2871,17 @@
   body.wave-immersive .wrap { padding-top: 0; }
   /* پس‌زمینه‌ی تمام‌صفحه‌ی شعله‌ای — عیناً زبانِ بصریِ «موجِ من»یِ یاندکس‌موزیک؛ صرف‌نظر از تمِ رنگیِ
      خودِ سایت، همیشه همین گرادینتِ نارنجی/قرمز/طلایی‌ست، رویِ کلِ صفحه (نه فقط پلیرِ تمام‌صفحه) */
-  body.wave-immersive { background-color: #1a0400; }
+  /* پس‌زمینه‌ی پایه‌ی حالتِ موج مشکیِ کامله (نه قهوه‌ای‌تیره‌ی قبلی)؛ شعله فقط نزدیکِ بالای صفحه
+     (پشتِ نوارِ بالا/کارتِ بزرگ) دیده می‌شه و با یه fade به سیاهِ کامل می‌رسه — دقیقاً مثلِ
+     رفرنس: نارنجی فقط بالا، زیرِ کارت (لیستِ آهنگ‌ها) مشکیِ یک‌دست */
+  body.wave-immersive { background-color: #000; }
   body.wave-immersive::before {
     content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none;
     background:
-      radial-gradient(55% 38% at 26% 6%, #ffe27a 0%, transparent 55%),
-      radial-gradient(65% 50% at 74% 20%, #ff9a00 0%, transparent 60%),
-      radial-gradient(85% 68% at 50% 52%, #ff4400 0%, transparent 68%),
-      radial-gradient(100% 85% at 50% 108%, #8a1400 0%, #1a0400 78%);
+      radial-gradient(50% 30% at 26% 2%, #ffe27a 0%, transparent 60%),
+      radial-gradient(55% 34% at 74% 10%, #ff9a00 0%, transparent 62%),
+      radial-gradient(70% 38% at 50% 18%, #ff4400 0%, transparent 70%),
+      linear-gradient(180deg, transparent 0, transparent 220px, #000 460px, #000 100%);
   }
   .wave-immersive-topbar { display: none; }
   body.wave-immersive .wave-immersive-topbar {
@@ -2930,8 +2933,10 @@
   .wave-hero {
     display: flex; flex-direction: column; align-items: center;
     width: 100vw; margin: 6px calc(-50vw + 50%) 24px;
-    padding: 26px calc(20px + var(--safe-left)) 30px calc(20px + var(--safe-right));
-    background: linear-gradient(180deg, rgba(0,0,0,0.05), rgba(0,0,0,0.28) 60%, rgba(0,0,0,0.4));
+    padding: 26px calc(20px + var(--safe-left)) 34px calc(20px + var(--safe-right));
+    /* از بالا (شفاف، شعله دیده بشه) تا پایینِ کارت مشکیِ کامل — دقیقاً همون سیاهیِ زیرِ کارت
+       رو ادامه می‌ده، پس مرزِ کارت با بخشِ لیست زیرش کاملاً بدونِ خط‌افتادگی به‌هم وصل می‌شه */
+    background: linear-gradient(180deg, rgba(0,0,0,0.05), rgba(0,0,0,0.5) 65%, #000 100%);
     box-sizing: border-box;
   }
   .wave-hero.hidden { display: none; }
@@ -2991,12 +2996,26 @@
   }
 
   /* ---------------- بازطراحیِ جستجو/کارت‌های خانه — زبانِ شیشه‌ای/دایره‌ایِ یاندکس‌موزیک ---------------- */
+  /* کادرِ سرچِ همیشه‌نمایان حذف شد؛ به‌جاش فقط دکمه‌ی ذره‌بینِ نوارِ بالا (wave-topbar-search،
+     دقیقاً مثلِ عکسِ کانسپت) هست. با زدنِ اون دکمه، همین کادر با کلاسِ wave-search-open موقتاً
+     باز می‌شه (focusMusicSearchFromWave)، و با خالی‌شدن/خروج از فوکوس دوباره بسته می‌شه
+     (closeWaveSearchIfEmpty) — پس ظاهرِ پیش‌فرضِ صفحه بدونِ کادرِ سرچه */
   html[data-music-skin="wave"] .music-search-row {
+    display: none;
     border-radius: 999px; background: rgba(255,255,255,0.12); border-color: transparent;
+    margin-bottom: 14px;
   }
+  html[data-music-skin="wave"] .music-search-row.wave-search-open { display: flex; }
   html[data-music-skin="wave"] .music-search-input { color: #fff; }
   html[data-music-skin="wave"] .music-search-input::placeholder { color: rgba(255,255,255,0.55); }
   html[data-music-skin="wave"] .music-search-row svg { color: rgba(255,255,255,0.7); }
+  /* بکگراندِ ردیفِ آهنگ حذف شد — عیناً لیستِ آهنگ‌هایِ «موجِ من»یِ یاندکس‌موزیک بدونِ کارت/بوردره،
+     رو همون پس‌زمینه‌ی مشکیِ صفحه؛ رنگِ متن هم برایِ خوانایی رویِ مشکی سفید/کِرم می‌شه */
+  html[data-music-skin="wave"] .music-row {
+    background: transparent; border-color: transparent;
+  }
+  html[data-music-skin="wave"] .music-row-title { color: #fff; }
+  html[data-music-skin="wave"] .music-row-sub { color: rgba(255,225,195,0.65); }
   html[data-music-skin="wave"] .music-row-cover,
   html[data-music-skin="wave"] .music-home-card-cover {
     border-radius: 50%; background: transparent; border: none; box-shadow: 0 4px 14px rgba(0,0,0,0.18);
@@ -3773,15 +3792,8 @@
   .chat-reaction-chip:active { transform: scale(0.92); }
   .chat-reaction-chip.mine { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 16%, var(--card)); }
   .chat-reaction-chip span { font-size: 11px; color: var(--subtext); font-variant-numeric: tabular-nums; }
-  .chat-reaction-picker {
-    background: var(--surface); border: 1px solid var(--border); border-radius: 999px; padding: 8px 10px;
-    display: flex; gap: 6px; margin: 0 16px calc(16px + var(--safe-bottom)); animation: fadeInUp 0.15s ease;
-  }
-  .chat-reaction-picker-item {
-    background: none; border: none; font-size: 24px; cursor: pointer; padding: 4px; border-radius: 50%;
-    transition: transform 0.12s ease;
-  }
-  .chat-reaction-picker-item:hover { transform: scale(1.2); background: var(--card); }
+  /* پاپ‌آپِ کوچیکِ قبلیِ ری‌اکشن حذف شد؛ الان همون پیکرِ ایموجیِ کامنت/چت (با پک‌ها) استفاده می‌شه —
+     نگاه کن به openChatReactionPicker */
 
   /* ---------- چت: برچسبِ فوروارد ---------- */
   .chat-forwarded-tag { font-size: 11px; color: var(--subtext); font-style: italic; margin-bottom: 2px; opacity: 0.85; }
@@ -6028,7 +6040,7 @@
     <!-- کادرِ جستجویِ آهنگ/خواننده؛ صرف‌نظر از اینکه کدوم تب فعاله، نتیجه‌ی جستجو تو #musicList نشون داده می‌شه -->
     <div class="music-search-row">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-      <input type="text" id="musicSearchInput" class="music-search-input" placeholder="جستجوی آهنگ یا خواننده..." autocomplete="off" oninput="onMusicSearchInput()" />
+      <input type="text" id="musicSearchInput" class="music-search-input" placeholder="جستجوی آهنگ یا خواننده..." autocomplete="off" oninput="onMusicSearchInput()" onblur="closeWaveSearchIfEmpty()" />
       <button type="button" class="music-search-clear-btn hidden" id="musicSearchClearBtn" onclick="clearMusicSearchInput()" aria-label="پاک‌کردنِ جستجو" title="پاک‌کردنِ جستجو">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
       </button>
@@ -7576,12 +7588,27 @@ function updateWaveImmersiveMode() {
 // دکمه‌ی بازگشتِ نوارِ بالا: به‌جایِ اینکه کاربر مجبور باشه از نوارِ ناوبریِ (که الان مخفیه) یه
 // بخشِ دیگه رو بزنه، همینجا مستقیم برمی‌گردونتش به فیدِ رسانه (همون رفتارِ باز کردنِ اولِ اپ)
 function exitWaveImmersive() { switchView("media"); }
-// آیکونِ ذره‌بینِ نوارِ بالا: کادرِ جستجویِ همیشه‌موجودِ خودِ سگ‌تونز رو اسکرول می‌کنه بالا و فوکوس می‌کنه
+// آیکونِ ذره‌بینِ نوارِ بالا: چون کادرِ سرچ دیگه همیشه‌نمایان نیست (توسطِ CSS مخفیه)، اول با کلاسِ
+// wave-search-open بازش می‌کنیم، بعد اسکرول و فوکوس می‌کنیم
 function focusMusicSearchFromWave() {
+  const row = document.querySelector("#view-music .music-search-row");
   const input = document.getElementById("musicSearchInput");
-  if (!input) return;
-  input.scrollIntoView({ behavior: "smooth", block: "center" });
+  if (!row || !input) return;
+  row.classList.add("wave-search-open");
+  row.scrollIntoView({ behavior: "smooth", block: "center" });
   setTimeout(() => input.focus(), 260);
+}
+// وقتی از کادرِ سرچِ اسکینِ موج فوکوس خارج می‌شه و متنی توش نیست، دوباره مخفی می‌شه (ظاهرِ پیش‌فرضِ
+// بدونِ کادرِ سرچ حفظ بشه)؛ setTimeout برای اینه که اگه کاربر داشت رویِ دکمه‌ی پاک‌کردنِ داخلِ همون
+// کادر کلیک می‌کرد (که خودش باعثِ blur می‌شه)، کلیک قبل از بسته‌شدنِ کادر به هدف برسه
+function closeWaveSearchIfEmpty() {
+  if (currentMusicSkin !== "wave") return;
+  const row = document.querySelector("#view-music .music-search-row");
+  const input = document.getElementById("musicSearchInput");
+  if (!row || !input) return;
+  setTimeout(() => {
+    if (!input.value.trim()) row.classList.remove("wave-search-open");
+  }, 180);
 }
 
 // ---------- کپسولِ «موجِ شما» (اسکینِ wave): بالایِ تبِ سگ‌تونز، شبیهِ نوارِ «Моя волна»یِ
@@ -7610,18 +7637,28 @@ function updateWaveNowPlayingCapsule() {
     // currentAudio با let خیلی پایین‌تر تو فایل تعریف می‌شه؛ اولین باری که این تابع صدا زده می‌شه
     // (از applyMusicSkin(currentMusicSkin) همون بالای لودِ صفحه) ممکنه هنوز به اون خط نرسیده باشیم —
     // در اون حالت هر ارجاعی به currentAudio ReferenceError می‌ده؛ try/catch جلوی توقفِ کل اسکریپت رو می‌گیره
-    if (currentMusicSkin !== "wave" || !currentAudio) {
+
+    // وقتی کاربر خودش پخش رو متوقف می‌کنه (toggleAudio) یا آهنگ تموم می‌شه، currentAudio نال می‌شه —
+    // ولی مینی‌پلیر (که با آخرین safeId هنوز بازه، مگر با X صریحاً بسته شده باشه) هنوز رو همون آهنگه؛
+    // پس به‌جایِ تکیه‌ی صرف به currentAudio، اگه نال بود از مینی‌پلیرِ بازِ فعلی safeId رو می‌گیریم تا
+    // کارتِ بزرگ فقط وقتی واقعاً هیچ آهنگی انتخاب نشده (یا مینی‌پلیر کامل بسته شده) غیب بشه
+    const miniPlayerWrap = document.getElementById("miniPlayer");
+    const activeSafeId = currentAudio
+      ? currentAudio.safeId
+      : (miniPlayerWrap && !miniPlayerWrap.classList.contains("hidden") ? miniPlayerWrap.dataset.safeId : null);
+
+    if (currentMusicSkin !== "wave" || !activeSafeId) {
       box.classList.add("hidden");
       box.innerHTML = "";
       waveCapsuleLastSafeId = null;
       setWaveTopbarPlain("سگ‌تونز");
       return;
     }
-    if (waveCapsuleLastSafeId !== currentAudio.safeId) {
+    if (waveCapsuleLastSafeId !== activeSafeId) {
       waveCapsuleDismissed = false;
-      waveCapsuleLastSafeId = currentAudio.safeId;
+      waveCapsuleLastSafeId = activeSafeId;
     }
-    const meta = audioMetaRegistry[currentAudio.safeId];
+    const meta = audioMetaRegistry[activeSafeId];
     if (!meta) { box.classList.add("hidden"); setWaveTopbarPlain("سگ‌تونز"); return; }
     if (waveCapsuleDismissed) {
       box.classList.add("hidden");
@@ -7641,7 +7678,8 @@ function updateWaveNowPlayingCapsule() {
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
         </button>`;
     }
-    const playing = !currentAudio.audioEl.paused;
+    const activeAudioEl = currentAudio ? currentAudio.audioEl : document.getElementById(`audioEl-${activeSafeId}`);
+    const playing = !!(activeAudioEl && !activeAudioEl.paused);
     const coverHtml = meta.thumbFileId
       ? `<img src="${mediaUrl(meta.thumbFileId)}" alt="" />`
       : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>`;
@@ -7656,7 +7694,7 @@ function updateWaveNowPlayingCapsule() {
         <button type="button" class="wave-hero-btn" onclick="stepMiniPlayer(-1)" title="قبلی" aria-label="قبلی">
           <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg>
         </button>
-        <button type="button" class="wave-hero-play" id="waveCapsulePlayBtn" onclick="toggleAudio('${currentAudio.safeId}')" title="پخش/توقف" aria-label="پخش/توقف">
+        <button type="button" class="wave-hero-play" id="waveCapsulePlayBtn" onclick="toggleAudio('${activeSafeId}')" title="پخش/توقف" aria-label="پخش/توقف">
           <svg class="icon-play" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
           <svg class="icon-pause" viewBox="0 0 24 24" fill="currentColor"><path d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg>
           <span class="wave-capsule-time" id="waveCapsuleTime">۰:۰۰</span>
@@ -7693,14 +7731,17 @@ function openWaveQueueFromCapsule(e) {
 setInterval(() => {
   const box = document.getElementById("waveNowPlayingCapsule");
   if (!box || box.classList.contains("hidden")) return;
-  if (!currentAudio || !currentAudio.audioEl) return;
-  const playing = !currentAudio.audioEl.paused;
+  // مثلِ updateWaveNowPlayingCapsule: اگه currentAudio نال شده (پخش متوقف شده) ولی کارت هنوز
+  // (رو آخرین safeId) نمایش داده می‌شه، عنصرِ audio رو از رویِ همون safeId پیدا می‌کنیم
+  const audioEl = currentAudio ? currentAudio.audioEl : (waveCapsuleLastSafeId ? document.getElementById(`audioEl-${waveCapsuleLastSafeId}`) : null);
+  if (!audioEl) return;
+  const playing = !audioEl.paused;
   box.classList.toggle("playing", playing);
   document.getElementById("waveCapsulePlayBtn")?.classList.toggle("playing", playing);
   const t = document.getElementById("waveCapsuleTime");
-  if (t) t.textContent = formatTime(currentAudio.audioEl.currentTime || 0);
-  if (currentAudio.audioEl.duration) {
-    const pct = Math.min(100, (currentAudio.audioEl.currentTime / currentAudio.audioEl.duration) * 100);
+  if (t) t.textContent = formatTime(audioEl.currentTime || 0);
+  if (audioEl.duration) {
+    const pct = Math.min(100, (audioEl.currentTime / audioEl.duration) * 100);
     box.style.setProperty("--wave-progress", pct.toFixed(2) + "%");
   }
 }, 1000);
@@ -10895,7 +10936,9 @@ function renderChatReactionsRow(m, myUsername) {
   return `<div class="chat-reactions-row">${m.reactions
     .map((r) => {
       const mine = r.usernames.includes(myUsername);
-      return `<button type="button" class="chat-reaction-chip${mine ? " mine" : ""}" onclick="event.stopPropagation(); toggleChatReaction('${m.id}', '${r.emoji}')">${r.emoji}<span>${r.count}</span></button>`;
+      // r.emoji ممکنه ایموجیِ یونیکد باشه یا شورت‌کدِ پکیِ سایت (:e:pack:name:)؛ renderRichText شورت‌کدِ
+      // پکی رو به <img> تبدیل می‌کنه، یونیکد دست‌نخورده می‌مونه (observer سراسریِ twemoji بعداً تبدیلش می‌کنه)
+      return `<button type="button" class="chat-reaction-chip${mine ? " mine" : ""}" onclick="event.stopPropagation(); toggleChatReaction('${m.id}', '${jsAttr(r.emoji)}')">${renderRichText(r.emoji)}<span>${r.count}</span></button>`;
     })
     .join("")}</div>`;
 }
@@ -11144,23 +11187,21 @@ function openChatMessageMenu(messageId) {
 }
 
 // ---------- چت: ری‌اکشن با ایموجی ----------
-const CHAT_QUICK_REACTIONS = ["👍", "❤️", "😂", "😮", "😢", "🙏", "🔥", "👏"];
-
+// قبلاً یه پاپ‌آپِ کوچیکِ جدا با فقط ۸ ایموجیِ ثابتِ یونیکد بود (محدودیتِ بیان)؛ الان دقیقاً همون
+// پیکرِ ایموجیِ کامنت/چت (با تبِ پیش‌فرض + همه‌یِ پک‌های ایموجیِ آپلودشده‌ی سایت) باز می‌شه، فقط با
+// context مخصوصِ "chat-reaction" — انتخاب هر ایموجی (یونیکد یا پکی) فوراً همون آهنگِ ری‌اکشن رو
+// می‌فرسته و پاپ‌آپ بسته می‌شه (بدونِ نوارِ کمپوز/دکمه‌ی ارسال، چون اینجا انتخاب = ارسالِ فوریه)
 function openChatReactionPicker(messageId) {
-  document.getElementById("chatMsgMenuBackdrop")?.remove();
-  const backdrop = document.createElement("div");
-  backdrop.className = "chat-msg-menu-backdrop";
-  backdrop.id = "chatMsgMenuBackdrop";
-  backdrop.onclick = (e) => {
-    if (e.target === backdrop) backdrop.remove();
-  };
-  backdrop.innerHTML = `
-    <div class="chat-reaction-picker">
-      ${CHAT_QUICK_REACTIONS.map(
-        (em) => `<button type="button" class="chat-reaction-picker-item" onclick="document.getElementById('chatMsgMenuBackdrop').remove(); toggleChatReaction('${messageId}', '${em}')">${em}</button>`
-      ).join("")}
-    </div>`;
-  document.body.appendChild(backdrop);
+  if (!getToken()) { alert("اول وارد شو"); return; }
+  stickerTarget = { context: "chat-reaction", messageId };
+  document.getElementById("emojiPickerError").textContent = "";
+  document.getElementById("emojiComposeInput").innerHTML = "";
+  const overlay = document.getElementById("stickerPickerOverlay");
+  overlay.classList.add("emoji-only");
+  switchPickerTab("emoji");
+  overlay.classList.remove("hidden");
+  void overlay.offsetWidth;
+  overlay.classList.add("open");
 }
 
 async function toggleChatReaction(messageId, emoji) {
@@ -21435,6 +21476,9 @@ function switchPickerTab(tab) {
     stickerBtn.classList.remove("active");
     emojiBtn.classList.add("active");
     title.textContent = "ایموجی";
+    // تویِ حالتِ ری‌اکشنِ چت انتخاب = ارسالِ فوری، پس نوارِ کمپوز/دکمه‌ی ارسال بی‌مصرفه — مخفیش می‌کنیم
+    const composeBar = document.querySelector("#emojiPickerBody .emoji-compose-bar");
+    if (composeBar) composeBar.classList.toggle("hidden", stickerTarget && stickerTarget.context === "chat-reaction");
     loadEmojiPicker();
   } else {
     emojiBody.classList.add("hidden");
@@ -21450,12 +21494,29 @@ async function loadEmojiPicker() {
   const errEl = document.getElementById("emojiPickerError");
   errEl.textContent = "";
   const tabsEl = document.getElementById("emojiPackTabs");
-  tabsEl.innerHTML = `<button type="button" class="emoji-pack-tab active" onclick="setEmojiPack('__default__')">پیش‌فرض</button>`;
+  // تویِ حالتِ ری‌اکشنِ چت، تبِ «پیش‌فرض» (ایموجیِ یونیکد) نشون داده نمی‌شه — فقط پک‌های ایموجیِ
+  // خودِ سایت به‌عنوانِ گزینه‌ی ری‌اکشن در دسترس‌ان
+  const isReactionMode = stickerTarget && stickerTarget.context === "chat-reaction";
+  tabsEl.innerHTML = isReactionMode ? "" : `<button type="button" class="emoji-pack-tab active" onclick="setEmojiPack('__default__')">پیش‌فرض</button>`;
   document.getElementById("emojiGrid").innerHTML = `<div class="comment-empty">در حال بارگذاری...</div>`;
 
   const packs = await fetchDefaultEmojis();
   await ensureEmojiManifestLoaded();
   if (!emojiPacksCache) { errEl.textContent = "بارگذاریِ پک‌های ایموجی ناموفق بود"; }
+
+  if (isReactionMode) {
+    if (packs.length === 0) {
+      tabsEl.innerHTML = "";
+      document.getElementById("emojiGrid").innerHTML = `<div class="comment-empty">هنوز هیچ پک ایموجی‌ای اضافه نشده</div>`;
+      return;
+    }
+    tabsEl.innerHTML = packs
+      .map((p, i) => `<button type="button" class="emoji-pack-tab${i === 0 ? " active" : ""}" id="emojiPackTab-${escapeHtml(p.id)}" onclick="setEmojiPack('${jsAttr(p.id)}')">${escapeHtml(p.label)}</button>`)
+      .join("");
+    emojiActivePack = packs[0].id;
+    renderEmojiGrid();
+    return;
+  }
 
   tabsEl.innerHTML =
     `<button type="button" class="emoji-pack-tab active" id="emojiPackTab-__default__" onclick="setEmojiPack('__default__')">پیش‌فرض</button>` +
@@ -21554,12 +21615,26 @@ function getEmojiComposeValue() {
 }
 
 function pickUnicodeEmoji(e) {
+  // تویِ حالتِ ری‌اکشنِ چت، انتخاب = ارسالِ فوریِ ری‌اکشن (نه درج تو نوارِ کمپوز)
+  if (stickerTarget && stickerTarget.context === "chat-reaction") {
+    const messageId = stickerTarget.messageId;
+    closeStickerPicker();
+    toggleChatReaction(messageId, e);
+    return;
+  }
   const input = document.getElementById("emojiComposeInput");
   insertIntoEmojiCompose(document.createTextNode(e));
   applyTwemojiTo(input); // ظاهرش رو هم‌شکلِ استایلِ iOS می‌کنه، عینِ جاهایِ دیگه‌ی سایت
 }
 
 function pickPackEmoji(packId, baseName) {
+  // تویِ حالتِ ری‌اکشنِ چت، انتخاب = ارسالِ فوریِ ری‌اکشن با شورت‌کدِ همون ایموجیِ پکی
+  if (stickerTarget && stickerTarget.context === "chat-reaction") {
+    const messageId = stickerTarget.messageId;
+    closeStickerPicker();
+    toggleChatReaction(messageId, `:e:${packId}:${baseName}:`);
+    return;
+  }
   const entry = emojiManifest[packId] && emojiManifest[packId][baseName];
   const img = document.createElement("img");
   img.className = "emoji-img";
