@@ -2791,34 +2791,154 @@
   }
 
   /* ================================================================
-     تمِ «موج» برای سگ‌تونز — data-music-skin="wave" — الهام از یاندکس‌موزیک:
-     پس‌زمینه‌ی تمام‌صفحه‌ی گرم/شعله‌ای بجایِ بلابِ رنگیِ برگرفته از کاور، دکمه‌ی
-     پخشِ اصلیِ سفیدِ توپر، و لهجه‌ی رنگیِ نارنجی-زرد رویِ بقیه‌ی دکمه‌ها. ---------------- */
-  html[data-music-skin="wave"] .full-player .bg-blur { background: linear-gradient(160deg,#3a0a00,#7a1d00 35%,#ff7a00 68%,#ffcf3f 100%); }
+     تمِ «موج» برای سگ‌تونز — data-music-skin="wave" — کپیِ دقیقِ زبانِ بصریِ
+     «موجِ من»یِ یاندکس‌موزیک: پس‌زمینه‌ی تمام‌صفحه‌ی شعله‌ایِ متحرک، کاورِ مربعیِ
+     کوچیک با نشانِ هدف‌گیریِ گوشه، دکمه‌ی پخشِ اصلی به‌شکلِ کپسولِ سفید با زمانِ
+     داخلش (دقیقاً مثلِ «▶ ۰۱:۴۸» تو رفرنس)، و بازطراحیِ کاملِ صفحه‌ی خانه/لیست با
+     کپسولِ «موجِ شما»، تب‌های کپسولی، و کارت‌های دایره‌ای. ---------------------------- */
+  html[data-music-skin="wave"] .full-player .bg-blur {
+    background: linear-gradient(160deg,#2b0600,#7a1d00 30%,#e6480a 55%,#ff8a00 75%,#ffcf3f 100%);
+    background-size: 220% 220%;
+    animation: waveFlameShift 14s ease-in-out infinite;
+  }
+  @keyframes waveFlameShift {
+    0%, 100% { background-position: 20% 30%; }
+    50% { background-position: 80% 70%; }
+  }
+  html[data-music-skin="wave"] .full-player .ambient-blob { filter: blur(90px); opacity: 0.75; }
   html[data-music-skin="wave"] .full-player .ambient-blob.b1 { background: #ff5a1f; }
   html[data-music-skin="wave"] .full-player .ambient-blob.b2 { background: #ffb300; }
   html[data-music-skin="wave"] .full-player .ambient-blob.b3 { background: #ff2d55; }
-  html[data-music-skin="wave"] .full-player .ambient-vignette { background: radial-gradient(ellipse at center, rgba(20,5,0,0.12) 30%, rgba(15,3,0,0.6) 75%, rgba(6,1,0,0.92) 100%); }
-  html[data-music-skin="wave"] .reels-art-wrap { border-radius: 14px; box-shadow: 0 14px 40px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,255,255,0.08); }
-  html[data-music-skin="wave"] .reels-ctrl-btn.reels-ctrl-main { background: #fff; color: #241000; box-shadow: 0 6px 20px rgba(0,0,0,0.4); }
-  html[data-music-skin="wave"] .reels-ctrl-btn { background: rgba(0,0,0,0.32); border-color: rgba(255,255,255,0.16); }
-  html[data-music-skin="wave"] .reels-ctrl-btn.reels-toggle.active { background: #ffcc4d; color: #241000; border-color: transparent; }
-  html[data-music-skin="wave"] .reels-seek { background: rgba(255,255,255,0.22); }
-  html[data-music-skin="wave"] .reels-seek::-webkit-slider-thumb, html[data-music-skin="wave"] .reels-seek::-moz-range-thumb { background: #ffcc4d; }
+  html[data-music-skin="wave"] .full-player .ambient-vignette { background: radial-gradient(ellipse at center, rgba(20,5,0,0.1) 25%, rgba(15,3,0,0.55) 72%, rgba(6,1,0,0.9) 100%); }
+
+  /* کاورِ مربعیِ کوچیک با حلقه‌ی کِرم‌رنگ + نشانِ هدف‌گیریِ گوشه‌ی پایین‌راست، عیناً رفرنس */
+  html[data-music-skin="wave"] .reels-art-wrap {
+    width: 190px; height: 190px; border-radius: 18px;
+    box-shadow: 0 16px 40px rgba(0,0,0,0.55), 0 0 0 3px rgba(255,235,200,0.35);
+  }
+  @media (max-width: 480px), (max-height: 700px) { html[data-music-skin="wave"] .reels-art-wrap { width: 140px; height: 140px; border-radius: 14px; } }
+  html[data-music-skin="wave"] .reels-art-wrap::after {
+    content: ""; position: absolute; inset-inline-end: 8px; bottom: 8px; width: 26px; height: 26px;
+    border-radius: 50%; background: rgba(20,6,0,0.55); backdrop-filter: blur(3px); z-index: 3;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ffe9c7' stroke-width='2'%3E%3Ccircle cx='12' cy='12' r='7'/%3E%3Ccircle cx='12' cy='12' r='1.4' fill='%23ffe9c7'/%3E%3Cpath d='M12 2v3M12 19v3M2 12h3M19 12h3'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: center; background-size: 15px 15px;
+  }
+
+  /* دکمه‌ی پخشِ اصلی: کپسولِ سفیدِ کشیده با آیکون + زمانِ سپری‌شده داخلش، دقیقاً مثلِ «▶ ۰۱:۴۸» رفرنس */
+  html[data-music-skin="wave"] .reels-ctrl-btn.reels-ctrl-main {
+    width: auto; height: 46px; padding: 0 18px 0 14px; border-radius: 999px; gap: 8px;
+    background: #fff; color: #241000; box-shadow: 0 8px 22px rgba(0,0,0,0.45);
+    direction: ltr;
+  }
+  html[data-music-skin="wave"] .reels-ctrl-btn.reels-ctrl-main svg { width: 17px; height: 17px; }
+  html[data-music-skin="wave"] .reels-ctrl-main-time {
+    display: inline-block; font-family: ui-monospace, Menlo, monospace; font-size: 13px;
+    font-weight: 700; color: #241000; direction: ltr;
+  }
+  html[data-music-skin="wave"] .reels-ctrl-btn { background: transparent; border-color: transparent; color: rgba(255,255,255,0.92); }
+  html[data-music-skin="wave"] .reels-ctrl-btn:not(.reels-ctrl-main) svg { width: 21px; height: 21px; }
+  html[data-music-skin="wave"] .reels-ctrl-btn.reels-toggle { opacity: 0.55; }
+  html[data-music-skin="wave"] .reels-ctrl-btn.reels-toggle.active { background: transparent; opacity: 1; color: #ffcc4d; border-color: transparent; }
+
+  /* سیک‌بار: نوارِ نازکِ کپسولی که با درصدِ پیشرفت (--seek-pct، هر فریم از JS آپدیت می‌شه) پر می‌شه */
+  html[data-music-skin="wave"] .reels-seek {
+    height: 5px; background: linear-gradient(to right, #ffcc4d var(--seek-pct, 0%), rgba(255,255,255,0.22) var(--seek-pct, 0%));
+  }
+  html[data-music-skin="wave"] .reels-seek::-webkit-slider-thumb, html[data-music-skin="wave"] .reels-seek::-moz-range-thumb { background: #ffcc4d; box-shadow: 0 0 0 3px rgba(255,204,77,0.25); }
+  html[data-music-skin="wave"] .reels-seek-time { color: rgba(255,235,210,0.8); }
   html[data-music-skin="wave"] .reels-title { font-weight: 800; }
+  html[data-music-skin="wave"] .reels-performer { color: rgba(255,220,190,0.8); }
   html[data-music-skin="wave"] .reels-close, html[data-music-skin="wave"] .reels-download,
   html[data-music-skin="wave"] .reels-queue-btn, html[data-music-skin="wave"] .reels-engage-item {
-    background: rgba(0,0,0,0.35); border-color: rgba(255,255,255,0.16);
+    background: rgba(20,6,0,0.4); border-color: rgba(255,200,150,0.2);
   }
   html[data-music-skin="wave"] .reels-engage-item.active, html[data-music-skin="wave"] .reels-engage-btn.active { color: #ffcc4d; }
   html[data-music-skin="wave"] .audio-play-btn, html[data-music-skin="wave"] .music-row-play, html[data-music-skin="wave"] .mini-player-play {
     background: linear-gradient(135deg,#ff8a00,#ff2d55); color: #fff;
   }
   html[data-music-skin="wave"] .music-fab { background: linear-gradient(135deg,#ff8a00,#ff2d55); color: #fff; box-shadow: 0 6px 18px rgba(255,80,20,0.4); }
-  html[data-music-skin="wave"] #view-music .media-sort-indicator { background: linear-gradient(135deg,#ff8a00,#ffcc4d); }
-  html[data-music-skin="wave"] .music-search-row { border-radius: 999px; }
-  html[data-music-skin="wave"] .music-row-cover, html[data-music-skin="wave"] .music-home-card-cover, html[data-music-skin="wave"] .queue-item-cover { border-radius: 12px; }
+  html[data-music-skin="wave"] .music-row-cover, html[data-music-skin="wave"] .queue-item-cover { border-radius: 12px; }
   html[data-music-skin="wave"] .mini-player { background: rgba(28,10,0,0.92); border-color: rgba(255,150,60,0.18); }
+
+  html[data-music-skin="wave"] .reels-ctrl-btn.reels-toggle { display: none; }
+
+  /* ---------------- کپسولِ «موجِ شما» بالایِ تبِ سگ‌تونز (وضعیتِ همیشه‌بودنِ نوارِ پخشِ فعلی) ---------------- */
+  html:not([data-music-skin="wave"]) .wave-now-playing { display: none !important; }
+  .wave-now-playing {
+    position: sticky; top: calc(6px + var(--safe-top)); z-index: 40;
+    margin: 2px 2px 16px; border-radius: 22px; overflow: hidden;
+    background: linear-gradient(155deg,#3a0b00,#8a2200 40%,#ff7a00 85%,#ffcf3f 120%);
+    background-size: 200% 200%; animation: waveFlameShift 16s ease-in-out infinite;
+    box-shadow: 0 10px 26px rgba(120,30,0,0.28);
+  }
+  .wave-now-playing.hidden { display: none; }
+  .wave-capsule-label {
+    display: flex; align-items: center; justify-content: space-between; gap: 8px;
+    padding: 10px 14px 0; font-size: 12px; font-weight: 700; color: #ffe4bf;
+  }
+  .wave-capsule-label span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .wave-capsule-close {
+    flex-shrink: 0; width: 22px; height: 22px; border-radius: 50%; border: none; cursor: pointer;
+    background: rgba(0,0,0,0.3); color: #ffe4bf; display: flex; align-items: center; justify-content: center;
+  }
+  .wave-capsule-close svg { width: 12px; height: 12px; }
+  .wave-capsule-body { display: flex; align-items: center; gap: 10px; padding: 10px 12px 12px; cursor: pointer; }
+  .wave-capsule-cover {
+    position: relative; flex-shrink: 0; width: 46px; height: 46px; border-radius: 10px; overflow: hidden;
+    background: rgba(0,0,0,0.35); box-shadow: 0 0 0 2px rgba(255,235,200,0.35);
+  }
+  .wave-capsule-cover img { width: 100%; height: 100%; object-fit: cover; }
+  .wave-capsule-cover svg { width: 100%; height: 100%; padding: 11px; color: rgba(255,255,255,0.7); }
+  .wave-capsule-target {
+    position: absolute; inset-inline-end: -2px; bottom: -2px; width: 16px; height: 16px; border-radius: 50%;
+    background: rgba(20,6,0,0.6); background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ffe9c7' stroke-width='2.5'%3E%3Ccircle cx='12' cy='12' r='7'/%3E%3Ccircle cx='12' cy='12' r='1.4' fill='%23ffe9c7'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: center; background-size: 9px 9px;
+  }
+  .wave-capsule-info { flex: 1; min-width: 0; }
+  .wave-capsule-title { font-size: 13.5px; font-weight: 700; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .wave-capsule-sub { font-size: 11.5px; color: rgba(255,225,195,0.75); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .wave-capsule-controls { display: flex; align-items: center; gap: 6px; flex-shrink: 0; direction: ltr; }
+  .wave-capsule-btn {
+    width: 30px; height: 30px; border-radius: 50%; border: none; background: transparent; color: #fff;
+    display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; opacity: 0.9;
+  }
+  .wave-capsule-btn svg { width: 16px; height: 16px; }
+  .wave-capsule-heart { color: #ffcc4d; }
+  .wave-capsule-play {
+    display: flex; align-items: center; gap: 6px; height: 32px; padding: 0 12px 0 10px; border-radius: 999px;
+    background: #fff; color: #241000; border: none; cursor: pointer; flex-shrink: 0;
+    font-family: ui-monospace, Menlo, monospace; font-size: 11.5px; font-weight: 700;
+  }
+  .wave-capsule-play .icon-play, .wave-capsule-play .icon-pause { width: 13px; height: 13px; }
+  .wave-capsule-play .icon-pause { display: none; }
+  .wave-capsule-play.playing .icon-play { display: none; }
+  .wave-capsule-play.playing .icon-pause { display: block; }
+
+  /* ---------------- بازطراحیِ تب‌ها/جستجو/کارت‌های خانه — زبانِ کپسولی/دایره‌ایِ یاندکس‌موزیک ---------------- */
+  html[data-music-skin="wave"] #view-music .media-sort-capsule {
+    background: var(--card); border-radius: 999px; padding: 4px;
+  }
+  html[data-music-skin="wave"] #view-music .media-sort-indicator {
+    background: linear-gradient(135deg,#ffcc4d,#ff8a00); border-radius: 999px;
+  }
+  html[data-music-skin="wave"] #view-music .media-sort-opt.active { color: #241000; font-weight: 800; }
+  html[data-music-skin="wave"] .music-search-row { border-radius: 999px; }
+  html[data-music-skin="wave"] .music-row-cover,
+  html[data-music-skin="wave"] .music-home-card-cover {
+    border-radius: 50%; background: transparent; border: none; box-shadow: 0 4px 14px rgba(0,0,0,0.18);
+  }
+  html[data-music-skin="wave"] .music-home-card { text-align: center; width: 92px; flex: 0 0 92px; }
+  html[data-music-skin="wave"] .music-home-row { gap: 16px; }
+  html[data-music-skin="wave"] .music-home-card-cover { width: 92px; height: 92px; }
+  html[data-music-skin="wave"] .music-home-card-title,
+  html[data-music-skin="wave"] .music-home-card-sub { text-align: center; }
+  html[data-music-skin="wave"] .music-home-card-more-wrap { inset-inline-end: 50%; transform: translateX(50%); bottom: -4px; }
+  html[data-music-skin="wave"] .music-home-section-title {
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  html[data-music-skin="wave"] .music-home-section-title::after {
+    content: "›"; font-size: 20px; font-weight: 700; color: var(--subtext); line-height: 1;
+  }
 
   /* ================================================================
      تمِ «طیف» برای سگ‌تونز — data-music-skin="spectrum" — پلیرِ تمام‌صفحه با
@@ -3148,6 +3268,8 @@
   .reels-ctrl-btn.reels-ctrl-main .icon-pause { display: none; }
   .reels-ctrl-btn.reels-ctrl-main.playing .icon-play { display: none; }
   .reels-ctrl-btn.reels-ctrl-main.playing .icon-pause { display: block; }
+  /* برچسبِ زمانِ داخلِ دکمه‌ی پخشِ اصلی — پیش‌فرض مخفیه؛ فقط اسکینِ wave به‌شکلِ کپسول نشونش می‌ده */
+  .reels-ctrl-main-time { display: none; }
   .reels-ctrl-btn.reels-toggle.active { background: var(--accent-gradient); border-color: transparent; }
   .reels-feeling {
     max-width: min(320px, 85vw); text-align: center; color: rgba(255,255,255,0.92);
@@ -5800,6 +5922,9 @@
 
   <!-- بخش سگ‌تونز: لیست همه‌ی آهنگ‌های آپلود شده تو سایت -->
   <div id="view-music" class="view hidden">
+    <!-- کپسولِ «موجِ شما» — فقط تو اسکینِ wave و فقط وقتی آهنگی در حالِ پخشه نشون داده می‌شه (با JS پر می‌شه) -->
+    <div id="waveNowPlayingCapsule" class="wave-now-playing hidden"></div>
+
     <div class="media-sort-row">
       <div class="media-sort-capsule" id="musicSortCapsule">
         <span class="media-sort-indicator" id="musicSortIndicator"></span>
@@ -6732,6 +6857,7 @@
         <svg class="icon-play" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
         <svg class="icon-pause" viewBox="0 0 24 24" fill="currentColor"><path d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg>
         <span class="icon-loading"></span>
+        <span class="reels-ctrl-main-time" id="fullPlayerPlayBtnTime">۰:۰۰</span>
       </button>
       <button class="reels-ctrl-btn" onclick="miniPlayerNext(event)" title="آهنگ بعدی">
         <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg>
@@ -6902,6 +7028,41 @@ function setUploadRoute(route) {
   try { localStorage.setItem("dehaatUploadRoute", route); } catch (e) {}
   updateUploadRouteUI(route);
 }
+
+// ---------- فچِ مقاومِ API: تایم‌اوت + یه‌بار تلاشِ مجدد با یه کانکشنِ کاملاً تازه ----------
+// مشکلی که حل می‌کنه: بعضی وقت‌ها (خصوصاً پشتِ فیلترشکن/VPN) یه کانکشنِ TCP نیمه‌گیر می‌مونه —
+// نه واقعاً قطع می‌شه نه جواب می‌ده — و fetch به‌جایِ خطادادن، بی‌نهایت معلق می‌مونه. تاگل‌کردنِ
+// حالتِ هواپیما دقیقاً همینو حل می‌کنه: کانکشن‌های گیرکرده رو از بین می‌بره و یه اتصالِ تازه
+// می‌سازه. اینجا همون رفتار رو محدود به خودِ سایت شبیه‌سازی می‌کنیم: اگه یه فچِ API بیشتر از
+// API_FETCH_TIMEOUT_MS طول کشید، خودمون abortش می‌کنیم؛ برای درخواست‌هایِ GET (که تکرارشون
+// بی‌خطره) بلافاصله با یه fetch کاملاً جدید یه‌بار دیگه امتحان می‌کنیم. برای POST/PUT/DELETE
+// (که ممکنه سمتِ سرور اثر داشته باشن، مثلِ ثبتِ کامنت) عمداً retry نمی‌کنیم — فقط abort می‌شه
+// و همون مسیرِ خطایِ فعلیِ خودِ کد ("اتصال به سرور برقرار نشد" و امثالش) طبیعی نشون داده می‌شه؛
+// چون retryِ خودکارِ یه POST می‌تونه باعثِ دوبار ثبت‌شدنِ همون کار بشه.
+const API_FETCH_TIMEOUT_MS = 8000;
+const nativeFetch = window.fetch.bind(window);
+function isApiFetchUrl(input) {
+  const url = typeof input === "string" ? input : (input && input.url) || "";
+  return url.includes("/api/");
+}
+function fetchWithTimeout(input, init) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), API_FETCH_TIMEOUT_MS);
+  return nativeFetch(input, { ...init, signal: controller.signal }).finally(() => clearTimeout(timer));
+}
+window.fetch = async function (input, init) {
+  if (!isApiFetchUrl(input) || (init && init.signal)) return nativeFetch(input, init);
+  const method = ((init && init.method) || "GET").toUpperCase();
+  try {
+    return await fetchWithTimeout(input, init);
+  } catch (e) {
+    if (e && e.name === "AbortError" && method === "GET") {
+      // یه‌بار با کانکشنِ کاملاً تازه دوباره امتحان می‌کنیم (فقط برایِ GET، بی‌خطره چون تکرارپذیره)
+      return fetchWithTimeout(input, init);
+    }
+    throw e;
+  }
+};
 
 function updateUploadRouteUI(route) {
   const btnGithub = document.getElementById("uploadRouteGithub");
@@ -7310,7 +7471,104 @@ function applyMusicSkin(skin) {
   else document.documentElement.setAttribute("data-music-skin", skin);
   localStorage.setItem("musicSkin", skin);
   markActiveMusicSkin(skin);
+  updateWaveNowPlayingCapsule();
 }
+
+// ---------- کپسولِ «موجِ شما» (اسکینِ wave): بالایِ تبِ سگ‌تونز، شبیهِ نوارِ «Моя волна»یِ
+// یاندکس‌موزیک — کاورِ آهنگِ در حالِ پخش + کنترل‌هایِ سریع، بدونِ نیازِ بازکردنِ پلیرِ تمام‌صفحه.
+// فقط وقتی اسکینِ فعال wave باشه و یه آهنگی در حالِ پخش/مکث باشه دیده می‌شه؛ با تعویضِ آهنگ،
+// دوباره ظاهر می‌شه حتی اگه قبلاً با ضربدر بسته شده باشه (dismiss فقط برایِ همون یه آهنگ معتبره).
+let waveCapsuleDismissed = false;
+let waveCapsuleLastSafeId = null;
+function dismissWaveCapsule(e) {
+  if (e) e.stopPropagation();
+  waveCapsuleDismissed = true;
+  updateWaveNowPlayingCapsule();
+}
+function updateWaveNowPlayingCapsule() {
+  const box = document.getElementById("waveNowPlayingCapsule");
+  if (!box) return;
+  if (currentMusicSkin !== "wave" || !currentAudio) {
+    box.classList.add("hidden");
+    box.innerHTML = "";
+    waveCapsuleLastSafeId = null;
+    return;
+  }
+  if (waveCapsuleLastSafeId !== currentAudio.safeId) {
+    waveCapsuleDismissed = false;
+    waveCapsuleLastSafeId = currentAudio.safeId;
+  }
+  if (waveCapsuleDismissed) { box.classList.add("hidden"); return; }
+  const meta = audioMetaRegistry[currentAudio.safeId];
+  if (!meta) { box.classList.add("hidden"); return; }
+  const playing = !currentAudio.audioEl.paused;
+  const coverHtml = meta.thumbFileId
+    ? `<img src="${mediaUrl(meta.thumbFileId)}" alt="" />`
+    : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>`;
+  box.innerHTML = `
+    <div class="wave-capsule-label">
+      <span>موجِ شما بر اساسِ «${escapeHtml(meta.title || "این آهنگ")}»</span>
+      <button type="button" class="wave-capsule-close" onclick="dismissWaveCapsule(event)" aria-label="بستن">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="wave-capsule-body" onclick="openFullPlayer()">
+      <div class="wave-capsule-cover">${coverHtml}<span class="wave-capsule-target"></span></div>
+      <div class="wave-capsule-info">
+        <div class="wave-capsule-title">${escapeHtml(meta.title || "بدون‌عنوان")}</div>
+        <div class="wave-capsule-sub">${escapeHtml(meta.performer || "")}</div>
+      </div>
+      <div class="wave-capsule-controls" onclick="event.stopPropagation()">
+        <button type="button" class="wave-capsule-btn" onclick="openWaveQueueFromCapsule(event)" title="لیست پخش" aria-label="لیست پخش">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h10M4 18h10M18 15l3 3-3 3"/></svg>
+        </button>
+        <button type="button" class="wave-capsule-btn" onclick="stepMiniPlayer(-1)" title="قبلی" aria-label="قبلی">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg>
+        </button>
+        <button type="button" class="wave-capsule-play" id="waveCapsulePlayBtn" onclick="toggleAudio('${currentAudio.safeId}')" title="پخش/توقف" aria-label="پخش/توقف">
+          <svg class="icon-play" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+          <svg class="icon-pause" viewBox="0 0 24 24" fill="currentColor"><path d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg>
+          <span class="wave-capsule-time" id="waveCapsuleTime">۰:۰۰</span>
+        </button>
+        <button type="button" class="wave-capsule-btn" onclick="stepMiniPlayer(1)" title="بعدی" aria-label="بعدی">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg>
+        </button>
+        <button type="button" class="wave-capsule-btn wave-capsule-heart" onclick="fullPlayerLikeFromWave()" title="پسندیدن" aria-label="پسندیدن">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/></svg>
+        </button>
+      </div>
+    </div>`;
+  box.classList.remove("hidden");
+  box.classList.toggle("playing", playing);
+  document.getElementById("waveCapsulePlayBtn")?.classList.toggle("playing", playing);
+}
+// قلبِ کپسولِ موج، بدونِ بازکردنِ پلیرِ تمام‌صفحه، مستقیماً همون پلیرِ تمام‌صفحه رو باز می‌کنه تا
+// لایک از همون مسیرِ اصلی (fullPlayerLike، که به postId و انگیجمنتِ لودشده نیاز داره) انجام بشه
+function fullPlayerLikeFromWave() { openFullPlayer(); }
+// دکمه‌ی «لیست»یِ کپسولِ موج: چون پنلِ صف (queuePanel) از نظرِ مارک‌آپ داخلِ خودِ #fullPlayer نشسته
+// (که تا وقتی کلاسِ open نگیره display:none هست)، اول پلیرِ تمام‌صفحه رو باز می‌کنیم، بعد صف رو
+function openWaveQueueFromCapsule(e) {
+  if (e) e.stopPropagation();
+  openFullPlayer();
+  setTimeout(() => openQueuePanel(), 60);
+}
+
+// هر ثانیه، اگه کپسول دیده می‌شه، زمانِ سپری‌شده و درصدِ پیشرفت رو آپدیت می‌کنه (بدونِ نیاز به
+// requestAnimationFrame، چون این کپسول فقط یه ساعت/نوارِ ساده‌ست، نه سیک‌بارِ دقیق)
+setInterval(() => {
+  const box = document.getElementById("waveNowPlayingCapsule");
+  if (!box || box.classList.contains("hidden")) return;
+  if (!currentAudio || !currentAudio.audioEl) return;
+  const playing = !currentAudio.audioEl.paused;
+  box.classList.toggle("playing", playing);
+  document.getElementById("waveCapsulePlayBtn")?.classList.toggle("playing", playing);
+  const t = document.getElementById("waveCapsuleTime");
+  if (t) t.textContent = formatTime(currentAudio.audioEl.currentTime || 0);
+  if (currentAudio.audioEl.duration) {
+    const pct = Math.min(100, (currentAudio.audioEl.currentTime / currentAudio.audioEl.duration) * 100);
+    box.style.setProperty("--wave-progress", pct.toFixed(2) + "%");
+  }
+}, 1000);
 function markActiveMusicSkin(skin) {
   document.querySelectorAll(".music-skin-card").forEach((el) => {
     el.classList.toggle("active", el.dataset.skin === skin);
@@ -13929,6 +14187,7 @@ function renderMiniPlayer(safeId, playing) {
     wrap.classList.remove("collapsed");
     scheduleMiniPlayerCollapse();
   }
+  updateWaveNowPlayingCapsule();
 }
 
 function hideMiniPlayer() {
@@ -13941,6 +14200,7 @@ function hideMiniPlayer() {
   cancelMiniPlayerCollapse();
   clearPlayerState();
   closeFullPlayer();
+  updateWaveNowPlayingCapsule();
 }
 
 // ---------- مینی‌پلیر: جمع‌شدنِ خودکار به نیم‌دایره‌ی کاورِ چرخان، بعد از ۶ ثانیه بدون تاچ ----------
@@ -14589,6 +14849,7 @@ function startFullPlayerSeekLoop() {
   const seek = document.getElementById("fullPlayerSeek");
   const curEl = document.getElementById("fullPlayerTimeCur");
   const durEl = document.getElementById("fullPlayerTimeDur");
+  const btnTimeEl = document.getElementById("fullPlayerPlayBtnTime");
   let lastTextSecond = -1; // متن زمان فقط وقتی عدد ثانیه واقعاً عوض بشه آپدیت می‌شه، نه هر فریم
   const tick = () => {
     if (!panel || !panel.classList.contains("open")) {
@@ -14600,12 +14861,17 @@ function startFullPlayerSeekLoop() {
       const audioEl = currentAudio.audioEl;
       const isLoading = !!(audioLoadState[currentAudio.safeId] && audioLoadState[currentAudio.safeId].pending);
       if (!isLoading) {
-        if (seek && !seek.dataset.dragging) seek.value = (audioEl.currentTime / audioEl.duration) * 100;
+        if (seek && !seek.dataset.dragging) {
+          const pct = (audioEl.currentTime / audioEl.duration) * 100;
+          seek.value = pct;
+          seek.style.setProperty("--seek-pct", pct.toFixed(2) + "%");
+        }
         const curSecond = Math.floor(audioEl.currentTime);
         if (curSecond !== lastTextSecond) {
           lastTextSecond = curSecond;
           if (curEl) curEl.textContent = formatTime(audioEl.currentTime);
           if (durEl) durEl.textContent = formatTime(audioEl.duration);
+          if (btnTimeEl) btnTimeEl.textContent = formatTime(audioEl.currentTime);
         }
       }
     }
