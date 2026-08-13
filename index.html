@@ -3314,6 +3314,97 @@
 
   /* -------- بخشِ «برای شما»/سکشن‌های خانه: عنوانِ سکشن + لینکِ «بیشتر» -------- */
   html[data-music-skin="vinyl"] .music-home-see-more-card { border-radius: 50%; background: rgba(20,20,30,0.05); }
+  html[data-music-skin="vinyl"] .music-home-see-more-card { color: #7a7883; border-color: rgba(20,20,30,0.12); }
+
+  /* -------- رنگِ متن‌ها: چون #view-music تویِ اسکینِ وینیل همیشه پس‌زمینه‌ی روشن داره (چند خط بالاتر)،
+     نه پس‌زمینه‌ی تیره‌ی احتمالیِ تمِ رنگیِ سایت، رنگِ متن‌ها هم دیگه نباید از var(--text)/var(--subtext)
+     (که وابسته‌ی همون تمِ رنگی‌ان و تویِ تم‌هایِ تیره سفیدن) بیاد؛ صریحاً یه پالتِ روشن/تیره‌ی ثابت ست می‌کنیم -------- */
+  html[data-music-skin="vinyl"] .music-home-card-title,
+  html[data-music-skin="vinyl"] .music-home-section-title,
+  html[data-music-skin="vinyl"] .music-row-title,
+  html[data-music-skin="vinyl"] .playlist-card-title,
+  html[data-music-skin="vinyl"] .playlist-detail-title { color: #1c1b20; }
+  html[data-music-skin="vinyl"] .music-home-card-sub,
+  html[data-music-skin="vinyl"] .music-row-sub,
+  html[data-music-skin="vinyl"] .playlist-card-sub,
+  html[data-music-skin="vinyl"] .music-home-empty-section { color: #8a8894; }
+  html[data-music-skin="vinyl"] .music-search-input { color: #1c1b20; }
+  html[data-music-skin="vinyl"] .music-search-input::placeholder { color: #a6a4ae; }
+  html[data-music-skin="vinyl"] .music-search-row { background: #fff; border-color: rgba(20,20,30,0.09); }
+  html[data-music-skin="vinyl"] .music-search-row svg { color: #8a8894; }
+  html[data-music-skin="vinyl"] #view-music .media-sort-opt { color: #7a7883; }
+  html[data-music-skin="vinyl"] .playlists-subtabs .playlists-subtab-btn { background: rgba(20,20,30,0.05); color: #7a7883; border-color: transparent; }
+  html[data-music-skin="vinyl"] .playlist-create-btn { color: #ff2d55; border-color: rgba(255,45,85,0.35); }
+  html[data-music-skin="vinyl"] .playlist-card { background: #fff; border-color: rgba(20,20,30,0.08); }
+  html[data-music-skin="vinyl"] .playlist-detail-back,
+  html[data-music-skin="vinyl"] .playlist-detail-action-btn { background: #fff; border-color: rgba(20,20,30,0.1); color: #1c1b20; }
+
+  /* ================================================================
+     حالتِ تمام‌صفحه‌یِ «وینیل»: عیناً هم‌الگویِ حالتِ تمام‌صفحه‌یِ «موج» — هدرِ سایت و نوارِ
+     ناوبریِ بالا کامل مخفی می‌شن، به‌جاش یه نوارِ بالاییِ روشن با دکمه‌ی بازگشت و ذره‌بینِ
+     جستجو میاد؛ کلاسِ vinyl-immersive رویِ body با updateVinylImmersiveMode کنترل می‌شه
+     (تویِ switchView و applyMusicSkin صدا زده می‌شه). طراحیِ خانه‌ش عیناً از رویِ رفرنسِ
+     ارسالی کپی شده: سکشنِ اولِ خانه («برای شما») با کاورهایِ گردِ کوچیک («جدیدترین‌ها»)،
+     سکشن‌هایِ بعدی با کاورهایِ مربعیِ گردگوشه + نشانِ پخشِ قرمزِ گوشه («محبوب‌ترین‌ها»)، و
+     لیستِ ردیفیِ زیرش (تبِ «جدیدترین») با کاورِ مربعی+عنوان/زیرعنوان («موردعلاقه‌ها»). ---- */
+  body.vinyl-immersive header, body.vinyl-immersive .top-nav { display: none !important; }
+  body.vinyl-immersive .wrap { padding-top: 0; }
+  /* مثلِ موج: تمِ رنگیِ فعلِ سایت background-image رو خودِ body ست می‌کنه، نه background-color؛
+     پس هر دو رو صریح override می‌کنیم که پس‌زمینه‌ی روشنِ رفرنس زیرِ هیچ گرادینتی گم نشه */
+  body.vinyl-immersive {
+    background-color: #faf9f7 !important;
+    background-image: none !important;
+  }
+  body.vinyl-immersive::before { content: none; }
+  .vinyl-immersive-topbar { display: none; }
+  body.vinyl-immersive .vinyl-immersive-topbar {
+    display: flex; align-items: center; justify-content: space-between; position: sticky; z-index: 45;
+    top: 0; margin: 0 -2px 14px; padding: calc(10px + var(--safe-top)) 4px 8px;
+    background: #faf9f7;
+  }
+  .vinyl-topbar-btn {
+    flex-shrink: 0; width: 36px; height: 36px; border-radius: 50%; border: none; cursor: pointer;
+    background: rgba(20,20,30,0.06); color: #1c1b20; display: flex; align-items: center; justify-content: center;
+    transition: background 0.15s ease, transform 0.15s ease;
+  }
+  .vinyl-topbar-btn:hover { background: rgba(20,20,30,0.1); }
+  .vinyl-topbar-btn:active { transform: scale(0.88); }
+  .vinyl-topbar-btn svg { width: 18px; height: 18px; }
+  @media (max-width: 480px), (max-height: 700px) {
+    body.vinyl-immersive .vinyl-immersive-topbar { padding-top: calc(6px + var(--safe-top)); }
+  }
+
+  /* کادرِ سرچِ همیشه‌نمایان حذف شد — عیناً همونی که برایِ موج هم پیاده شده: فقط دکمه‌ی ذره‌بینِ
+     نوارِ بالا هست، با زدنش کادر با کلاسِ vinyl-search-open موقتاً باز می‌شه */
+  body.vinyl-immersive .music-search-row { display: none; margin-bottom: 14px; }
+  body.vinyl-immersive .music-search-row.vinyl-search-open { display: flex; }
+
+  /* تب‌هایِ پلی‌لیست‌ها/جدیدترین/برای‌شما زیرِ نوارِ بالا، به‌شکلِ کپسولِ ظریفِ روشن (نه کارتِ تیره‌ی پیش‌فرض) */
+  body.vinyl-immersive .media-sort-row { margin-top: 0; margin-bottom: 18px; }
+  body.vinyl-immersive .media-sort-capsule { background: rgba(20,20,30,0.05); border-color: transparent; }
+
+  /* عنوانِ سکشن‌ها: بولد و درشت، دقیقاً مثلِ «New Releases / Popular / Favorites»یِ رفرنس */
+  body.vinyl-immersive .music-home-section-title { font-size: 19px; font-weight: 800; margin: 0 2px 14px; }
+
+  /* دکمه‌ی سه‌نقطه‌ی رویِ کاورهایِ خانه تویِ رفرنس نیست؛ تویِ حالتِ تمام‌صفحه‌ی وینیل مخفیش می‌کنیم */
+  body.vinyl-immersive #musicHome .music-home-card-more-wrap { display: none; }
+
+  /* سکشنِ اولِ خانه: کاورهایِ گردِ کوچیک، دقیقاً «New Releases» */
+  body.vinyl-immersive #musicHome .music-home-section:first-of-type .music-home-card-cover { border-radius: 50%; }
+
+  /* سکشن‌هایِ بعدی: کاورهایِ مربعیِ گردگوشه + نشانِ پخشِ قرمزِ گوشه‌ی پایین‌راست، دقیقاً «Popular» */
+  body.vinyl-immersive #musicHome .music-home-section:not(:first-of-type) .music-home-card-cover { border-radius: 16px; }
+  body.vinyl-immersive #musicHome .music-home-section:not(:first-of-type) .music-home-card-cover::after {
+    content: ""; position: absolute; inset-inline-end: 6px; bottom: 6px; width: 22px; height: 22px;
+    border-radius: 50%; background: linear-gradient(160deg,#ff5040,#ff2d55); z-index: 4;
+    box-shadow: 0 3px 8px rgba(255,45,85,0.45);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23fff'%3E%3Cpath d='M8 5v14l11-7z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: center; background-size: 11px 11px;
+  }
+
+  /* تبِ «جدیدترین» (لیستِ ردیفیِ #musicList): کاورِ مربعیِ گردگوشه (نه گرد)، دقیقاً «Favorites»یِ رفرنس —
+     این override با اسپسیفیسیتیِ بالاتر (به‌خاطرِ #musicList) رویِ قانونِ سراسریِ کاورِ گردِ اسکینِ وینیل غالب می‌شه */
+  body.vinyl-immersive #musicList .music-row-cover { border-radius: 14px; }
 
   /* ================================================================
      مینی‌پلیرِ اسکینِ وینیل — همون کپسولِ شناورِ پیش‌فرضِ سایت (که خودش از قبل
@@ -6360,6 +6451,18 @@
     <!-- کارتِ بزرگِ «موجِ شما» — فقط تو اسکینِ wave و فقط وقتی آهنگی در حالِ پخشه نشون داده می‌شه (با JS پر می‌شه) -->
     <div id="waveNowPlayingCapsule" class="wave-hero hidden"></div>
 
+    <!-- نوارِ بالایِ حالتِ تمام‌صفحه‌ی «وینیل»: عیناً هم‌الگویِ نوارِ موج (دکمه‌ی بازگشت + جستجو)،
+         فقط با پالتِ روشنِ رفرنسِ وینیل؛ فقط وقتی اسکینِ فعال vinyl باشه دیده می‌شه (کلاسِ
+         vinyl-immersive رویِ body با updateVinylImmersiveMode کنترل می‌شه) -->
+    <div class="vinyl-immersive-topbar" id="vinylImmersiveTopbar">
+      <button type="button" class="vinyl-topbar-btn" onclick="exitVinylImmersive()" aria-label="بازگشت" title="بازگشت">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      </button>
+      <button type="button" class="vinyl-topbar-btn" onclick="focusMusicSearchFromVinyl()" aria-label="جستجو" title="جستجو">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+      </button>
+    </div>
+
     <!-- تب‌ها عمداً زیرِ کارتِ موج میان، نه بالاش -->
     <div class="media-sort-row">
       <div class="media-sort-capsule" id="musicSortCapsule">
@@ -7913,6 +8016,7 @@ function applyMusicSkin(skin) {
   markActiveMusicSkin(skin);
   updateWaveNowPlayingCapsule();
   updateWaveImmersiveMode();
+  updateVinylImmersiveMode();
   arrangeVinylControls(skin === "vinyl");
 }
 
@@ -7949,6 +8053,24 @@ function updateWaveImmersiveMode() {
 // دکمه‌ی بازگشتِ نوارِ بالا: به‌جایِ اینکه کاربر مجبور باشه از نوارِ ناوبریِ (که الان مخفیه) یه
 // بخشِ دیگه رو بزنه، همینجا مستقیم برمی‌گردونتش به فیدِ رسانه (همون رفتارِ باز کردنِ اولِ اپ)
 function exitWaveImmersive() { switchView("media"); }
+
+// ---------- حالتِ تمام‌صفحه‌ی «وینیل»: عیناً هم‌الگویِ حالتِ تمام‌صفحه‌ی «موج» — تبِ سگ‌تونز
+// به‌جایِ نوارِ ناوبریِ بالا و هدرِ سایت، یه صفحه‌ی مستقل با دکمه‌ی بازگشتِ خودش می‌شه ----------
+function updateVinylImmersiveMode() {
+  const musicView = document.getElementById("view-music");
+  const active = currentMusicSkin === "vinyl" && musicView && !musicView.classList.contains("hidden");
+  document.body.classList.toggle("vinyl-immersive", !!active);
+}
+function exitVinylImmersive() { switchView("media"); }
+// آیکونِ ذره‌بینِ نوارِ بالایِ وینیل: عیناً همون رفتارِ موج (کادرِ سرچِ همیشه‌مخفی رو موقتاً باز می‌کنه)
+function focusMusicSearchFromVinyl() {
+  const row = document.querySelector("#view-music .music-search-row");
+  const input = document.getElementById("musicSearchInput");
+  if (!row || !input) return;
+  row.classList.add("vinyl-search-open");
+  row.scrollIntoView({ behavior: "smooth", block: "center" });
+  setTimeout(() => input.focus(), 260);
+}
 // آیکونِ ذره‌بینِ نوارِ بالا: چون کادرِ سرچ دیگه همیشه‌نمایان نیست (توسطِ CSS مخفیه)، اول با کلاسِ
 // wave-search-open بازش می‌کنیم، بعد اسکرول و فوکوس می‌کنیم
 function focusMusicSearchFromWave() {
@@ -7963,12 +8085,13 @@ function focusMusicSearchFromWave() {
 // بدونِ کادرِ سرچ حفظ بشه)؛ setTimeout برای اینه که اگه کاربر داشت رویِ دکمه‌ی پاک‌کردنِ داخلِ همون
 // کادر کلیک می‌کرد (که خودش باعثِ blur می‌شه)، کلیک قبل از بسته‌شدنِ کادر به هدف برسه
 function closeWaveSearchIfEmpty() {
-  if (currentMusicSkin !== "wave") return;
+  if (currentMusicSkin !== "wave" && currentMusicSkin !== "vinyl") return;
   const row = document.querySelector("#view-music .music-search-row");
   const input = document.getElementById("musicSearchInput");
   if (!row || !input) return;
+  const openClass = currentMusicSkin === "vinyl" ? "vinyl-search-open" : "wave-search-open";
   setTimeout(() => {
-    if (!input.value.trim()) row.classList.remove("wave-search-open");
+    if (!input.value.trim()) row.classList.remove(openClass);
   }, 180);
 }
 
@@ -8788,6 +8911,7 @@ function switchView(name, forceReload = false) {
     initUploadRoute();
   }
   updateWaveImmersiveMode();
+  updateVinylImmersiveMode();
 }
 
 // ---------- کپسول ناوبری بالای صفحه: پس‌زمینه‌ی مشترکِ متحرک، دقیقاً هم‌اندازه‌ی دکمه‌ی فعال ----------
