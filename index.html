@@ -2876,8 +2876,16 @@
      رفرنس: نارنجی فقط بالا، زیرِ کارت (لیستِ آهنگ‌ها) مشکیِ یک‌دست */
   /* درخواست: پس‌زمینه‌ی کل صفحه‌ی «موج» مشکیِ کامل باشه (نه شعله‌ی نارنجیِ قبلی) — گرمی/رنگِ
      بصری حالا فقط از طریقِ گلوی دورِ کاورِ آهنگ (متناسب با رنگِ خودِ کاور) تأمین می‌شه، نه یه
-     گرادینتِ ثابتِ بالای صفحه. تمِ پیش‌فرضِ سایت (data-music-skin != wave) دست‌نخورده می‌مونه. */
-  body.wave-immersive { background-color: #000; }
+     گرادینتِ ثابتِ بالای صفحه. تمِ پیش‌فرضِ سایت (data-music-skin != wave) دست‌نخورده می‌مونه.
+     نکته‌ی مهم: تمِ رنگیِ فعلِ سایت (مثلاً purple-dark) رو background-image رو خودِ body ست
+     می‌کنه، نه background-color؛ پس فقط background-color:#000 کافی نیست (گرادینتِ تم زیرش
+     باقی می‌مونه) — background-image رو هم صریحاً none می‌کنیم، با !important چون سلکتورِ
+     تمِ رنگی (:root[data-theme=...][data-bg=...] body) رو خودِ body دو تا اتریبیوت داره و از
+     body.wave-immersive ساده specificityِ بیشتری داره. */
+  body.wave-immersive {
+    background-color: #000 !important;
+    background-image: none !important;
+  }
   body.wave-immersive::before { content: none; }
   .wave-immersive-topbar { display: none; }
   body.wave-immersive .wave-immersive-topbar {
@@ -3014,6 +3022,36 @@
   html[data-music-skin="wave"] #view-music .media-sort-opt.active {
     background: linear-gradient(135deg,#ffcc4d,#ff8a00); color: #241000; font-weight: 800;
   }
+
+  /* ---------------- هماهنگ‌سازیِ دکمه‌های تبِ «پلی‌لیست‌ها» (زیرتب‌های من/پابلیک، دکمه‌ی
+     پلی‌لیستِ جدید، و خودِ کارتِ هر پلی‌لیست) با همون زبانِ بصریِ شیشه‌ای/کپسولیِ اسکینِ موج —
+     قبلاً این‌ها از متغیرهای رنگیِ تمِ سایت (var(--card)/var(--border)/var(--accent-gradient))
+     استفاده می‌کردن که تویِ حالتِ موج هماهنگ نبودن (مثلاً بنفشِ تمِ purple-dark) ---------------- */
+  html[data-music-skin="wave"] .playlists-subtab-btn {
+    background: rgba(255,255,255,0.12); color: rgba(255,255,255,0.85);
+    border-radius: 999px; border-color: transparent; font-weight: 700; padding: 10px 0;
+  }
+  html[data-music-skin="wave"] .playlists-subtab-btn.active {
+    background: linear-gradient(135deg,#ffcc4d,#ff8a00); color: #241000; font-weight: 800;
+  }
+  html[data-music-skin="wave"] .playlist-create-btn {
+    background: rgba(255,255,255,0.08); border: 1px dashed rgba(255,204,77,0.55);
+    color: #ffcc4d; border-radius: 999px; font-weight: 700;
+  }
+  html[data-music-skin="wave"] .playlist-create-btn:hover {
+    background: rgba(255,204,77,0.14); border-color: #ffcc4d;
+  }
+  /* کارتِ هر پلی‌لیست: مثلِ music-row، بدونِ کارت/بوردر، رویِ همون پس‌زمینه‌ی مشکیِ صفحه */
+  html[data-music-skin="wave"] .playlist-card {
+    background: transparent; border-color: transparent;
+  }
+  html[data-music-skin="wave"] .playlist-card-icon {
+    background: linear-gradient(135deg,#ff8a00,#ff2d55); border-radius: 12px;
+  }
+  html[data-music-skin="wave"] .playlist-card-title { color: #fff; }
+  html[data-music-skin="wave"] .playlist-card-sub { color: rgba(255,225,195,0.65); }
+  html[data-music-skin="wave"] .playlist-badge { border-color: rgba(255,255,255,0.25); color: rgba(255,255,255,0.75); }
+  html[data-music-skin="wave"] .playlist-badge.public { color: #ffcc4d; border-color: rgba(255,204,77,0.5); }
 
   /* ---------------- بازطراحیِ جستجو/کارت‌های خانه — زبانِ شیشه‌ای/دایره‌ایِ یاندکس‌موزیک ---------------- */
   /* کادرِ سرچِ همیشه‌نمایان حذف شد؛ به‌جاش فقط دکمه‌ی ذره‌بینِ نوارِ بالا (wave-topbar-search،
