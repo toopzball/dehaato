@@ -2869,83 +2869,134 @@
      کنترل می‌شه (تویِ switchView و applyMusicSkin صدا زده می‌شه). ---------------------------- */
   body.wave-immersive header, body.wave-immersive .top-nav { display: none !important; }
   body.wave-immersive .wrap { padding-top: 0; }
+  /* پس‌زمینه‌ی تمام‌صفحه‌ی شعله‌ای — عیناً زبانِ بصریِ «موجِ من»یِ یاندکس‌موزیک؛ صرف‌نظر از تمِ رنگیِ
+     خودِ سایت، همیشه همین گرادینتِ نارنجی/قرمز/طلایی‌ست، رویِ کلِ صفحه (نه فقط پلیرِ تمام‌صفحه) */
+  body.wave-immersive { background-color: #1a0400; }
+  body.wave-immersive::before {
+    content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none;
+    background:
+      radial-gradient(55% 38% at 26% 6%, #ffe27a 0%, transparent 55%),
+      radial-gradient(65% 50% at 74% 20%, #ff9a00 0%, transparent 60%),
+      radial-gradient(85% 68% at 50% 52%, #ff4400 0%, transparent 68%),
+      radial-gradient(100% 85% at 50% 108%, #8a1400 0%, #1a0400 78%);
+  }
   .wave-immersive-topbar { display: none; }
   body.wave-immersive .wave-immersive-topbar {
     display: flex; align-items: center; gap: 10px; position: sticky; z-index: 45;
-    top: 0; margin: 0 -2px 12px; padding: calc(10px + var(--safe-top)) 4px 8px;
-    background: var(--bg, var(--surface));
+    top: 0; margin: 0 -2px 18px; padding: calc(10px + var(--safe-top)) 4px 8px;
+    background: transparent;
   }
   .wave-topbar-btn {
     flex-shrink: 0; width: 36px; height: 36px; border-radius: 50%; border: none; cursor: pointer;
-    background: var(--card); color: var(--text); display: flex; align-items: center; justify-content: center;
+    background: rgba(255,255,255,0.14); color: #fff; display: flex; align-items: center; justify-content: center;
   }
   .wave-topbar-btn svg { width: 18px; height: 18px; }
+  /* کپسولِ برچسبِ بالا: حالتِ ساده (بدونِ آهنگِ در حالِ پخش) یه‌خطی و وسط‌چین؛ حالتِ فعال (has-track)
+     دقیقاً مثلِ نوارِ «Моя волна по треку»یِ یاندکس‌موزیک، دوخطی با دکمه‌ی ضربدرِ کنارش */
   .wave-topbar-label {
-    flex: 1; min-width: 0; text-align: center; font-size: 13.5px; font-weight: 700; color: var(--text);
-    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-    background: var(--card); border-radius: 999px; padding: 9px 14px;
+    flex: 1; min-width: 0; display: flex; align-items: center; justify-content: center; gap: 8px;
+    background: rgba(255,255,255,0.14); border-radius: 999px; padding: 9px 16px;
   }
+  .wave-topbar-label:not(.has-track) .wave-topbar-pill-lines {
+    font-size: 13.5px; font-weight: 700; color: #fff;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .wave-topbar-label.has-track { justify-content: space-between; padding-inline-start: 16px; }
+  .wave-topbar-pill-lines { flex: 1; min-width: 0; text-align: center; }
+  .wave-topbar-label.has-track .wave-topbar-pill-lines { text-align: start; }
+  .wave-topbar-pill-title {
+    display: block; font-size: 11px; font-weight: 600; color: rgba(255,255,255,0.65);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .wave-topbar-pill-sub {
+    display: block; margin-top: 1px; font-size: 13.5px; font-weight: 800; color: #fff;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .wave-topbar-pill-close {
+    flex-shrink: 0; width: 22px; height: 22px; border-radius: 50%; border: none; cursor: pointer;
+    background: rgba(0,0,0,0.28); color: #fff; display: flex; align-items: center; justify-content: center;
+  }
+  .wave-topbar-pill-close svg { width: 11px; height: 11px; }
   @media (max-width: 480px), (max-height: 700px) {
     body.wave-immersive .wave-immersive-topbar { padding-top: calc(6px + var(--safe-top)); }
   }
 
-  /* ---------------- کپسولِ «موجِ شما» زیرِ نوارِ بالا (وضعیتِ همیشه‌بودنِ نوارِ پخشِ فعلی) ---------------- */
-  html:not([data-music-skin="wave"]) .wave-now-playing { display: none !important; }
-  .wave-now-playing {
-    position: sticky; top: 54px; z-index: 40;
-    margin: 2px 2px 16px; border-radius: 22px; overflow: hidden;
-    background: linear-gradient(155deg,#3a0b00,#8a2200 40%,#ff7a00 85%,#ffcf3f 120%);
-    background-size: 200% 200%; animation: waveFlameShift 16s ease-in-out infinite;
-    box-shadow: 0 10px 26px rgba(120,30,0,0.28);
+  /* ---------------- کارتِ بزرگِ «موجِ شما»: کاورِ مربعیِ وسط‌چین + عنوان/زیرعنوان + ردیفِ کنترل‌ها —
+     دقیقاً همون صفحه‌ی اصلیِ «Моя волна»یِ یاندکس‌موزیک، به‌جایِ نوارِ افقیِ باریکِ قبلی؛ تب‌ها
+     (پلی‌لیست/جدیدترین/برای‌شما) عمداً زیرِ همین کارت میان، نه بالاش ---------------- */
+  html:not([data-music-skin="wave"]) .wave-hero { display: none !important; }
+  /* edge-to-edge: کارت از دیوارِ چپ تا دیوارِ راستِ صفحه کشیده می‌شه، بدونِ توجه به پدینگِ .wrap —
+     ترفندِ استانداردِ full-bleed: عرض ۱۰۰vw + وسط‌چینی نسبت به کلِ ویوپورت، نه فقط کانتینر */
+  .wave-hero {
+    display: flex; flex-direction: column; align-items: center;
+    width: 100vw; margin: 6px calc(-50vw + 50%) 24px;
+    padding: 26px calc(20px + var(--safe-left)) 30px calc(20px + var(--safe-right));
+    background: linear-gradient(180deg, rgba(0,0,0,0.05), rgba(0,0,0,0.28) 60%, rgba(0,0,0,0.4));
+    box-sizing: border-box;
   }
-  .wave-now-playing.hidden { display: none; }
-  .wave-capsule-close {
-    position: absolute; top: 8px; inset-inline-end: 8px; z-index: 2;
-    width: 22px; height: 22px; border-radius: 50%; border: none; cursor: pointer;
-    background: rgba(0,0,0,0.32); color: #ffe4bf; display: flex; align-items: center; justify-content: center;
+  .wave-hero.hidden { display: none; }
+  .wave-hero-cover {
+    position: relative; width: 190px; height: 190px; border-radius: 22px; overflow: hidden;
+    background: rgba(0,0,0,0.4); box-shadow: 0 16px 40px rgba(0,0,0,0.45);
   }
-  .wave-capsule-close svg { width: 12px; height: 12px; }
-  .wave-capsule-body { display: flex; align-items: center; gap: 10px; padding: 12px; cursor: pointer; }
-  .wave-capsule-cover {
-    position: relative; flex-shrink: 0; width: 46px; height: 46px; border-radius: 10px; overflow: hidden;
-    background: rgba(0,0,0,0.35); box-shadow: 0 0 0 2px rgba(255,235,200,0.35);
+  @media (max-width: 380px) { .wave-hero-cover { width: 158px; height: 158px; } }
+  .wave-hero-cover img { width: 100%; height: 100%; object-fit: cover; }
+  .wave-hero-cover svg { width: 100%; height: 100%; padding: 46px; color: rgba(255,255,255,0.55); }
+  .wave-hero-target {
+    position: absolute; inset-inline-end: 10px; top: 10px; width: 26px; height: 26px; border-radius: 50%;
+    background: rgba(10,3,0,0.55); background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ffe9c7' stroke-width='2.2'%3E%3Ccircle cx='12' cy='12' r='7'/%3E%3Ccircle cx='12' cy='12' r='1.6' fill='%23ffe9c7'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: center; background-size: 14px 14px;
   }
-  .wave-capsule-cover img { width: 100%; height: 100%; object-fit: cover; }
-  .wave-capsule-cover svg { width: 100%; height: 100%; padding: 11px; color: rgba(255,255,255,0.7); }
-  .wave-capsule-target {
-    position: absolute; inset-inline-end: -2px; bottom: -2px; width: 16px; height: 16px; border-radius: 50%;
-    background: rgba(20,6,0,0.6); background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ffe9c7' stroke-width='2.5'%3E%3Ccircle cx='12' cy='12' r='7'/%3E%3Ccircle cx='12' cy='12' r='1.4' fill='%23ffe9c7'/%3E%3C/svg%3E");
-    background-repeat: no-repeat; background-position: center; background-size: 9px 9px;
+  .wave-hero-title {
+    margin-top: 18px; font-size: 19px; font-weight: 800; color: #fff; text-align: center;
+    max-width: 88%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
-  .wave-capsule-info { flex: 1; min-width: 0; }
-  .wave-capsule-title { font-size: 13.5px; font-weight: 700; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .wave-capsule-sub { font-size: 11.5px; color: rgba(255,225,195,0.75); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .wave-capsule-controls { display: flex; align-items: center; gap: 6px; flex-shrink: 0; direction: ltr; }
-  .wave-capsule-btn {
-    width: 30px; height: 30px; border-radius: 50%; border: none; background: transparent; color: #fff;
-    display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; opacity: 0.9;
+  .wave-hero-sub {
+    margin-top: 4px; font-size: 13.5px; font-weight: 500; color: rgba(255,225,195,0.75); text-align: center;
+    max-width: 88%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
-  .wave-capsule-btn svg { width: 16px; height: 16px; }
-  .wave-capsule-heart { color: #ffcc4d; }
-  .wave-capsule-play {
-    display: flex; align-items: center; gap: 6px; height: 32px; padding: 0 12px 0 10px; border-radius: 999px;
-    background: #fff; color: #241000; border: none; cursor: pointer; flex-shrink: 0;
-    font-family: ui-monospace, Menlo, monospace; font-size: 11.5px; font-weight: 700;
+  .wave-hero-controls { display: flex; align-items: center; justify-content: center; gap: 20px; margin-top: 18px; direction: ltr; }
+  .wave-hero-btn {
+    flex-shrink: 0; border: none; background: transparent; color: rgba(255,255,255,0.92); cursor: pointer;
+    display: flex; align-items: center; justify-content: center; padding: 4px;
   }
-  .wave-capsule-play .icon-play, .wave-capsule-play .icon-pause { width: 13px; height: 13px; }
-  .wave-capsule-play .icon-pause { display: none; }
-  .wave-capsule-play.playing .icon-play { display: none; }
-  .wave-capsule-play.playing .icon-pause { display: block; }
+  .wave-hero-btn svg { width: 24px; height: 24px; }
+  .wave-hero-btn.wave-hero-heart { color: #ffcc4d; }
+  .wave-hero-play {
+    flex-shrink: 0; display: flex; align-items: center; gap: 8px; height: 44px; padding: 0 18px 0 14px;
+    border-radius: 999px; background: #fff; color: #241000; border: none; cursor: pointer;
+    font-family: ui-monospace, Menlo, monospace; font-size: 13px; font-weight: 700;
+  }
+  .wave-hero-play svg { width: 17px; height: 17px; }
+  .wave-hero-play .icon-pause { display: none; }
+  .wave-hero-play.playing .icon-play { display: none; }
+  .wave-hero-play.playing .icon-pause { display: block; }
+  .wave-hero-play .wave-capsule-time { direction: ltr; }
 
-  /* ---------------- بازطراحیِ تب‌ها/جستجو/کارت‌های خانه — زبانِ کپسولی/دایره‌ایِ یاندکس‌موزیک ---------------- */
+  /* ---------------- تب‌های زیرِ کارتِ موج: سه کپسولِ جداگانه، دقیقاً زبانِ بصریِ تب‌هایِ
+     «Плейлисты / Новинки / Для вас»یِ یاندکس‌موزیک (نه یه کپسولِ سگمنتیِ یکپارچه) ---------------- */
+  html[data-music-skin="wave"] #view-music .media-sort-row { margin-bottom: 18px; }
   html[data-music-skin="wave"] #view-music .media-sort-capsule {
-    background: var(--card); border-radius: 999px; padding: 4px;
+    background: transparent; border: none; border-radius: 0; padding: 0; gap: 8px;
+    display: flex; overflow-x: auto; scrollbar-width: none;
   }
-  html[data-music-skin="wave"] #view-music .media-sort-indicator {
-    background: linear-gradient(135deg,#ffcc4d,#ff8a00); border-radius: 999px;
+  html[data-music-skin="wave"] #view-music .media-sort-capsule::-webkit-scrollbar { display: none; }
+  html[data-music-skin="wave"] #view-music .media-sort-indicator { display: none; }
+  html[data-music-skin="wave"] #view-music .media-sort-opt {
+    flex: 0 0 auto; background: rgba(255,255,255,0.12); color: rgba(255,255,255,0.85);
+    border-radius: 999px; padding: 10px 18px; font-size: 13.5px; font-weight: 700;
   }
-  html[data-music-skin="wave"] #view-music .media-sort-opt.active { color: #241000; font-weight: 800; }
-  html[data-music-skin="wave"] .music-search-row { border-radius: 999px; }
+  html[data-music-skin="wave"] #view-music .media-sort-opt.active {
+    background: linear-gradient(135deg,#ffcc4d,#ff8a00); color: #241000; font-weight: 800;
+  }
+
+  /* ---------------- بازطراحیِ جستجو/کارت‌های خانه — زبانِ شیشه‌ای/دایره‌ایِ یاندکس‌موزیک ---------------- */
+  html[data-music-skin="wave"] .music-search-row {
+    border-radius: 999px; background: rgba(255,255,255,0.12); border-color: transparent;
+  }
+  html[data-music-skin="wave"] .music-search-input { color: #fff; }
+  html[data-music-skin="wave"] .music-search-input::placeholder { color: rgba(255,255,255,0.55); }
+  html[data-music-skin="wave"] .music-search-row svg { color: rgba(255,255,255,0.7); }
   html[data-music-skin="wave"] .music-row-cover,
   html[data-music-skin="wave"] .music-home-card-cover {
     border-radius: 50%; background: transparent; border: none; box-shadow: 0 4px 14px rgba(0,0,0,0.18);
@@ -2955,12 +3006,14 @@
   html[data-music-skin="wave"] .music-home-card-cover { width: 92px; height: 92px; }
   html[data-music-skin="wave"] .music-home-card-title,
   html[data-music-skin="wave"] .music-home-card-sub { text-align: center; }
+  html[data-music-skin="wave"] .music-home-card-title { color: #fff; }
+  html[data-music-skin="wave"] .music-home-card-sub { color: rgba(255,225,195,0.7); }
   html[data-music-skin="wave"] .music-home-card-more-wrap { inset-inline-end: 50%; transform: translateX(50%); bottom: -4px; }
   html[data-music-skin="wave"] .music-home-section-title {
-    display: flex; align-items: center; justify-content: space-between;
+    display: flex; align-items: center; justify-content: space-between; color: #fff;
   }
   html[data-music-skin="wave"] .music-home-section-title::after {
-    content: "›"; font-size: 20px; font-weight: 700; color: var(--subtext); line-height: 1;
+    content: "›"; font-size: 20px; font-weight: 700; color: rgba(255,255,255,0.6); line-height: 1;
   }
 
   /* ================================================================
@@ -5951,20 +6004,23 @@
       <button type="button" class="wave-topbar-btn wave-topbar-back" onclick="exitWaveImmersive()" aria-label="بازگشت" title="بازگشت">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
       </button>
-      <div class="wave-topbar-label" id="waveTopbarLabel">سگ‌تونز</div>
+      <div class="wave-topbar-label" id="waveTopbarLabel">
+        <span class="wave-topbar-pill-lines"><span class="wave-topbar-pill-sub">سگ‌تونز</span></span>
+      </div>
       <button type="button" class="wave-topbar-btn wave-topbar-search" onclick="focusMusicSearchFromWave()" aria-label="جستجو" title="جستجو">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
       </button>
     </div>
 
-    <!-- کپسولِ «موجِ شما» — فقط تو اسکینِ wave و فقط وقتی آهنگی در حالِ پخشه نشون داده می‌شه (با JS پر می‌شه) -->
-    <div id="waveNowPlayingCapsule" class="wave-now-playing hidden"></div>
+    <!-- کارتِ بزرگِ «موجِ شما» — فقط تو اسکینِ wave و فقط وقتی آهنگی در حالِ پخشه نشون داده می‌شه (با JS پر می‌شه) -->
+    <div id="waveNowPlayingCapsule" class="wave-hero hidden"></div>
 
+    <!-- تب‌ها عمداً زیرِ کارتِ موج میان، نه بالاش -->
     <div class="media-sort-row">
       <div class="media-sort-capsule" id="musicSortCapsule">
         <span class="media-sort-indicator" id="musicSortIndicator"></span>
-        <button class="media-sort-opt active" id="musicSort-date" onclick="setMusicSort('date')">جدیدترین</button>
         <button class="media-sort-opt" id="musicSort-foryou" onclick="setMusicSort('foryou')">برای شما</button>
+        <button class="media-sort-opt active" id="musicSort-date" onclick="setMusicSort('date')">جدیدترین</button>
         <button class="media-sort-opt" id="musicSort-playlists" onclick="setMusicSort('playlists')">پلی‌لیست‌ها</button>
       </div>
     </div>
@@ -7539,6 +7595,13 @@ function dismissWaveCapsule(e) {
   waveCapsuleDismissed = true;
   updateWaveNowPlayingCapsule();
 }
+// برچسبِ ساده‌ی بالای صفحه (بدونِ آهنگِ در حالِ پخش): یه‌خطی، بدونِ دکمه‌ی ضربدر
+function setWaveTopbarPlain(text) {
+  const topbarLabel = document.getElementById("waveTopbarLabel");
+  if (!topbarLabel) return;
+  topbarLabel.classList.remove("has-track");
+  topbarLabel.innerHTML = `<span class="wave-topbar-pill-lines"><span class="wave-topbar-pill-sub">${escapeHtml(text)}</span></span>`;
+}
 function updateWaveNowPlayingCapsule() {
   const box = document.getElementById("waveNowPlayingCapsule");
   const topbarLabel = document.getElementById("waveTopbarLabel");
@@ -7551,7 +7614,7 @@ function updateWaveNowPlayingCapsule() {
       box.classList.add("hidden");
       box.innerHTML = "";
       waveCapsuleLastSafeId = null;
-      if (topbarLabel) topbarLabel.textContent = "سگ‌تونز";
+      setWaveTopbarPlain("سگ‌تونز");
       return;
     }
     if (waveCapsuleLastSafeId !== currentAudio.safeId) {
@@ -7559,48 +7622,57 @@ function updateWaveNowPlayingCapsule() {
       waveCapsuleLastSafeId = currentAudio.safeId;
     }
     const meta = audioMetaRegistry[currentAudio.safeId];
-    if (!meta) { box.classList.add("hidden"); if (topbarLabel) topbarLabel.textContent = "سگ‌تونز"; return; }
-    if (topbarLabel) topbarLabel.textContent = `موجِ شما بر اساسِ «${meta.title || "این آهنگ"}»`;
-    if (waveCapsuleDismissed) { box.classList.add("hidden"); return; }
+    if (!meta) { box.classList.add("hidden"); setWaveTopbarPlain("سگ‌تونز"); return; }
+    if (waveCapsuleDismissed) {
+      box.classList.add("hidden");
+      setWaveTopbarPlain("سگ‌تونز");
+      return;
+    }
+    // کپسولِ دوخطیِ بالا — دقیقاً مثلِ نوارِ «Моя волна по треку»یِ یاندکس‌موزیک: خطِ اول برچسبِ
+    // ثابتِ «موجِ شما»، خطِ دوم اسمِ آهنگِ در حالِ پخش، و دکمه‌ی ضربدر برای بستنِ کارتِ موج
+    if (topbarLabel) {
+      topbarLabel.classList.add("has-track");
+      topbarLabel.innerHTML = `
+        <span class="wave-topbar-pill-lines">
+          <span class="wave-topbar-pill-title">موجِ شما بر اساسِ آهنگ</span>
+          <span class="wave-topbar-pill-sub">${escapeHtml(meta.title || "این آهنگ")}</span>
+        </span>
+        <button type="button" class="wave-topbar-pill-close" onclick="dismissWaveCapsule(event)" aria-label="بستن">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+        </button>`;
+    }
     const playing = !currentAudio.audioEl.paused;
     const coverHtml = meta.thumbFileId
       ? `<img src="${mediaUrl(meta.thumbFileId)}" alt="" />`
       : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>`;
     box.innerHTML = `
-      <button type="button" class="wave-capsule-close" onclick="dismissWaveCapsule(event)" aria-label="بستن">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
-      </button>
-      <div class="wave-capsule-body" onclick="openFullPlayer()">
-        <div class="wave-capsule-cover">${coverHtml}<span class="wave-capsule-target"></span></div>
-        <div class="wave-capsule-info">
-          <div class="wave-capsule-title">${escapeHtml(meta.title || "بدون‌عنوان")}</div>
-          <div class="wave-capsule-sub">${escapeHtml(meta.performer || "")}</div>
-        </div>
-        <div class="wave-capsule-controls" onclick="event.stopPropagation()">
-          <button type="button" class="wave-capsule-btn" onclick="openWaveQueueFromCapsule(event)" title="لیست پخش" aria-label="لیست پخش">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h10M4 18h10M18 15l3 3-3 3"/></svg>
-          </button>
-          <button type="button" class="wave-capsule-btn" onclick="stepMiniPlayer(-1)" title="قبلی" aria-label="قبلی">
-            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg>
-          </button>
-          <button type="button" class="wave-capsule-play" id="waveCapsulePlayBtn" onclick="toggleAudio('${currentAudio.safeId}')" title="پخش/توقف" aria-label="پخش/توقف">
-            <svg class="icon-play" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
-            <svg class="icon-pause" viewBox="0 0 24 24" fill="currentColor"><path d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg>
-            <span class="wave-capsule-time" id="waveCapsuleTime">۰:۰۰</span>
-          </button>
-          <button type="button" class="wave-capsule-btn" onclick="stepMiniPlayer(1)" title="بعدی" aria-label="بعدی">
-            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg>
-          </button>
-          <button type="button" class="wave-capsule-btn wave-capsule-heart" onclick="fullPlayerLikeFromWave()" title="پسندیدن" aria-label="پسندیدن">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/></svg>
-          </button>
-        </div>
+      <div class="wave-hero-cover" onclick="openFullPlayer()">${coverHtml}<span class="wave-hero-target"></span></div>
+      <div class="wave-hero-title" onclick="openFullPlayer()">${escapeHtml(meta.title || "بدون‌عنوان")}</div>
+      <div class="wave-hero-sub" onclick="openFullPlayer()">${escapeHtml(meta.performer || "")}</div>
+      <div class="wave-hero-controls">
+        <button type="button" class="wave-hero-btn" onclick="openWaveQueueFromCapsule(event)" title="لیست پخش" aria-label="لیست پخش">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h10M4 18h10M18 15l3 3-3 3"/></svg>
+        </button>
+        <button type="button" class="wave-hero-btn" onclick="stepMiniPlayer(-1)" title="قبلی" aria-label="قبلی">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg>
+        </button>
+        <button type="button" class="wave-hero-play" id="waveCapsulePlayBtn" onclick="toggleAudio('${currentAudio.safeId}')" title="پخش/توقف" aria-label="پخش/توقف">
+          <svg class="icon-play" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+          <svg class="icon-pause" viewBox="0 0 24 24" fill="currentColor"><path d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg>
+          <span class="wave-capsule-time" id="waveCapsuleTime">۰:۰۰</span>
+        </button>
+        <button type="button" class="wave-hero-btn" onclick="stepMiniPlayer(1)" title="بعدی" aria-label="بعدی">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg>
+        </button>
+        <button type="button" class="wave-hero-btn wave-hero-heart" onclick="fullPlayerLikeFromWave()" title="پسندیدن" aria-label="پسندیدن">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/></svg>
+        </button>
       </div>`;
     box.classList.remove("hidden");
     box.classList.toggle("playing", playing);
     document.getElementById("waveCapsulePlayBtn")?.classList.toggle("playing", playing);
   } catch (e) {
-    // اگه (مثلاً هنگامِ اولین اجرای صفحه) هنوز currentAudio در دسترس نبود، فقط کپسول رو مخفی نگه می‌داریم
+    // اگه (مثلاً هنگامِ اولین اجرای صفحه) هنوز currentAudio در دسترس نبود، فقط کارت رو مخفی نگه می‌داریم
     // و بی‌سروصدا برمی‌گردیم — به‌جای اینکه با ارور کل اسکریپتِ صفحه (و اسپلش‌اسکرین) رو گیر بندازیم
     box.classList.add("hidden");
   }
