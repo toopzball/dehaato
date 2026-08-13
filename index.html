@@ -1746,6 +1746,10 @@
   .comment-item2-text.emoji-solo, .chat-bubble-text.emoji-solo { font-size: 52px; line-height: 1.1; }
   .comment-item2-text.emoji-solo img.emoji-img, .chat-bubble-text.emoji-solo img.emoji-img { width: 66px; height: 66px; }
   img.emoji-img { width: calc(1.2em + 2px); height: calc(1.2em + 2px); object-fit: contain; vertical-align: -0.25em; display: inline-block; }
+  /* درخواستِ بزرگ‌ترشدنِ ایموجی‌های چت‌روم (متنِ حبابِ پیام)، حدودِ ۳ پیکسل در طول/عرض نسبت به
+     سایزِ پیش‌فرضِ سراسری‌ی بالا؛ روی حالتِ تک‌ایموجیِ بزرگ (emoji-solo، پایین‌تر) اثر نداره چون
+     اون قانون specificityِ بیشتری داره (دو کلاس) و اولویت رو نگه می‌داره */
+  .chat-bubble-text img.emoji-img { width: calc(1.2em + 5px); height: calc(1.2em + 5px); }
 
   .sticker-upload-tile {
     display: flex; align-items: center; gap: 10px;
@@ -2934,6 +2938,11 @@
   html:not([data-music-skin="wave"]) .wave-hero { display: none !important; }
   /* edge-to-edge: کارت از دیوارِ چپ تا دیوارِ راستِ صفحه کشیده می‌شه، بدونِ توجه به پدینگِ .wrap —
      ترفندِ استانداردِ full-bleed: عرض ۱۰۰vw + وسط‌چینی نسبت به کلِ ویوپورت، نه فقط کانتینر */
+  /* درخواستِ کشویی‌شدن: قبلاً hidden→visible با display:none/flex آنی بود، یعنی موقعِ انتخابِ آهنگ
+     کارتِ بزرگ یهو ظاهر می‌شد و تب‌ها/لیستِ زیرش بدونِ هیچ انیمیشنی می‌پریدن پایین. حالا به‌جایِ
+     display، از max-height/opacity ترنزیشن می‌گیریم؛ یعنی کارت به‌آرومی «باز» می‌شه و همین باعث
+     می‌شه محتوایِ زیرش (تب‌ها + لیستِ آهنگ) هم به‌آرومی، تویِ فلوِ عادیِ داکیومنت، به سمتِ پایین
+     هل داده بشن — دقیقاً افکتِ کشویی/دراوری که خواسته شده بود */
   .wave-hero {
     display: flex; flex-direction: column; align-items: center;
     width: 100vw; margin: 6px calc(-50vw + 50%) 24px;
@@ -2942,15 +2951,26 @@
        دورِ کاورِ آهنگه (پایین‌تر، .wave-hero-cover) */
     background: #000;
     box-sizing: border-box;
+    max-height: 420px; opacity: 1; overflow: hidden;
+    transition: max-height 0.45s ease, opacity 0.35s ease, padding 0.45s ease, margin-bottom 0.45s ease;
   }
-  .wave-hero.hidden { display: none; }
+  .wave-hero.hidden {
+    max-height: 0; opacity: 0; padding-top: 0; padding-bottom: 0; margin-bottom: 0; pointer-events: none;
+  }
   .wave-hero-cover {
     position: relative; width: 190px; height: 190px; border-radius: 22px; overflow: hidden;
     background: rgba(0,0,0,0.4);
     /* گلوی دورِ کاور: رنگش داینامیک از خودِ عکسِ کاور استخراج می‌شه (applyWaveCoverGlow، با canvas)
-       و رو --wave-cover-glow ست می‌شه؛ تا وقتی عکس لود نشده، یه نارنجیِ نرم به‌عنوانِ فالبک */
+       و رو --wave-cover-glow ست می‌شه؛ تا وقتی عکس لود نشده، یه نارنجیِ نرم به‌عنوانِ فالبک.
+       علاوه بر این، یه نبضِ گلوی سبک/آروم هم روش انیمیت می‌شه (wave-cover-pulse)، تا کاورِ کارتِ
+       بزرگ کاملاً ثابت/مرده به‌نظر نرسه؛ دامنه‌ی تغییرش کمه که چشم‌آزار نشه */
     box-shadow: 0 16px 40px rgba(0,0,0,0.45), 0 0 55px 14px var(--wave-cover-glow, rgba(255,138,0,0.38));
     transition: box-shadow 0.5s ease;
+    animation: wave-cover-pulse 3.6s ease-in-out infinite;
+  }
+  @keyframes wave-cover-pulse {
+    0%, 100% { box-shadow: 0 16px 40px rgba(0,0,0,0.45), 0 0 55px 14px var(--wave-cover-glow, rgba(255,138,0,0.38)); }
+    50% { box-shadow: 0 16px 40px rgba(0,0,0,0.45), 0 0 66px 17px var(--wave-cover-glow, rgba(255,138,0,0.38)); }
   }
   @media (max-width: 380px) { .wave-hero-cover { width: 158px; height: 158px; } }
   .wave-hero-cover img { width: 100%; height: 100%; object-fit: cover; }
@@ -2984,11 +3004,13 @@
     font-family: ui-monospace, Menlo, monospace; font-size: 12px; font-weight: 700;
     color: rgba(255,255,255,0.82); direction: ltr;
   }
-  /* دکمه‌ی پلی: کپسولِ سفید، یکم بلندتر از قبل (۴۴px -> ۵۲px)، با یه سیک‌بارِ کپسولی که از زیرِ
-     خودِ دکمه (به‌عنوانِ بک‌گراندِ پیشرفت) رد می‌شه؛ آیکون رو لایه‌ی بالاتره تا زیرِ سیک‌بار گم نشه */
+  /* دکمه‌ی پلی: کپسولِ سفید — قبلاً ۴۴px -> ۵۲px بلندتر شده بود، حالا طبقِ درخواستِ جدید یه پله
+     بلندتر (۵۲px -> ۶۲px) تا هم راحت‌تر لمس بشه و هم به‌عنوانِ سیک‌بار قابلِ‌استفاده باشه. با یه
+     سیک‌بارِ کپسولی که از زیرِ خودِ دکمه (به‌عنوانِ بک‌گراندِ پیشرفت) رد می‌شه؛ آیکون رو لایه‌ی
+     بالاتره تا زیرِ سیک‌بار گم نشه */
   .wave-hero-play {
     position: relative; flex-shrink: 0; display: flex; align-items: center; justify-content: center;
-    width: 88px; height: 52px; padding: 0; overflow: hidden;
+    width: 96px; height: 62px; padding: 0; overflow: hidden; touch-action: none;
     border-radius: 999px; background: #fff; color: #241000; border: none; cursor: pointer;
   }
   .wave-hero-play svg { position: relative; z-index: 2; width: 18px; height: 18px; }
@@ -3005,6 +3027,9 @@
     background: linear-gradient(90deg, rgba(255,204,77,0.55), rgba(255,138,0,0.45));
     transition: width 0.2s linear;
   }
+  /* موقعِ درگ‌کردنِ سیک‌بار، ترنزیشنِ عرض رو موقتاً خاموش می‌کنیم تا نوار دقیقاً زیرِ انگشت بیاد،
+     نه با تاخیر؛ نگاه کن به onWaveCapsuleSeekStart */
+  .wave-hero-play.wave-seeking .wave-hero-play-seek-fill { transition: none; }
 
   /* ---------------- تب‌های زیرِ کارتِ موج: سه کپسولِ جداگانه، دقیقاً زبانِ بصریِ تب‌هایِ
      «Плейлисты / Новинки / Для вас»یِ یاندکس‌موزیک (نه یه کپسولِ سگمنتیِ یکپارچه) ---------------- */
@@ -3852,8 +3877,9 @@
   .chat-reaction-chip span { font-size: 11px; color: var(--subtext); font-variant-numeric: tabular-nums; }
   /* درخواستِ بزرگ‌ترشدنِ ریکشن‌های چت: هم ایموجیِ یونیکد (بعد از تبدیلِ Twemoji به img.emoji-img) و هم
      ایموجیِ پکی (که renderRichText مستقیماً img.emoji-img می‌سازه) از همین سلکتور رد می‌شن؛ نسبت به
-     سایزِ پیش‌فرضش (calc(1.2em + 2px))، حدودِ ۳ پیکسل در طول/عرض بزرگ‌تر شده */
-  .chat-reaction-chip img.emoji-img { width: calc(1.2em + 5px); height: calc(1.2em + 5px); }
+     سایزِ پیش‌فرضش (calc(1.2em + 2px))، قبلاً ۳ پیکسل بزرگ‌تر شده بود (calc(1.2em + 5px))، حالا طبقِ
+     درخواستِ جدید ۴ پیکسلِ دیگه هم اضافه شد (در مجموع ۷ پیکسل بزرگ‌تر از حالتِ پیش‌فرض) */
+  .chat-reaction-chip img.emoji-img { width: calc(1.2em + 9px); height: calc(1.2em + 9px); }
   /* پاپ‌آپِ کوچیکِ قبلیِ ری‌اکشن حذف شد؛ الان همون پیکرِ ایموجیِ کامنت/چت (با پک‌ها) استفاده می‌شه —
      نگاه کن به openChatReactionPicker */
 
@@ -7761,7 +7787,7 @@ function updateWaveNowPlayingCapsule() {
         </button>
         <div class="wave-hero-play-wrap">
           <span class="wave-hero-play-time" id="waveCapsuleTime">۰:۰۰</span>
-          <button type="button" class="wave-hero-play" id="waveCapsulePlayBtn" onclick="toggleAudio('${activeSafeId}')" title="پخش/توقف" aria-label="پخش/توقف">
+          <button type="button" class="wave-hero-play" id="waveCapsulePlayBtn" onclick="onWaveCapsulePlayClick(event, '${activeSafeId}')" onpointerdown="onWaveCapsuleSeekStart(event)" title="پخش/توقف — بکش برای سیک" aria-label="پخش/توقف">
             <span class="wave-hero-play-seek"><span class="wave-hero-play-seek-fill"></span></span>
             <svg class="icon-play" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
             <svg class="icon-pause" viewBox="0 0 24 24" fill="currentColor"><path d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg>
@@ -7862,6 +7888,53 @@ function openWaveQueueFromCapsule(e) {
   if (e) e.stopPropagation();
   openFullPlayer();
   setTimeout(() => openQueuePanel(), 60);
+}
+
+// ---------- سیک‌بارِ کپسولیِ کارتِ موج: قبلاً دکمه‌ی پلی فقط پلی/توقف می‌کرد و نوارِ زیرش صرفاً
+// یه نمایشِ بصریِ پیشرفت بود (کار نمی‌کرد)؛ حالا با کشیدنِ انگشت رویِ همون دکمه می‌شه به هر نقطه‌ای
+// از آهنگ سیک کرد — دقیقاً مثلِ یه سیک‌بارِ واقعی، منتها شکلش کپسول/دکمه‌ست ----------
+let waveCapsuleDragMoved = false;
+function onWaveCapsuleSeekStart(e) {
+  const btn = e.currentTarget;
+  waveCapsuleDragMoved = false;
+  btn.classList.add("wave-seeking");
+  const move = (ev) => {
+    waveCapsuleDragMoved = true;
+    seekWaveCapsuleToPointer(btn, ev, false);
+  };
+  const up = (ev) => {
+    if (waveCapsuleDragMoved) seekWaveCapsuleToPointer(btn, ev, true);
+    btn.classList.remove("wave-seeking");
+    document.removeEventListener("pointermove", move);
+    document.removeEventListener("pointerup", up);
+    document.removeEventListener("pointercancel", up);
+  };
+  document.addEventListener("pointermove", move);
+  document.addEventListener("pointerup", up);
+  document.addEventListener("pointercancel", up);
+}
+// commit=false یعنی فقط پیش‌نمایشِ بصری حینِ کشیدن (نوار رو جابه‌جا کن)، commit=true یعنی واقعاً
+// currentTime رو ست کن (موقعِ رهاکردنِ انگشت)؛ همینطور حینِ کشیدن هم زنده currentTime رو آپدیت
+// می‌کنیم که کاربر همزمان صدای جابه‌جایی رو هم بشنوه، نه فقط موقعِ رهاکردن
+function seekWaveCapsuleToPointer(btn, ev, commit) {
+  const rect = btn.getBoundingClientRect();
+  let ratio = (ev.clientX - rect.left) / rect.width;
+  ratio = Math.max(0, Math.min(1, ratio));
+  const box = document.getElementById("waveNowPlayingCapsule");
+  if (box) box.style.setProperty("--wave-progress", (ratio * 100).toFixed(2) + "%");
+  const audioEl = currentAudio ? currentAudio.audioEl : (waveCapsuleLastSafeId ? document.getElementById(`audioEl-${waveCapsuleLastSafeId}`) : null);
+  if (audioEl && audioEl.duration) {
+    audioEl.currentTime = ratio * audioEl.duration;
+    const t = document.getElementById("waveCapsuleTime");
+    if (t) t.textContent = formatTime(audioEl.currentTime);
+  }
+}
+// کلیکِ سادهٔ روی دکمه (بدونِ کشیدن) همون پلی/توقفِ قبلی‌ست؛ اگه کلیک بعد از یه درگِ واقعی اومده
+// باشه (مرورگر بعد از pointerup یه click هم می‌فرسته)، اون رو نادیده می‌گیریم تا سیک باعثِ
+// پلی/توقفِ ناخواسته نشه
+function onWaveCapsulePlayClick(e, safeId) {
+  if (waveCapsuleDragMoved) { waveCapsuleDragMoved = false; return; }
+  toggleAudio(safeId);
 }
 
 // هر ثانیه، اگه کپسول دیده می‌شه، زمانِ سپری‌شده و درصدِ پیشرفت رو آپدیت می‌کنه (بدونِ نیاز به
@@ -19155,7 +19228,33 @@ function clearMusicSearchInput() {
 }
 
 // ================= خانه‌ی «برای شما»: ردیف‌های افقیِ سگ‌تونز (سالاد شیرازی/خواننده‌های موردعلاقه/کشفِ ژانرِ جدید) =================
-const musicHomeState = { loaded: false, expandedSection: null, expandedPage: 1, expandedLoading: false, audioSafeIds: new Set() };
+const musicHomeState = { loaded: false, expandedSection: null, expandedPage: 1, expandedLoading: false, audioSafeIds: new Set(), lastShuffleOrder: {} };
+
+// ---------- شافل‌شدنِ ردیف‌های «سالاد شیرازی» و «خواننده‌های موردعلاقه» موقعِ رفرشِ «برای شما» ----------
+// خودِ انتخابِ آهنگ‌ها (کدوم آهنگ‌ها اصلاً تویِ این دو ردیف باشن) کارِ سرور/اندپوینتِ /api/music/home ست؛
+// این‌جا فقط ترتیبِ نمایشِ همون مجموعه‌ای که سرور برگردونده رو شافل می‌کنیم، تا هر بار که کاربر برمی‌گرده
+// به تبِ «برای شما» (یا سورت دوباره اجرا می‌شه) چیدمان تکراری/یکسان نباشه
+const WAVE_SHUFFLE_SECTION_TITLES = ["سالاد شیرازی", "خواننده‌های موردعلاقه", "خواننده های مورد علاقه"];
+function shuffleArrayCopy(arr) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+function shuffleForYouSectionTracks(section) {
+  const shouldShuffle = WAVE_SHUFFLE_SECTION_TITLES.some((t) => (section.title || "").includes(t));
+  if (!shouldShuffle || !section.tracks || section.tracks.length < 2) return section;
+  const prevOrder = musicHomeState.lastShuffleOrder[section.id];
+  let shuffled = shuffleArrayCopy(section.tracks);
+  // اگه شانسی ترتیبِ جدید دقیقاً همون ترتیبِ دفعه‌ی قبل دراومد، یه‌بارِ دیگه شافل می‌کنیم که چیدمان
+  // واقعاً با دفعه‌ی قبل فرق داشته باشه، نه اینکه تصادفاً تکراری بشینه
+  const sameAsBefore = prevOrder && shuffled.length === prevOrder.length && shuffled.every((t, i) => t.id === prevOrder[i]);
+  if (sameAsBefore) shuffled = shuffleArrayCopy(section.tracks);
+  musicHomeState.lastShuffleOrder[section.id] = shuffled.map((t) => t.id);
+  return Object.assign({}, section, { tracks: shuffled });
+}
 
 // اگه <audio> این آهنگ از قبل جایی تو صفحه نباشه، تو حوضچه‌ی پنهانِ صف می‌سازتش — دقیقاً همون الگویِ
 // loadQueueTracks؛ برخلافِ music-row (که audio رو inline خودِ ردیف می‌سازه)، کارت‌های خانه audio
@@ -19210,7 +19309,7 @@ async function loadMusicHome() {
     // کاملِ محتوا می‌کشیمش بیرون و پارکش می‌کنیم که پخش قطع نشه
     const audioInsideHome = currentAudio && homeEl.contains(document.getElementById(`audioEl-${currentAudio.safeId}`));
     const plucked = audioInsideHome ? pluckCurrentAudioNode() : null;
-    homeEl.innerHTML = (data.sections || []).map(renderMusicHomeSectionHtml).join("");
+    homeEl.innerHTML = (data.sections || []).map(shuffleForYouSectionTracks).map(renderMusicHomeSectionHtml).join("");
     if (plucked) ensureQueueAudioPool().appendChild(plucked.node);
   } catch (e) {
     if (!musicHomeState.loaded) homeEl.innerHTML = `<div class="empty-state">لیست بارگذاری نشد. اتصال اینترنتت رو چک کن.</div>`;
