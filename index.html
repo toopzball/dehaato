@@ -2487,13 +2487,17 @@
     cursor: pointer;
     transition: opacity 0.2s, right 0.45s cubic-bezier(0.34, 1.56, 0.64, 1),
       margin-right 0.45s cubic-bezier(0.34, 1.56, 0.64, 1), bottom 0.45s cubic-bezier(0.34, 1.56, 0.64, 1),
-      width 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), padding 0.4s ease, gap 0.3s ease, border-radius 0.4s ease;
+      width 0.45s cubic-bezier(0.34, 1.56, 0.64, 1), padding 0.45s cubic-bezier(0.34, 1.56, 0.64, 1),
+      gap 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), border-radius 0.45s cubic-bezier(0.34, 1.56, 0.64, 1),
+      box-shadow 0.45s ease;
   }
   .mini-player.hidden { display: none !important; }
   /* حالتِ جمع‌شده: یه دایره‌ی واقعی و کاملاً گردِ کاور که نصفش از لبه‌ی صفحه بیرون می‌زنه؛ همون
      نصفه‌ی داخلیش (رو به محتوا) دیده می‌شه و نصفه‌ی بیرونی طبیعتاً از دیدرس خارجه — پس خودِ کاور
      هیچ‌وقت کش نمیاد/بیضی نمی‌شه، همیشه دقیقاً هم‌اندازه‌ی یه دایره‌ی واقعیه، دقیقاً مثل هر
-     آیکون/کاورِ دایره‌ای دیگه‌ی سایت (مثلاً تو لیستِ آهنگا) */
+     آیکون/کاورِ دایره‌ای دیگه‌ی سایت (مثلاً تو لیستِ آهنگا).
+     همه‌ی پراپرتی‌ها (عرض/پدینگ/گپ/گردی‌گوشه/شعاعِ سایه) حالا با یه cubic-bezierِ فنری/یکسان
+     حرکت می‌کنن، نه قاطیِ ease + bounce، تا کلِ تبدیل یه‌دست و نرم دیده بشه، نه چند تیکه. */
   .mini-player.collapsed {
     width: 48px; height: 48px; padding: 0; gap: 0; border-radius: 50%;
     right: -24px; margin-right: 0;
@@ -2504,12 +2508,50 @@
   .mini-player-cover {
     width: 34px; height: 34px; border-radius: 50%; overflow: hidden; flex-shrink: 0;
     background: var(--card); display: flex; align-items: center; justify-content: center; color: var(--subtext);
-    transition: width 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), height 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    box-shadow: 0 0 0 0 transparent;
+    transition: width 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), height 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
+      box-shadow 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  /* حلقه‌ی نورِ ظریف دورِ کاور، فقط دقیقاً هنگامِ جمع‌شدن به دایره ظاهر می‌شه (رنگش از var(--accent)
+     همون تمِ فعاله) — همین حلقه‌ی محو حسِ «قفل‌شدن تویِ حالتِ جدید» رو به تبدیل می‌ده */
+  .mini-player.collapsed .mini-player-cover {
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 40%, transparent), 0 3px 10px rgba(0,0,0,0.35);
   }
   .mini-player-cover img { width: 100%; height: 100%; object-fit: cover; }
   .mini-player-cover svg { width: 15px; height: 15px; }
   .mini-player.playing .mini-player-cover { animation: mini-cover-spin 6s linear infinite; }
   @keyframes mini-cover-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+  /* ---------- انیمیشن‌های سراسریِ مینی‌پلیر (همه‌ی تم‌ها، نه فقط وینیل) ----------
+     این سه‌تا قبلاً فقط مخصوصِ اسکینِ وینیل بودن؛ حالا سطحِ پایه‌ن و با var(--accent)
+     رنگ می‌گیرن، پس رویِ هر تمی (پیش‌فرض/اپل/آرک/طیف/موج) خودشون رو با رنگِ همون
+     تم هماهنگ می‌کنن. اسکینِ وینیل خودش پایین‌تر رنگ/انیمیشنِ اختصاصیِ خودش (قرمزتر)
+     رو با اسپسیفیسیتیِ بالاتر override می‌کنه، پس این قانون‌ها روش اثر نمی‌ذارن. */
+  /* تپشِ نرمِ سایه‌ی دورِ کپسول موقعِ پخش — حسِ «زنده»ی ملایم، نه چشمک‌زن */
+  .mini-player.playing {
+    animation: miniPlayerBreathe 2.6s ease-in-out infinite;
+  }
+  @keyframes miniPlayerBreathe {
+    0%, 100% { box-shadow: 0 8px 26px rgba(0,0,0,0.5); }
+    50% { box-shadow: 0 8px 28px rgba(0,0,0,0.4), 0 0 0 5px color-mix(in srgb, var(--accent) 20%, transparent); }
+  }
+  /* ورودِ فنری موقعِ اولین‌بار ظاهرشدنِ کپسول (کلاسِ just-appeared با JS اضافه/حذف می‌شه) */
+  .mini-player.just-appeared {
+    animation: miniPlayerSpringIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  @keyframes miniPlayerSpringIn {
+    from { transform: translateY(28px) scale(0.82); opacity: 0; }
+    to { transform: translateY(0) scale(1); opacity: 1; }
+  }
+  /* فیدبکِ فشردنِ دکمه‌ها: یه جمع‌شدنِ ظریف موقعِ تاچ/کلیک */
+  .mini-player-btn, .mini-player-play, .mini-player-close {
+    transition: transform 0.15s ease, color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
+  }
+  .mini-player-btn:active, .mini-player-close:active { transform: scale(0.86); }
+  .mini-player-play:active { transform: scale(0.88); }
+  @media (prefers-reduced-motion: reduce) {
+    .mini-player.playing, .mini-player.just-appeared { animation: none; }
+  }
   .mini-player-info { flex: 1; min-width: 0; }
   .mini-player-title { font-size: 12.5px; font-weight: 500; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .mini-player-performer { font-size: 11px; color: var(--subtext); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -2800,45 +2842,55 @@
      کوچیک با نشانِ هدف‌گیریِ گوشه، دکمه‌ی پخشِ اصلی به‌شکلِ کپسولِ سفید با زمانِ
      داخلش (دقیقاً مثلِ «▶ ۰۱:۴۸» تو رفرنس)، و بازطراحیِ کاملِ صفحه‌ی خانه/لیست با
      کپسولِ «موجِ شما»، تب‌های کپسولی، و کارت‌های دایره‌ای. ---------------------------- */
-  html[data-music-skin="wave"] .full-player .bg-blur {
-    background: linear-gradient(160deg,#2b0600,#7a1d00 30%,#e6480a 55%,#ff8a00 75%,#ffcf3f 100%);
-    background-size: 220% 220%;
-    animation: waveFlameShift 14s ease-in-out infinite;
-  }
-  @keyframes waveFlameShift {
-    0%, 100% { background-position: 20% 30%; }
-    50% { background-position: 80% 70%; }
-  }
-  html[data-music-skin="wave"] .full-player .ambient-blob { filter: blur(90px); opacity: 0.75; }
-  html[data-music-skin="wave"] .full-player .ambient-blob.b1 { background: #ff5a1f; }
-  html[data-music-skin="wave"] .full-player .ambient-blob.b2 { background: #ffb300; }
-  html[data-music-skin="wave"] .full-player .ambient-blob.b3 { background: #ff2d55; }
-  html[data-music-skin="wave"] .full-player .ambient-vignette { background: radial-gradient(ellipse at center, rgba(20,5,0,0.1) 25%, rgba(15,3,0,0.55) 72%, rgba(6,1,0,0.9) 100%); }
+  /* پس‌زمینه‌ی پلیرِ تمام‌صفحه: مشکیِ تقریباً خالص (نه دیگه شعله‌ی رنگیِ سراسرِ صفحه) — گرمی/رنگ
+     حالا فقط از هاله‌ی نرمِ دورِ کاور میاد (پایین‌تر)، دقیقاً مثلِ رفرنس که فقط وسطِ صفحه گلو داره
+     و بالا/پایینِ صفحه تقریباً مشکیِ محضه */
+  html[data-music-skin="wave"] .full-player .bg-blur { background: #0b0402; }
+  html[data-music-skin="wave"] .full-player .ambient-blob { opacity: 0; }
+  html[data-music-skin="wave"] .full-player .ambient-vignette { background: radial-gradient(ellipse at 50% 38%, rgba(20,5,0,0.05) 20%, rgba(11,4,2,0.62) 66%, rgba(6,2,1,0.95) 100%); }
 
-  /* کاورِ مربعیِ کوچیک با حلقه‌ی کِرم‌رنگ + نشانِ هدف‌گیریِ گوشه‌ی پایین‌راست، عیناً رفرنس */
+  /* کاورِ گردِ بزرگ با هاله‌ی نرمِ غروب‌گونه (طلایی→نارنجی→صورتی→بنفش) که از پشتش بیرون می‌زنه،
+     دقیقاً زبانِ بصریِ رفرنسِ ارسالی — عکسِ خودِ آهنگ وسط، هاله دورش با blur شدید محو می‌شه تویِ
+     پس‌زمینه‌ی مشکی. overflow:visible روی خودِ wrap تا هاله (که با ::before ساخته می‌شه) بتونه
+     از مرزِ کادر بیرون بزنه؛ کلیپ‌شدنِ گردِ خودِ عکس با border-radius روی img/placeholder انجام می‌شه */
   html[data-music-skin="wave"] .reels-art-wrap {
-    width: 190px; height: 190px; border-radius: 18px;
-    box-shadow: 0 16px 40px rgba(0,0,0,0.55), 0 0 0 3px rgba(255,235,200,0.35);
+    width: 210px; height: 210px; border-radius: 50%; overflow: visible;
+    box-shadow: none; background: transparent;
   }
-  @media (max-width: 480px), (max-height: 700px) { html[data-music-skin="wave"] .reels-art-wrap { width: 140px; height: 140px; border-radius: 14px; } }
-  html[data-music-skin="wave"] .reels-art-wrap::after {
-    content: ""; position: absolute; inset-inline-end: 8px; bottom: 8px; width: 26px; height: 26px;
-    border-radius: 50%; background: rgba(20,6,0,0.55); backdrop-filter: blur(3px); z-index: 3;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ffe9c7' stroke-width='2'%3E%3Ccircle cx='12' cy='12' r='7'/%3E%3Ccircle cx='12' cy='12' r='1.4' fill='%23ffe9c7'/%3E%3Cpath d='M12 2v3M12 19v3M2 12h3M19 12h3'/%3E%3C/svg%3E");
-    background-repeat: no-repeat; background-position: center; background-size: 15px 15px;
+  html[data-music-skin="wave"] .reels-art-wrap img,
+  html[data-music-skin="wave"] .reels-art-wrap .placeholder-icon,
+  html[data-music-skin="wave"] .reels-art-wrap .art-loading {
+    border-radius: 50%; position: relative; z-index: 2;
+  }
+  html[data-music-skin="wave"] .reels-art-wrap::before {
+    content: ""; position: absolute; inset: -64px; z-index: 0; border-radius: 50%;
+    background: radial-gradient(circle at 34% 30%, #fff6cf 0%, #ffcf3f 16%, #ff8a3d 36%, #ff3b6e 58%, #b23dff 80%, transparent 94%);
+    filter: blur(48px); opacity: 0.92;
+  }
+  html[data-music-skin="wave"] .reels-art-wrap.playing::before {
+    animation: waveOrbBreathe 5s ease-in-out infinite;
+  }
+  @keyframes waveOrbBreathe {
+    0%, 100% { transform: scale(1); opacity: 0.85; }
+    50% { transform: scale(1.07); opacity: 1; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    html[data-music-skin="wave"] .reels-art-wrap.playing::before { animation: none; }
+  }
+  @media (max-width: 480px), (max-height: 700px) {
+    html[data-music-skin="wave"] .reels-art-wrap { width: 150px; height: 150px; }
+    html[data-music-skin="wave"] .reels-art-wrap::before { inset: -46px; }
   }
 
-  /* دکمه‌ی پخشِ اصلی: کپسولِ سفیدِ کشیده با آیکون + زمانِ سپری‌شده داخلش، دقیقاً مثلِ «▶ ۰۱:۴۸» رفرنس */
+  /* دکمه‌ی پخشِ اصلی: حالا یه دایره‌ی سفیدِ سادهِ مینیمال (نه دیگه کپسولِ کشیده با زمانِ داخلش) —
+     دقیقاً همون زبونِ بصریِ رفرنس: یه دایره‌ی سفیدِ تک‌آیکون، وسطِ ردیفِ قبلی/بعدی */
   html[data-music-skin="wave"] .reels-ctrl-btn.reels-ctrl-main {
-    width: auto; height: 46px; padding: 0 18px 0 14px; border-radius: 999px; gap: 8px;
+    width: 62px; height: 62px; border-radius: 50%;
     background: #fff; color: #241000; box-shadow: 0 8px 22px rgba(0,0,0,0.45);
-    direction: ltr;
   }
-  html[data-music-skin="wave"] .reels-ctrl-btn.reels-ctrl-main svg { width: 17px; height: 17px; }
-  html[data-music-skin="wave"] .reels-ctrl-main-time {
-    display: inline-block; font-family: ui-monospace, Menlo, monospace; font-size: 13px;
-    font-weight: 700; color: #241000; direction: ltr;
-  }
+  html[data-music-skin="wave"] .reels-ctrl-btn.reels-ctrl-main svg { width: 22px; height: 22px; }
+  html[data-music-skin="wave"] .reels-ctrl-main-time { display: none; }
+  html[data-music-skin="wave"] .reels-controls { gap: 26px; }
   html[data-music-skin="wave"] .reels-ctrl-btn { background: transparent; border-color: transparent; color: rgba(255,255,255,0.92); }
   html[data-music-skin="wave"] .reels-ctrl-btn:not(.reels-ctrl-main) svg { width: 21px; height: 21px; }
   html[data-music-skin="wave"] .reels-ctrl-btn.reels-toggle { opacity: 0.55; }
@@ -2846,7 +2898,7 @@
 
   /* سیک‌بار: نوارِ نازکِ کپسولی که با درصدِ پیشرفت (--seek-pct، هر فریم از JS آپدیت می‌شه) پر می‌شه */
   html[data-music-skin="wave"] .reels-seek {
-    height: 5px; background: linear-gradient(to right, #ffcc4d var(--seek-pct, 0%), rgba(255,255,255,0.22) var(--seek-pct, 0%));
+    height: 4px; background: linear-gradient(to right, #ffcc4d var(--seek-pct, 0%), rgba(255,255,255,0.22) var(--seek-pct, 0%));
   }
   html[data-music-skin="wave"] .reels-seek::-webkit-slider-thumb, html[data-music-skin="wave"] .reels-seek::-moz-range-thumb { background: #ffcc4d; box-shadow: 0 0 0 3px rgba(255,204,77,0.25); }
   html[data-music-skin="wave"] .reels-seek-time { color: rgba(255,235,210,0.8); }
@@ -2855,6 +2907,12 @@
   html[data-music-skin="wave"] .reels-close, html[data-music-skin="wave"] .reels-download,
   html[data-music-skin="wave"] .reels-queue-btn, html[data-music-skin="wave"] .reels-engage-item {
     background: rgba(20,6,0,0.4); border-color: rgba(255,200,150,0.2);
+  }
+  /* رأی‌گیری/کامنت تویِ این اسکین حذف می‌شن (فقط لایک+صف می‌مونن)؛ دقیقاً همون منطقِ مینیمالِ
+     اسکینِ وینیل، تا ردیفِ تعامل شلوغ نشه و با ظاهرِ ساده‌ی رفرنس هماهنگ بمونه */
+  html[data-music-skin="wave"] #fpVoteWrap,
+  html[data-music-skin="wave"] #fpCommentBtn {
+    display: none;
   }
   html[data-music-skin="wave"] .reels-engage-item.active, html[data-music-skin="wave"] .reels-engage-btn.active { color: #ffcc4d; }
   html[data-music-skin="wave"] .audio-play-btn, html[data-music-skin="wave"] .music-row-play, html[data-music-skin="wave"] .mini-player-play {
