@@ -1,10 +1,12 @@
 // ---------- سرویس‌ورکر دهات: پوش نوتیفیکیشن + کش برای کارِ آفلاین ----------
 // نسخه رو هر بار که لیستِ فایل‌های کش‌شونده یا استراتژیِ کش عوض شد، دستی بالا ببر (مثلاً v2, v3, ...)
 // تا مرورگرها مجبور بشن کشِ قدیمی رو دور بریزن و نسخه‌ی جدید رو بگیرن.
-const CACHE_VERSION = "v1";
+const CACHE_VERSION = "v2";
 const SHELL_CACHE = `dehaat-shell-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `dehaat-runtime-${CACHE_VERSION}`;
 const ALL_CACHES = [SHELL_CACHE, RUNTIME_CACHE];
+// کشِ آهنگِ درحالِ‌پخش (نگاه کن به DehaatOffline.cacheOnlyThisTrack تویِ index.html): این کش
+// مستقیم از خودِ صفحه (نه از این سرویس‌ورکر) باز و مدیریت می‌شه، پس نباید موقعِ activate پاک بشه.
 
 // اسکلتِ اصلیِ اپ: صفحاتِ HTML و آیکون‌هایی که برای بالا اومدنِ اپ (حتی آفلاین) لازمن.
 // اینا رو موقعِ نصبِ سرویس‌ورکر از قبل دانلود و کش می‌کنیم (precache).
@@ -39,9 +41,14 @@ self.addEventListener("install", (event) => {
 self.addEventListener("activate", (event) => {
   event.waitUntil(
     (async () => {
-      // کشِ نسخه‌های قدیمی (که اسمشون تویِ ALL_CACHES نیست) رو پاک می‌کنیم
+      // کشِ نسخه‌های قدیمی (که اسمشون تویِ ALL_CACHES نیست) رو پاک می‌کنیم؛ کشِ آهنگِ درحالِ‌پخش
+      // (dehaat-offline-now-playing-*) دستِ خودِ صفحه‌ست، دست نمی‌زنیم بهش
       const keys = await caches.keys();
-      await Promise.all(keys.filter((k) => !ALL_CACHES.includes(k)).map((k) => caches.delete(k)));
+      await Promise.all(
+        keys
+          .filter((k) => !ALL_CACHES.includes(k) && !k.startsWith("dehaat-offline-now-playing"))
+          .map((k) => caches.delete(k))
+      );
       await self.clients.claim();
     })()
   );
