@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>حکم</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --primary: #1A0A31;
+    --surface: #241243;
+    --card: #2D1856;
+    --accent: #8B5CF6;
+    --accent-hover: #A78BFA;
+    --text: #FFFFFF;
+    --subtext: #C9C4D8;
+    --border: #3D2A64;
+    --success: #22C55E;
+    --error: #EF4444;
+    --gold: #F5B942;
+    --radius: 16px;
+    --team-a: #8B5CF6;
+    --team-b: #F5B942;
+    --accent-gradient: linear-gradient(135deg, var(--accent), var(--accent-hover));
+    --safe-top: env(safe-area-inset-top, 0px);
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; margin: 0; }
+  body {
+    font-family: 'Vazirmatn', Tahoma, sans-serif;
+    background: radial-gradient(60% 50% at 50% 0%, #2D1856 0%, #1A0A31 60%), var(--primary);
+    color: var(--text);
+    overflow: hidden;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  button { font-family: inherit; }
+  .hidden { display: none !important; }
+  .screen { position: absolute; inset: 0; display: flex; flex-direction: column; }
+
+  /* ---------- عمومی ---------- */
+  .btn {
+    border: none; border-radius: 14px; padding: 13px 18px; font-size: 15px; font-weight: 700;
+    cursor: pointer; color: var(--text); background: var(--card); border: 1px solid var(--border);
+    transition: transform .12s ease, background .15s ease;
+  }
+  .btn:active { transform: scale(.97); }
+  .btn-accent { background: var(--accent-gradient); border: none; }
+  .btn-ghost { background: transparent; border: 1px solid var(--border); color: var(--subtext); }
+  .btn:disabled { opacity: .45; cursor: default; pointer-events: none; }
+  input[type="text"] {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+    padding: 12px 14px; color: var(--text); font-size: 15px; font-family: inherit; width: 100%;
+  }
+  input[type="text"]:focus { outline: none; border-color: var(--accent); }
+  .toast {
+    position: absolute; top: calc(var(--safe-top) + 12px); left: 50%; transform: translateX(-50%);
+    background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+    padding: 10px 18px; font-size: 13px; z-index: 999; box-shadow: 0 8px 24px #0007;
+    opacity: 0; pointer-events: none; transition: opacity .25s ease, top .25s ease;
+  }
+  .toast.show { opacity: 1; top: calc(var(--safe-top) + 20px); }
+  .toast.error { border-color: var(--error); color: #FFD3D3; }
+
+  /* ---------- منو ---------- */
+  #screenMenu { padding: calc(var(--safe-top) + 18px) 18px calc(var(--safe-bottom) + 18px); overflow-y: auto; }
+  .menu-header { text-align: center; margin-bottom: 22px; }
+  .menu-header .big-icon { font-size: 44px; }
+  .menu-header h1 { margin: 6px 0 2px; font-size: 22px; }
+  .menu-header p { margin: 0; color: var(--subtext); font-size: 13px; }
+  .menu-section { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; margin-bottom: 14px; }
+  .menu-section h3 { margin: 0 0 12px; font-size: 14px; color: var(--subtext); font-weight: 600; }
+  .row-gap { display: flex; gap: 10px; }
+  .row-gap .btn { flex: 1; }
+  .join-row { display: flex; gap: 8px; margin-top: 10px; }
+  .join-row input { text-align: center; letter-spacing: 3px; font-weight: 700; text-transform: uppercase; }
+  .public-rooms-list { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; max-height: 220px; overflow-y: auto; }
+  .public-room-item { display: flex; align-items: center; gap: 10px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 10px 12px; }
+  .public-room-item .avatar-sm { width: 30px; height: 30px; border-radius: 50%; background: var(--accent); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; flex-shrink: 0; }
+  .public-room-item .name { flex: 1; font-size: 13px; }
+  .public-room-item .btn { padding: 7px 14px; font-size: 12px; }
+  .empty-hint { color: var(--subtext); font-size: 13px; text-align: center; padding: 10px; }
+
+  /* ---------- روم انتظار ---------- */
+  #screenRoom { padding: calc(var(--safe-top) + 18px) 18px calc(var(--safe-bottom) + 18px); align-items: center; justify-content: center; text-align: center; }
+  .room-code-box { background: var(--card); border: 1px dashed var(--accent); border-radius: 16px; padding: 18px 26px; margin: 16px 0; }
+  .room-code-box .code { font-size: 30px; font-weight: 800; letter-spacing: 6px; color: var(--gold); }
+  .room-code-box .hint { font-size: 12px; color: var(--subtext); margin-top: 6px; }
+  .seats-ring { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; width: 100%; max-width: 340px; margin: 10px 0 18px; }
+  .seat-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 14px 8px; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+  .seat-card.filled { border-color: var(--accent); }
+  .seat-card .avatar-sm { width: 40px; height: 40px; border-radius: 50%; background: var(--accent); display: flex; align-items: center; justify-content: center; font-weight: 700; overflow: hidden; }
+  .seat-card .avatar-sm img { width: 100%; height: 100%; object-fit: cover; }
+  .seat-card .name { font-size: 12px; }
+  .seat-card .team-tag { font-size: 10px; padding: 2px 8px; border-radius: 8px; }
+  .seat-card .team-tag.t0 { background: #8B5CF633; color: var(--team-a); }
+  .seat-card .team-tag.t1 { background: #F5B94233; color: var(--gold); }
+  .seat-card.empty { opacity: .4; }
+  .vis-toggle { display: flex; gap: 8px; margin-bottom: 6px; }
+  .vis-toggle button { flex: 1; padding: 9px; font-size: 12px; border-radius: 10px; border: 1px solid var(--border); background: var(--surface); color: var(--subtext); }
+  .vis-toggle button.active { background: var(--accent-gradient); color: #fff; border: none; }
+
+  /* ---------- میزِ بازی ---------- */
+  #screenGame { inset: 0; }
+  .table-wrap { position: absolute; inset: 0; display: grid; grid-template-rows: auto 1fr auto; padding: var(--safe-top) 0 var(--safe-bottom); }
+  .top-bar { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; }
+  .top-bar .left-actions, .top-bar .right-actions { display: flex; gap: 8px; align-items: center; }
+  .icon-btn { width: 34px; height: 34px; border-radius: 50%; background: var(--surface); border: 1px solid var(--border); color: var(--text); display: flex; align-items: center; justify-content: center; cursor: pointer; }
+  .score-pill { display: flex; align-items: center; gap: 6px; background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 6px 12px; font-size: 12px; }
+  .score-pill b { font-size: 14px; }
+  .score-pill .a { color: var(--team-a); }
+  .score-pill .b { color: var(--gold); }
+  .trump-badge { display: flex; align-items: center; gap: 6px; background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 6px 12px; font-size: 18px; }
+
+  .table-center { position: relative; display: flex; align-items: center; justify-content: center; }
+  .felt {
+    position: relative; width: min(78vw, 340px); height: min(78vw, 340px); border-radius: 50%;
+    background: radial-gradient(circle at 50% 40%, #3D2A64, #241243 70%);
+    border: 6px solid #1A0A3155; box-shadow: inset 0 0 40px #00000066, 0 10px 40px #00000066;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .trick-area { position: relative; width: 130px; height: 130px; }
+  .trick-card { position: absolute; width: 52px; height: 74px; border-radius: 6px; overflow: hidden; box-shadow: 0 4px 10px #0007; }
+  .trick-card img { width: 100%; height: 100%; object-fit: cover; }
+  .trick-pos-bottom { bottom: 0; left: 50%; transform: translateX(-50%); }
+  .trick-pos-right { right: 0; top: 50%; transform: translateY(-50%); }
+  .trick-pos-top { top: 0; left: 50%; transform: translateX(-50%); }
+  .trick-pos-left { left: 0; top: 50%; transform: translateY(-50%); }
+
+  .seat-slot { position: absolute; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  .seat-slot.pos-top { top: -6px; left: 50%; transform: translateX(-50%); }
+  .seat-slot.pos-right { right: -14px; top: 50%; transform: translateY(-50%); flex-direction: row-reverse;}
+  .seat-slot.pos-left { left: -14px; top: 50%; transform: translateY(-50%); flex-direction: row; }
+  .seat-avatar { width: 46px; height: 46px; border-radius: 50%; background: var(--surface); border: 2px solid var(--border); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 15px; overflow: hidden; position: relative; }
+  .seat-avatar img { width: 100%; height: 100%; object-fit: cover; }
+  .seat-avatar.turn { border-color: var(--gold); box-shadow: 0 0 0 4px #F5B94233; }
+  .seat-avatar.disconnected { opacity: .35; }
+  .seat-name { font-size: 11px; background: #00000066; padding: 2px 8px; border-radius: 8px; white-space: nowrap; max-width: 90px; overflow: hidden; text-overflow: ellipsis; }
+  .seat-cardcount { position: absolute; bottom: -4px; left: -4px; background: var(--gold); color: #1A0A31; font-size: 10px; font-weight: 800; border-radius: 8px; padding: 0 5px; min-width: 16px; text-align: center; }
+  .hakem-crown { position: absolute; top: -10px; right: -4px; font-size: 15px; }
+
+  .my-area { display: flex; flex-direction: column; align-items: center; padding: 6px 0 calc(10px + var(--safe-bottom)); gap: 8px; }
+  .turn-strip { font-size: 13px; color: var(--subtext); display: flex; align-items: center; gap: 8px; height: 18px; }
+  .turn-strip.mine { color: var(--gold); font-weight: 700; }
+  .timer-bar-wrap { width: 90px; height: 4px; background: var(--surface); border-radius: 4px; overflow: hidden; }
+  .timer-bar { height: 100%; background: var(--gold); transition: width .3s linear; }
+  .hand-strip { display: flex; justify-content: center; padding: 0 6px; direction: ltr; }
+  .hand-card {
+    width: 64px; height: 92px; margin-inline-start: -30px; border-radius: 8px; overflow: hidden;
+    box-shadow: 0 4px 14px #0008; border: 2px solid #00000000; cursor: pointer;
+    transition: transform .15s ease, margin .15s ease, filter .15s ease;
+    flex-shrink: 0; background: #fff;
+  }
+  .hand-card:first-child { margin-inline-start: 0; }
+  .hand-card img { width: 100%; height: 100%; object-fit: cover; display: block; pointer-events: none; }
+  .hand-card.playable:hover, .hand-card.playable:active { transform: translateY(-14px); z-index: 5; }
+  .hand-card.unplayable { filter: brightness(.45) saturate(.6); cursor: default; }
+
+  /* ---------- انتخاب حکم ---------- */
+  .trump-overlay, .center-overlay {
+    position: absolute; inset: 0; background: #1A0A31CC; backdrop-filter: blur(4px);
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px;
+    text-align: center; padding: 20px; z-index: 50;
+  }
+  .trump-overlay h2, .center-overlay h2 { margin: 0; font-size: 19px; }
+  .trump-overlay p, .center-overlay p { margin: 0; color: var(--subtext); font-size: 13px; }
+  .suit-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; width: 100%; max-width: 280px; }
+  .suit-btn {
+    background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 18px 10px;
+    display: flex; flex-direction: column; align-items: center; gap: 6px; cursor: pointer; font-size: 13px;
+  }
+  .suit-btn .glyph { font-size: 32px; }
+  .suit-btn.suit-hearts .glyph, .suit-btn.suit-diamonds .glyph { color: #E5484D; }
+  .suit-btn.suit-spades .glyph, .suit-btn.suit-clubs .glyph { color: #F4F4F5; }
+  .my-cards-preview { display: flex; gap: -20px; direction: ltr; margin-top: 6px; }
+  .my-cards-preview img { width: 44px; height: 62px; object-fit: cover; border-radius: 5px; margin-inline-start: -18px; box-shadow: 0 3px 8px #0007; }
+  .my-cards-preview img:first-child { margin-inline-start: 0; }
+
+  .result-team { font-size: 15px; font-weight: 700; }
+  .result-team.a { color: var(--team-a); }
+  .result-team.b { color: var(--gold); }
+  .kot-badge { background: var(--error); color: #fff; font-size: 11px; padding: 3px 10px; border-radius: 8px; }
+
+  @media (max-width: 360px) {
+    .hand-card { width: 54px; height: 78px; margin-inline-start: -26px; }
+    .felt { width: min(84vw, 300px); height: min(84vw, 300px); }
+  }
+</style>
+</head>
+<body>
+
+<div class="toast" id="toast"></div>
+
+<!-- ===================== منو ===================== -->
+<div class="screen" id="screenMenu">
+  <div class="menu-header">
+    <div class="big-icon">🃏</div>
+    <h1>حکم</h1>
+    <p>۴نفره، آنلاین، دو تیمِ روبه‌رو</p>
+  </div>
+
+  <div class="menu-section">
+    <h3>ساختنِ روم</h3>
+    <div class="row-gap">
+      <button class="btn btn-accent" onclick="createRoom('private')">🔒 خصوصی (با کد)</button>
+      <button class="btn" onclick="createRoom('public')">🌐 عمومی</button>
+    </div>
+  </div>
+
+  <div class="menu-section">
+    <h3>پیوستن با کد</h3>
+    <div class="join-row">
+      <input type="text" id="joinCodeInput" placeholder="کدِ روم" maxlength="6" />
+      <button class="btn btn-accent" onclick="joinByCode()">ورود</button>
+    </div>
+  </div>
+
+  <div class="menu-section">
+    <h3>روم‌هایِ عمومیِ باز</h3>
+    <div class="public-rooms-list" id="publicRoomsList">
+      <div class="empty-hint">در حال بارگذاری...</div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== اتاقِ انتظار ===================== -->
+<div class="screen hidden" id="screenRoom">
+  <div class="room-code-box">
+    <div class="code" id="roomCodeText">------</div>
+    <div class="hint">این کد رو به ۳ نفرِ دیگه بده</div>
+  </div>
+  <div class="vis-toggle" id="visToggle" style="width:100%; max-width:280px;">
+    <button id="visPrivateBtn" onclick="setVisibility('private')">خصوصی</button>
+    <button id="visPublicBtn" onclick="setVisibility('public')">عمومی</button>
+  </div>
+  <div class="seats-ring" id="waitingSeats"></div>
+  <div id="waitingStatusText" style="color:var(--subtext); font-size:13px;">منتظرِ بازیکن‌ها…</div>
+  <button class="btn btn-ghost" style="margin-top:16px;" onclick="leaveRoom()">خروج از روم</button>
+</div>
+
+<!-- ===================== میزِ بازی ===================== -->
+<div class="screen hidden" id="screenGame">
+  <div class="table-wrap">
+    <div class="top-bar">
+      <div class="right-actions">
+        <div class="icon-btn" onclick="leaveRoom()" title="خروج">✕</div>
+      </div>
+      <div class="score-pill">
+        <span class="a">تیمِ من: <b id="scoreMine">0</b></span>
+        <span style="opacity:.4">|</span>
+        <span class="b">حریف: <b id="scoreTheirs">0</b></span>
+      </div>
+      <div class="left-actions">
+        <div class="trump-badge" id="trumpBadge">—</div>
+      </div>
+    </div>
+
+    <div class="table-center">
+      <div class="felt">
+        <div class="trick-area" id="trickArea"></div>
+        <div class="seat-slot pos-top" id="seatTop"></div>
+        <div class="seat-slot pos-right" id="seatRight"></div>
+        <div class="seat-slot pos-left" id="seatLeft"></div>
+      </div>
+
+      <div class="trump-overlay hidden" id="trumpOverlay">
+        <h2 id="trumpOverlayTitle">در انتظارِ انتخابِ حکم</h2>
+        <p id="trumpOverlaySub">حاکم داره خالِ حکم رو انتخاب می‌کنه…</p>
+        <div class="my-cards-preview" id="trumpPreviewCards"></div>
+        <div class="suit-grid hidden" id="trumpSuitGrid">
+          <div class="suit-btn suit-hearts" onclick="chooseTrump('hearts')"><span class="glyph">♥</span>دل</div>
+          <div class="suit-btn suit-diamonds" onclick="chooseTrump('diamonds')"><span class="glyph">♦</span>خشت</div>
+          <div class="suit-btn suit-spades" onclick="chooseTrump('spades')"><span class="glyph">♠</span>پیک</div>
+          <div class="suit-btn suit-clubs" onclick="chooseTrump('clubs')"><span class="glyph">♣</span>گشنیز</div>
+        </div>
+      </div>
+
+      <div class="center-overlay hidden" id="handOverOverlay">
+        <h2>پایانِ دست</h2>
+        <div class="result-team" id="handOverText"></div>
+        <div class="kot-badge hidden" id="handOverKot">کُت! ✋</div>
+        <p id="handOverScoreText"></p>
+        <p style="font-size:12px;">دستِ بعدی به‌زودی شروع می‌شه…</p>
+      </div>
+
+      <div class="center-overlay hidden" id="matchOverOverlay">
+        <h2 id="matchOverTitle">پایانِ بازی</h2>
+        <p id="matchOverSub"></p>
+        <button class="btn btn-accent" id="rematchBtn" onclick="voteRematch()">بازیِ دوباره</button>
+        <div style="font-size:12px; color:var(--subtext);" id="rematchStatusText"></div>
+        <button class="btn btn-ghost" onclick="leaveRoom()">خروج</button>
+      </div>
+
+      <div class="center-overlay hidden" id="playerLeftOverlay">
+        <h2>یکی از بازیکن‌ها رفت</h2>
+        <p id="playerLeftText"></p>
+        <button class="btn btn-accent" onclick="leaveRoom()">برگشت به منو</button>
+      </div>
+    </div>
+
+    <div class="my-area">
+      <div class="turn-strip" id="turnStrip">—</div>
+      <div class="timer-bar-wrap"><div class="timer-bar" id="timerBar" style="width:100%;"></div></div>
+      <div class="hand-strip" id="handStrip"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ==================== تنظیمات ====================
+const HOKM_API_BASE = "https://deh-games.alipviv8698.workers.dev"; // همون ورکرِ deh-games (دوز)؛ حکم هم روش اضافه شده
+const WORKER_DIRECT_URL = "https://api-7x2.pages.dev";
+const WORKER_PAGES_PROXY_URL = "";
+const IS_GITHUB_HOST = /(^|\.)github\.io$/.test(location.hostname) || location.hostname === "dehaat.bbboi.ir";
+const WORKER_URL = IS_GITHUB_HOST ? WORKER_DIRECT_URL : WORKER_PAGES_PROXY_URL;
+
+function getToken() { return localStorage.getItem("token"); }
+function getUsername() { return localStorage.getItem("username"); }
+function mediaUrl(fileId) {
+  if (!fileId) return "";
+  return `${WORKER_URL}/api/media/${encodeURIComponent(fileId)}?token=${encodeURIComponent(getToken() || "")}`;
+}
+function avatarColor(name) {
+  const colors = ["#8B5CF6", "#EC4899", "#F59E0B", "#10B981", "#3B82F6", "#EF4444", "#14B8A6", "#A855F7"];
+  let h = 0;
+  for (let i = 0; i < (name || "").length; i++) h = (h * 31 + name.charCodeAt(i)) >>> 0;
+  return colors[h % colors.length];
+}
+
+const SUIT_GLYPH = { hearts: "♥", diamonds: "♦", spades: "♠", clubs: "♣" };
+const SUIT_FA = { hearts: "دل", diamonds: "خشت", spades: "پیک", clubs: "گشنیز" };
+const RANK_VAL = Object.fromEntries(["2","3","4","5","6","7","8","9","10","J","Q","K","A"].map((r,i)=>[r,i]));
+
+function cardImg(card) { return `cards/${card}.png`; }
+function cardSuit(card) { return card.split("-")[1]; }
+function cardRank(card) { return card.split("-")[0]; }
+
+// ==================== وضعیت ====================
+let ws = null;
+let myUsername = getUsername();
+let mySeat = null;
+let myHand = [];
+let lastRoom = null;
+let timerInterval = null;
+let currentCode = null;
+
+function toast(msg, type) {
+  const el = document.getElementById("toast");
+  el.textContent = msg;
+  el.className = "toast show" + (type === "error" ? " error" : "");
+  clearTimeout(el._t);
+  el._t = setTimeout(() => el.classList.remove("show"), 2600);
+}
+
+function showScreen(id) {
+  document.querySelectorAll(".screen").forEach((s) => s.classList.add("hidden"));
+  document.getElementById(id).classList.remove("hidden");
+}
+
+// ==================== ورودِ اولیه ====================
+(function init() {
+  if (!getToken()) {
+    document.body.innerHTML = '<div style="padding:40px;text-align:center;color:#C9C4D8;">لطفاً اول وارد شو.</div>';
+    return;
+  }
+  const params = new URLSearchParams(location.search);
+  const code = params.get("code");
+  if (code) {
+    connect(code.toUpperCase());
+  } else {
+    showScreen("screenMenu");
+    loadPublicRooms();
+  }
+})();
+
+async function apiFetch(path, opts) {
+  const res = await fetch(`${HOKM_API_BASE}${path}`, {
+    ...opts,
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${getToken()}`, ...(opts && opts.headers) },
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error || "خطا");
+  return data;
+}
+
+async function loadPublicRooms() {
+  const box = document.getElementById("publicRoomsList");
+  try {
+    const data = await apiFetch("/api/hokm/rooms");
+    const rooms = data.rooms || [];
+    if (!rooms.length) {
+      box.innerHTML = '<div class="empty-hint">فعلاً روم عمومیِ بازی نیست؛ خودت یکی بساز!</div>';
+      return;
+    }
+    box.innerHTML = rooms.map((r) => `
+      <div class="public-room-item">
+        <div class="avatar-sm" style="background:${avatarColor(r.hostUsername||'')}">${(r.hostUsername||'?').charAt(0).toUpperCase()}</div>
+        <div class="name">روم ${escapeHtmlLocal(r.hostUsername)} · ${r.playersCount||1}/4</div>
+        <button class="btn btn-accent" onclick="connect('${r.code}')">ورود</button>
+      </div>`).join("");
+  } catch (e) {
+    box.innerHTML = '<div class="empty-hint">لود نشد؛ دوباره امتحان کن.</div>';
+  }
+}
+function escapeHtmlLocal(s) {
+  return (s || "").replace(/[&<>"']/g, (c) => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
+}
+
+async function createRoom(visibility) {
+  try {
+    const data = await apiFetch("/api/hokm/room", { method: "POST", body: JSON.stringify({ visibility }) });
+    connect(data.code);
+  } catch (e) { toast(e.message, "error"); }
+}
+function joinByCode() {
+  const v = (document.getElementById("joinCodeInput").value || "").trim().toUpperCase();
+  if (!v) { toast("کد رو وارد کن", "error"); return; }
+  connect(v);
+}
+
+// ==================== اتصالِ وب‌ساکت ====================
+function connect(code) {
+  currentCode = code;
+  if (ws) { try { ws.close(); } catch (e) {} ws = null; }
+  const wsBase = HOKM_API_BASE.replace(/^http/, "ws");
+  ws = new WebSocket(`${wsBase}/api/hokm/ws?code=${encodeURIComponent(code)}&token=${encodeURIComponent(getToken())}`);
+  ws.onopen = () => {};
+  ws.onclose = () => {};
+  ws.onerror = () => toast("اتصال برقرار نشد", "error");
+  ws.onmessage = (evt) => {
+    let msg;
+    try { msg = JSON.parse(evt.data); } catch (e) { return; }
+    handleServerMessage(msg);
+  };
+}
+
+function send(obj) { if (ws && ws.readyState === 1) ws.send(JSON.stringify(obj)); }
+
+function handleServerMessage(msg) {
+  if (msg.t === "hello") {
+    mySeat = msg.seat;
+    myHand = msg.hand || [];
+    lastRoom = msg.room;
+    render();
+    return;
+  }
+  if (msg.t === "state") {
+    lastRoom = msg.room;
+    if (msg.hand) myHand = msg.hand;
+    render();
+    return;
+  }
+  if (msg.t === "playerLeft") {
+    document.getElementById("playerLeftText").textContent = `${msg.username} از بازی خارج شد؛ این دور نمی‌تونه ادامه پیدا کنه.`;
+    document.getElementById("playerLeftOverlay").classList.remove("hidden");
+    return;
+  }
+  if (msg.error) { toast(msg.error, "error"); }
+}
+
+// ==================== خروج ====================
+function leaveRoom() {
+  send({ t: "leave" });
+  if (ws) { try { ws.close(); } catch (e) {} ws = null; }
+  mySeat = null; myHand = []; lastRoom = null; currentCode = null;
+  history.replaceState(null, "", location.pathname);
+  document.getElementById("handOverOverlay").classList.add("hidden");
+  document.getElementById("matchOverOverlay").classList.add("hidden");
+  document.getElementById("playerLeftOverlay").classList.add("hidden");
+  showScreen("screenMenu");
+  loadPublicRooms();
+}
+
+// ==================== رومِ انتظار ====================
+function setVisibility(v) { send({ t: "setVisibility", v }); }
+
+function renderWaitingRoom() {
+  showScreen("screenRoom");
+  document.getElementById("roomCodeText").textContent = lastRoom.code || currentCode;
+  document.getElementById("visPrivateBtn").classList.toggle("active", lastRoom.visibility !== "public");
+  document.getElementById("visPublicBtn").classList.toggle("active", lastRoom.visibility === "public");
+  const isHost = lastRoom.hostUsername === myUsername;
+  document.getElementById("visToggle").style.opacity = isHost ? "1" : ".5";
+  document.getElementById("visToggle").style.pointerEvents = isHost ? "auto" : "none";
+
+  const wrap = document.getElementById("waitingSeats");
+  wrap.innerHTML = "";
+  for (let s = 0; s < 4; s++) {
+    const p = lastRoom.players.find((pl) => pl.seat === s);
+    const div = document.createElement("div");
+    div.className = "seat-card " + (p ? "filled" : "empty");
+    if (p) {
+      const avatarHtml = p.avatarFileId
+        ? `<img src="${mediaUrl(p.avatarFileId)}" />`
+        : (p.username || "?").charAt(0).toUpperCase();
+      div.innerHTML = `
+        <div class="avatar-sm">${avatarHtml}</div>
+        <div class="name">${escapeHtmlLocal(p.username)}${p.username===myUsername? " (تو)":""}</div>
+        <div class="team-tag t${p.team}">تیمِ ${p.team === 0 ? "۱" : "۲"}</div>`;
+    } else {
+      div.innerHTML = `<div class="avatar-sm" style="background:var(--surface);">؟</div><div class="name">خالی</div>`;
+    }
+    wrap.appendChild(div);
+  }
+  document.getElementById("waitingStatusText").textContent =
+    lastRoom.players.length < 4 ? `${lastRoom.players.length} از ۴ نفر` : "در حال شروع…";
+}
+
+// ==================== رندرِ اصلیِ بازی ====================
+function render() {
+  if (!lastRoom) return;
+  if (lastRoom.status === "waiting" || lastRoom.status === "empty") { renderWaitingRoom(); return; }
+  showScreen("screenGame");
+
+  const myTeam = mySeat != null ? (mySeat % 2 === 0 ? 0 : 1) : 0;
+  const myScore = lastRoom.teamScore ? lastRoom.teamScore[myTeam] : 0;
+  const theirScore = lastRoom.teamScore ? lastRoom.teamScore[1 - myTeam] : 0;
+  document.getElementById("scoreMine").textContent = myScore;
+  document.getElementById("scoreTheirs").textContent = theirScore;
+
+  const trumpBadge = document.getElementById("trumpBadge");
+  trumpBadge.textContent = lastRoom.trumpSuit ? `${SUIT_GLYPH[lastRoom.trumpSuit]} ${SUIT_FA[lastRoom.trumpSuit]}` : "—";
+
+  renderSeats();
+  renderTrick();
+  renderHand();
+  renderOverlays();
+  renderTurnStrip();
+}
+
+function seatRelative(seat) {
+  // نسبت به صندلیِ خودم: ۰=من (پایین)، ۱=راست، ۲=بالا (هم‌تیمی)، ۳=چپ
+  if (mySeat == null) return seat;
+  return (seat - mySeat + 4) % 4;
+}
+
+function renderSeats() {
+  const posMap = { 1: "seatRight", 2: "seatTop", 3: "seatLeft" };
+  Object.values(posMap).forEach((id) => (document.getElementById(id).innerHTML = ""));
+  for (const p of lastRoom.players) {
+    const rel = seatRelative(p.seat);
+    if (rel === 0) continue; // خودم پایین جدا رندر می‌شه (نیازی به آواتار نیست، دستمون کافیه)
+    const elId = posMap[rel];
+    const el = document.getElementById(elId);
+    const isTurn = lastRoom.turn === p.username;
+    const avatarHtml = p.avatarFileId
+      ? `<img src="${mediaUrl(p.avatarFileId)}" />`
+      : `<div style="width:100%;height:100%;background:${avatarColor(p.username)};display:flex;align-items:center;justify-content:center;">${(p.username||"?").charAt(0).toUpperCase()}</div>`;
+    const crown = lastRoom.hakemUsername === p.username ? '<div class="hakem-crown">👑</div>' : "";
+    const div = document.createElement("div");
+    div.innerHTML = `
+      <div class="seat-avatar ${isTurn ? "turn":""} ${p.connected===false?"disconnected":""}">
+        ${avatarHtml}${crown}
+        <div class="seat-cardcount">${p.cardsLeft ?? 0}</div>
+      </div>
+      <div class="seat-name">${escapeHtmlLocal(p.username)}</div>`;
+    el.appendChild(div);
+  }
+}
+
+function renderTrick() {
+  const area = document.getElementById("trickArea");
+  area.innerHTML = "";
+  const trick = lastRoom.currentTrick || [];
+  const posClass = { 0: "trick-pos-bottom", 1: "trick-pos-right", 2: "trick-pos-top", 3: "trick-pos-left" };
+  for (const entry of trick) {
+    const rel = seatRelative(entry.seat);
+    const div = document.createElement("div");
+    div.className = "trick-card " + posClass[rel];
+    div.innerHTML = `<img src="${cardImg(entry.card)}" />`;
+    area.appendChild(div);
+  }
+}
+
+function renderHand() {
+  const strip = document.getElementById("handStrip");
+  strip.innerHTML = "";
+  const canPlay = lastRoom.status === "playing" && lastRoom.turn === myUsername;
+  let legal = null;
+  if (canPlay && lastRoom.currentTrick && lastRoom.currentTrick.length > 0 && lastRoom.leadSuit) {
+    const followers = myHand.filter((c) => cardSuit(c) === lastRoom.leadSuit);
+    legal = followers.length ? new Set(followers) : null;
+  }
+  for (const card of myHand) {
+    const isLegal = !canPlay ? false : (legal ? legal.has(card) : true);
+    const div = document.createElement("div");
+    div.className = "hand-card " + (canPlay ? (isLegal ? "playable" : "unplayable") : "unplayable");
+    div.innerHTML = `<img src="${cardImg(card)}" />`;
+    if (canPlay && isLegal) div.onclick = () => send({ t: "playCard", card });
+    strip.appendChild(div);
+  }
+}
+
+function renderTurnStrip() {
+  const strip = document.getElementById("turnStrip");
+  clearInterval(timerInterval);
+  if (lastRoom.status === "playing" && lastRoom.turn) {
+    const isMine = lastRoom.turn === myUsername;
+    strip.className = "turn-strip" + (isMine ? " mine" : "");
+    strip.textContent = isMine ? "نوبتِ توئه" : `نوبتِ ${lastRoom.turn}`;
+    startTimerBar(lastRoom.deadline);
+  } else if (lastRoom.status === "choosing_trump") {
+    strip.className = "turn-strip";
+    strip.textContent = lastRoom.hakemUsername === myUsername ? "خالِ حکم رو انتخاب کن" : "منتظرِ انتخابِ حکم…";
+    startTimerBar(lastRoom.deadline);
+  } else {
+    strip.textContent = "—";
+    document.getElementById("timerBar").style.width = "100%";
+  }
+}
+function startTimerBar(deadline) {
+  const bar = document.getElementById("timerBar");
+  if (!deadline) { bar.style.width = "100%"; return; }
+  const total = Math.max(1, deadline - Date.now());
+  const startTotal = total;
+  function tick() {
+    const left = Math.max(0, deadline - Date.now());
+    bar.style.width = `${Math.max(0, (left / startTotal) * 100)}%`;
+    if (left <= 0) clearInterval(timerInterval);
+  }
+  tick();
+  timerInterval = setInterval(tick, 200);
+}
+
+function renderOverlays() {
+  const trumpOv = document.getElementById("trumpOverlay");
+  const handOv = document.getElementById("handOverOverlay");
+  const matchOv = document.getElementById("matchOverOverlay");
+  const leftOv = document.getElementById("playerLeftOverlay");
+
+  trumpOv.classList.add("hidden");
+  handOv.classList.add("hidden");
+  matchOv.classList.add("hidden");
+  if (lastRoom.status !== "finished") leftOv.classList.add("hidden");
+
+  if (lastRoom.status === "choosing_trump") {
+    trumpOv.classList.remove("hidden");
+    const amHakem = lastRoom.hakemUsername === myUsername;
+    document.getElementById("trumpOverlayTitle").textContent = amHakem ? "تو حاکمی!" : "در انتظارِ انتخابِ حکم";
+    document.getElementById("trumpOverlaySub").textContent = amHakem
+      ? "یکی از این چهار خال رو به‌عنوانِ حکم انتخاب کن:"
+      : `${lastRoom.hakemUsername} داره خالِ حکم رو انتخاب می‌کنه…`;
+    document.getElementById("trumpSuitGrid").classList.toggle("hidden", !amHakem);
+    const prevWrap = document.getElementById("trumpPreviewCards");
+    prevWrap.innerHTML = "";
+    if (amHakem) {
+      const sorted = myHand.slice().sort((a,b)=> RANK_VAL[cardRank(a)]-RANK_VAL[cardRank(b)]);
+      for (const c of sorted) {
+        const img = document.createElement("img");
+        img.src = cardImg(c);
+        prevWrap.appendChild(img);
+      }
+    }
+  }
+
+  if (lastRoom.status === "handover" && lastRoom.lastHandResult) {
+    handOv.classList.remove("hidden");
+    const r = lastRoom.lastHandResult;
+    const myTeam = mySeat % 2 === 0 ? 0 : 1;
+    const won = r.winnerTeam === myTeam;
+    const txt = document.getElementById("handOverText");
+    txt.textContent = won ? "تیمِ شما بردید این دست رو 🎉" : "تیمِ حریف بردید این دست رو";
+    txt.className = "result-team " + (won ? "a" : "b");
+    document.getElementById("handOverKot").classList.toggle("hidden", !r.kot);
+    document.getElementById("handOverScoreText").textContent =
+      `خشت‌ها: ${r.teamTricks[0]} به ${r.teamTricks[1]} — امتیازِ این دست: ${r.points}`;
+  }
+
+  if (lastRoom.status === "finished") {
+    if (lastRoom.matchWinnerTeam !== null && lastRoom.matchWinnerTeam !== undefined) {
+      matchOv.classList.remove("hidden");
+      const myTeam = mySeat % 2 === 0 ? 0 : 1;
+      const won = lastRoom.matchWinnerTeam === myTeam;
+      document.getElementById("matchOverTitle").textContent = won ? "بردید! 🏆" : "باختید 😔";
+      document.getElementById("matchOverSub").textContent = `امتیازِ نهایی: ${lastRoom.teamScore[0]} - ${lastRoom.teamScore[1]}`;
+      document.getElementById("rematchStatusText").textContent =
+        lastRoom.rematchCount ? `${lastRoom.rematchCount} از ۴ نفر رأی دادن` : "";
+    } else {
+      leftOv.classList.remove("hidden");
+    }
+  }
+}
+
+function chooseTrump(suit) { send({ t: "chooseTrump", suit }); }
+function voteRematch() {
+  send({ t: "rematch" });
+  document.getElementById("rematchBtn").disabled = true;
+}
+</script>
+</body>
+</html>
