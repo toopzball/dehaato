@@ -6365,6 +6365,10 @@
   <div class="app-splash-emoji" id="appSplashEmoji"><span class="emoji-text"></span><span class="splash-caret"></span></div>
   <div class="app-splash-name">دهات</div>
   <div class="app-splash-dots"><span></span><span></span><span></span></div>
+  <!-- فقط وقتی نتِ اولیه کند/قطعه ظاهر می‌شه (نگاه کن به DehaatOffline.initSplashOfflineOption) -->
+  <button type="button" id="appSplashOfflineBtn" class="hidden"
+    style="margin-top:18px;background:transparent;border:1px solid rgba(255,255,255,0.35);color:#fff;border-radius:10px;padding:8px 16px;font-family:var(--app-font);font-size:13px;cursor:pointer;"
+    onclick="DehaatOffline.enterOfflineMode()">ورود آفلاین (نسخه‌ی ذخیره‌شده)</button>
 </div>
 <!-- پاپ‌آپ زنده‌ی اعلان‌ها (استایل داینامیک آیلند): وقتی اعلان جدیدی برسه، یه دایره از بالا پایین میاد
      و بعد به یه کپسول باز می‌شه که دایره (آیکون) همیشه سمت راستش چسبیده می‌مونه. جزئیات انیمیشن و
@@ -7966,6 +7970,272 @@ if (!localStorage.getItem("token")) {
 
 function getToken() { return localStorage.getItem("token"); }
 function getUsername() { return localStorage.getItem("username"); }
+
+// ==================================================================================
+// ================= حالتِ آفلاین (شبیهِ تلگرام) — DehaatOffline ====================
+// دیتای ساختاریافته (پیام‌های چت، صفحاتِ دفتر، اولین صفحه‌ی فید) تویِ IndexedDB ذخیره می‌شه.
+// آهنگِ درحالِ‌پخش (فقط همون یکی، نه بیشتر) تویِ Cache Storage نگه داشته می‌شه، چون فایلِ باینریه.
+// ==================================================================================
+const DehaatOffline = (() => {
+  const DB_NAME = "dehaatOfflineDB";
+  const DB_VERSION = 1;
+  const NOTEBOOK_MAX_PAGES = 8; // طبقِ درخواست: فقط ۸ صفحه‌ی دفتر کش بشه
+  const CHAT_MAX_MESSAGES = 4000; // سقفِ ایمنِ ذخیره به‌ازایِ هر گفتگو (عملاً یعنی «کلِ چت»، بدونِ اینکه استوریج بی‌نهایت بزرگ بشه)
+  const AUDIO_CACHE_NAME = "dehaat-offline-now-playing-v1";
+
+  let dbPromise = null;
+  function openDB() {
+    if (dbPromise) return dbPromise;
+    dbPromise = new Promise((resolve) => {
+      if (!("indexedDB" in window)) { resolve(null); return; }
+      try {
+        const req = indexedDB.open(DB_NAME, DB_VERSION);
+        req.onupgradeneeded = () => {
+          const db = req.result;
+          if (!db.objectStoreNames.contains("feedFirstPage")) db.createObjectStore("feedFirstPage");
+          if (!db.objectStoreNames.contains("notebookPages")) db.createObjectStore("notebookPages", { keyPath: "pageNum" });
+          if (!db.objectStoreNames.contains("chatMessages")) db.createObjectStore("chatMessages", { keyPath: "conversationId" });
+        };
+        req.onsuccess = () => resolve(req.result);
+        req.onerror = () => resolve(null); // نبودِ IndexedDB (مثلاً حالتِ خصوصیِ بعضی مرورگرها) نباید کلِ سایت رو بخوابونه
+      } catch (e) { resolve(null); }
+    });
+    return dbPromise;
+  }
+
+  function txDone(store, mode, run) {
+    return openDB().then((db) => new Promise((resolve) => {
+      if (!db) { resolve(null); return; }
+      try {
+        const tx = db.transaction(store, mode);
+        const result = run(tx.objectStore(store));
+        tx.oncomplete = () => resolve(result);
+        tx.onerror = () => resolve(null);
+        tx.onabort = () => resolve(null);
+      } catch (e) { resolve(null); }
+    }));
+  }
+
+  // ---------- اولین صفحه‌ی فید (برای پنجره‌ی اولین صفحه از آخرین پست‌ها) ----------
+  async function saveFeedFirstPage(feedData) {
+    if (!feedData) return;
+    await txDone("feedFirstPage", "readwrite", (s) => s.put({ data: feedData, savedAt: Date.now() }, "main"));
+  }
+  async function getFeedFirstPage() {
+    const db = await openDB();
+    if (!db) return null;
+    return new Promise((resolve) => {
+      try {
+        const req = db.transaction("feedFirstPage", "readonly").objectStore("feedFirstPage").get("main");
+        req.onsuccess = () => resolve(req.result ? req.result.data : null);
+        req.onerror = () => resolve(null);
+      } catch (e) { resolve(null); }
+    });
+  }
+
+  // ---------- صفحاتِ دفتر (فقط ۸ تای آخر نگه داشته می‌شه) ----------
+  async function saveNotebookPage(pageNum, entry) {
+    if (!entry || entry === "loading") return;
+    await txDone("notebookPages", "readwrite", (s) => s.put({ pageNum, entry, savedAt: Date.now() }));
+    // اضافه‌ها رو (قدیمی‌ترین‌ها بر اساسِ زمانِ ذخیره) حذف کن تا فقط ۸ تا بمونه
+    const db = await openDB();
+    if (!db) return;
+    const all = await new Promise((resolve) => {
+      try {
+        const req = db.transaction("notebookPages", "readonly").objectStore("notebookPages").getAll();
+        req.onsuccess = () => resolve(req.result || []);
+        req.onerror = () => resolve([]);
+      } catch (e) { resolve([]); }
+    });
+    if (all.length > NOTEBOOK_MAX_PAGES) {
+      all.sort((a, b) => a.savedAt - b.savedAt);
+      const toRemove = all.slice(0, all.length - NOTEBOOK_MAX_PAGES);
+      await txDone("notebookPages", "readwrite", (s) => { toRemove.forEach((r) => s.delete(r.pageNum)); });
+    }
+  }
+  async function getNotebookPage(pageNum) {
+    const db = await openDB();
+    if (!db) return null;
+    return new Promise((resolve) => {
+      try {
+        const req = db.transaction("notebookPages", "readonly").objectStore("notebookPages").get(pageNum);
+        req.onsuccess = () => resolve(req.result ? req.result.entry : null);
+        req.onerror = () => resolve(null);
+      } catch (e) { resolve(null); }
+    });
+  }
+  async function getAllCachedNotebookPageNumbers() {
+    const db = await openDB();
+    if (!db) return [];
+    return new Promise((resolve) => {
+      try {
+        const req = db.transaction("notebookPages", "readonly").objectStore("notebookPages").getAllKeys();
+        req.onsuccess = () => resolve(req.result || []);
+        req.onerror = () => resolve([]);
+      } catch (e) { resolve([]); }
+    });
+  }
+
+  // ---------- چتِ کامل (تویِ IndexedDB، به‌ازایِ هر گفتگو) ----------
+  async function saveChatMessages(conversationId, messages) {
+    if (!conversationId || !Array.isArray(messages)) return;
+    const db = await openDB();
+    if (!db) return;
+    const existing = await new Promise((resolve) => {
+      try {
+        const req = db.transaction("chatMessages", "readonly").objectStore("chatMessages").get(conversationId);
+        req.onsuccess = () => resolve(req.result ? req.result.messages : []);
+        req.onerror = () => resolve([]);
+      } catch (e) { resolve([]); }
+    });
+    const byId = new Map();
+    (existing || []).forEach((m) => byId.set(m.id, m));
+    messages.forEach((m) => byId.set(m.id, m));
+    let merged = Array.from(byId.values()).sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0));
+    if (merged.length > CHAT_MAX_MESSAGES) merged = merged.slice(merged.length - CHAT_MAX_MESSAGES);
+    await txDone("chatMessages", "readwrite", (s) => s.put({ conversationId, messages: merged, savedAt: Date.now() }));
+  }
+  async function getChatMessages(conversationId) {
+    const db = await openDB();
+    if (!db) return null;
+    return new Promise((resolve) => {
+      try {
+        const req = db.transaction("chatMessages", "readonly").objectStore("chatMessages").get(conversationId);
+        req.onsuccess = () => resolve(req.result ? req.result.messages : null);
+        req.onerror = () => resolve(null);
+      } catch (e) { resolve(null); }
+    });
+  }
+
+  // ---------- آهنگِ درحالِ پخش: فقط همون یکی کش می‌شه؛ آهنگِ ردشده از کش پاک می‌شه ----------
+  // فراخوانی می‌شه: (۱) وقتی کاربر داره از سایت خارج می‌شه (visibilitychange/pagehide)، با آهنگِ
+  // درحالِ‌پخشِ همون لحظه. اینطوری فقط دقیقاً همون آهنگی که کاربر قبل از رفتن گوش می‌داد کش می‌شه.
+  async function cacheOnlyThisTrack(url) {
+    if (!url || !("caches" in window)) return;
+    try {
+      const cache = await caches.open(AUDIO_CACHE_NAME);
+      const keys = await cache.keys();
+      // اول آهنگ‌های قبلی (ردشده) رو پاک کن
+      await Promise.all(keys.filter((req) => req.url !== url).map((req) => cache.delete(req)));
+      const already = await cache.match(url);
+      if (!already) {
+        const res = await fetch(url);
+        if (res && res.ok) await cache.put(url, res.clone());
+      }
+    } catch (e) { /* بی‌صدا؛ کش شدنِ آهنگ ضروری نیست */ }
+  }
+  async function getCachedTrackUrl(url) {
+    if (!url || !("caches" in window)) return null;
+    try {
+      const cache = await caches.open(AUDIO_CACHE_NAME);
+      const match = await cache.match(url);
+      return match ? url : null;
+    } catch (e) { return null; }
+  }
+
+  // ---------- تشخیصِ وضعیتِ اتصال + توستِ شبیهِ تلگرام (درحالِ اتصال.../درحالِ اپدیت...) ----------
+  let toastEl = null;
+  let isOffline = false;
+  let reconnecting = false;
+  function ensureToastEl() {
+    if (toastEl && toastEl.isConnected) return toastEl;
+    toastEl = document.createElement("div");
+    toastEl.id = "connectivityToast";
+    toastEl.style.cssText =
+      "position:fixed;left:50%;top:calc(12px + var(--safe-top));transform:translateX(-50%);z-index:10002;" +
+      "background:var(--card);color:var(--text);border:1px solid var(--border);border-radius:12px;" +
+      "padding:9px 16px;font-size:13px;box-shadow:0 6px 20px rgba(0,0,0,0.4);display:none;align-items:center;gap:8px;" +
+      "font-family:var(--app-font);";
+    const spinner = document.createElement("span");
+    spinner.style.cssText =
+      "width:13px;height:13px;border-radius:50%;border:2px solid var(--subtext);border-top-color:var(--accent);" +
+      "display:inline-block;animation:dehaatConnSpin 0.7s linear infinite;";
+    if (!document.getElementById("dehaatConnSpinKeyframes")) {
+      const style = document.createElement("style");
+      style.id = "dehaatConnSpinKeyframes";
+      style.textContent = "@keyframes dehaatConnSpin{to{transform:rotate(360deg)}}";
+      document.head.appendChild(style);
+    }
+    const text = document.createElement("span");
+    text.className = "connectivity-toast-text";
+    toastEl.appendChild(spinner);
+    toastEl.appendChild(text);
+    document.body.appendChild(toastEl);
+    return toastEl;
+  }
+  function showToast(text) {
+    const el = ensureToastEl();
+    el.querySelector(".connectivity-toast-text").textContent = text;
+    el.style.display = "flex";
+  }
+  function hideToast() {
+    if (toastEl) toastEl.style.display = "none";
+  }
+
+  async function handleReconnect() {
+    if (reconnecting || !isOffline) return;
+    reconnecting = true;
+    isOffline = false;
+    showToast("در حال اپدیت...");
+    try {
+      if (typeof bootstrapApp === "function") await bootstrapApp();
+    } catch (e) {}
+    hideToast();
+    reconnecting = false;
+  }
+
+  function onNetworkError() {
+    if (!isOffline) {
+      isOffline = true;
+      showToast("در حال اتصال...");
+    }
+  }
+  function onNetworkOk() {
+    if (isOffline) handleReconnect();
+    else hideToast();
+  }
+
+  window.addEventListener("online", () => { isOffline = true; handleReconnect(); });
+  window.addEventListener("offline", onNetworkError);
+
+  // ---------- ورودِ آفلاین از اسپلش ----------
+  function initSplashOfflineOption() {
+    const btn = document.getElementById("appSplashOfflineBtn");
+    if (!btn) return;
+    // اگه از همون اول آفلاینیم، سریع‌تر (۱.۲ ثانیه) دکمه رو نشون بده؛ وگرنه چند ثانیه صبر کن، شاید نتِ کند فقط دیر جواب بده
+    const delay = navigator.onLine === false ? 1200 : 4000;
+    setTimeout(() => {
+      const splash = document.getElementById("app-splash");
+      if (splash && splash.isConnected && !splash.classList.contains("hide")) {
+        btn.classList.remove("hidden");
+      }
+    }, delay);
+  }
+
+  async function enterOfflineMode() {
+    if (typeof hideAppSplash === "function") hideAppSplash();
+    showToast("در حال اتصال...");
+    isOffline = true;
+    try {
+      const cachedFeed = await getFeedFirstPage();
+      if (cachedFeed && typeof renderMediaFeedPage === "function") {
+        renderMediaFeedPage(cachedFeed, true);
+      }
+      if (typeof switchView === "function") switchView("media");
+      if (typeof restorePlayerState === "function") restorePlayerState();
+    } catch (e) {}
+  }
+
+  return {
+    saveFeedFirstPage, getFeedFirstPage,
+    saveNotebookPage, getNotebookPage, getAllCachedNotebookPageNumbers,
+    saveChatMessages, getChatMessages,
+    cacheOnlyThisTrack, getCachedTrackUrl,
+    onNetworkError, onNetworkOk,
+    initSplashOfflineOption, enterOfflineMode,
+    isOffline: () => isOffline,
+  };
+})();
 
 // مدیا حالا خصوصیه و نیاز به توکن داره. چون تگ‌های <img>/<audio>/<video> نمی‌تونن هدر Authorization
 // بفرستن، توکن رو به‌صورت کوئری‌استرینگ به آدرس فایل اضافه می‌کنیم. همه‌جای صفحه به‌جای ساختن مستقیم
@@ -11632,6 +11902,7 @@ async function loadInitialChatMessages(conversationId) {
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || "خطا در بارگذاریِ پیام‌ها");
+    DehaatOffline.onNetworkOk();
     chatState.messages = data.messages || [];
     chatState.hasMoreOlder = !!data.hasMore;
     chatState.oldestLoadedAt = chatState.messages.length ? chatState.messages[0].createdAt : null;
@@ -11642,7 +11913,21 @@ async function loadInitialChatMessages(conversationId) {
     updateChatConvSubtitle();
     renderChatMessages();
     renderChatPinnedBar();
+    DehaatOffline.saveChatMessages(conversationId, chatState.messages); // کشِ کاملِ چت برای حالتِ آفلاین
   } catch (e) {
+    DehaatOffline.onNetworkError();
+    // آفلاین: قبل از نشون‌دادنِ خطا، امتحان کن نسخه‌ی کش‌شده‌ی همین گفتگو رو نشون بدی
+    const cached = await DehaatOffline.getChatMessages(conversationId);
+    if (cached && cached.length) {
+      chatState.messages = cached;
+      chatState.hasMoreOlder = false;
+      chatState.oldestLoadedAt = cached[0].createdAt;
+      chatState.newestLoadedAt = cached[cached.length - 1].createdAt;
+      updateChatConvSubtitle();
+      renderChatMessages();
+      renderChatPinnedBar();
+      return;
+    }
     document.getElementById("chatConvMessages").innerHTML = `<div class="chat-loading">${escapeHtml(e.message || "خطا در بارگذاری")}</div>`;
   }
 }
@@ -14808,6 +15093,24 @@ function loadPlayerState() {
     return null;
   }
 }
+
+// ---------- کشِ آفلاینِ آهنگِ درحالِ پخش ----------
+// فقط دقیقاً همون آهنگی که کاربر «قبل از خروج از سایت» گوش می‌داده کش می‌شه (نه هر آهنگی که پخش شده)؛
+// با پخشِ آهنگِ بعدی/ردکردن، دفعه‌ی بعدی که کاربر بره، آهنگِ قبلی به‌طورِ خودکار از کش پاک می‌شه
+// (چون cacheOnlyThisTrack همیشه فقط یه اسلات نگه می‌داره).
+function cacheCurrentTrackBeforeLeaving() {
+  try {
+    if (!currentAudio) return;
+    const { safeId } = currentAudio;
+    const meta = audioMetaRegistry[safeId];
+    if (!meta || !meta.fileId) return;
+    DehaatOffline.cacheOnlyThisTrack(mediaUrl(meta.fileId));
+  } catch (e) {}
+}
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "hidden") cacheCurrentTrackBeforeLeaving();
+});
+window.addEventListener("pagehide", cacheCurrentTrackBeforeLeaving);
 
 // آهنگِ آخرین‌بار پخش‌شده رو (اگه پستش الان تو صفحه رندر نشده) به‌صورت یه ادیوی پنهان
 // داخل خودِ مینی‌پلیر می‌سازه تا کاربر بتونه با یه ضربه از همون‌جایی که ول کرده بود ادامه بده
@@ -18692,8 +18995,17 @@ async function fetchNotebookPage(pageNum) {
     const hasMore = notebookRaw.builtPages.length > pageNum || notebookRaw.rawHasMore || !!notebookRaw.pendingSingle;
     const entry = { posts, hasMore };
     notebookState.pages[pageNum] = entry;
+    DehaatOffline.onNetworkOk();
+    DehaatOffline.saveNotebookPage(pageNum, entry); // کشِ آفلاین (حداکثر ۸ صفحه‌ی آخر نگه داشته می‌شه)
     return entry;
   } catch (e) {
+    DehaatOffline.onNetworkError();
+    // آفلاین یا قطعیِ نت: اگه همین صفحه قبلاً کش شده، همون رو نشون بده به‌جایِ خالی
+    const cached = await DehaatOffline.getNotebookPage(pageNum);
+    if (cached) {
+      notebookState.pages[pageNum] = cached;
+      return cached;
+    }
     notebookState.pages[pageNum] = { posts: [], hasMore: false, failed: true };
     return notebookState.pages[pageNum];
   }
@@ -25881,24 +26193,34 @@ async function bootstrapApp() {
     const data = await res.json();
     await emojiReady; // تضمینِ اینکه قبل از رندرِ فید، منیفستِ ایموجی آماده‌ست
 
+    DehaatOffline.onNetworkOk();
     applyAdminStatus(data);
     adminBadgeMap = data.admin_badges || {};
     applyThemeAndAvatar(data.profile);
     applyNotificationBadge(data.unread_notifications);
     renderMediaFeedPage(data.feed, true);
+    DehaatOffline.saveFeedFirstPage(data.feed); // برای «ورود آفلاین» از اسپلش، دفعه‌ی بعد
     initReferralStatus();
     initBirthdayPopup();
     if (data.changelog && !data.changelog.seen) {
       showChangelogModal(data.changelog.entries);
     }
   } catch (e) {
-    // برگشت به روشِ قدیمی، جدا جدا
-    await Promise.all([initAdminStatus(), syncThemeFromServer(), checkNotificationsBadge(), loadFeedView("media", true), initReferralStatus(), initBirthdayPopup()]);
+    DehaatOffline.onNetworkError();
+    // برگشت به روشِ قدیمی، جدا جدا (اگه واقعاً آفلاینیم، این‌ها هم شکست می‌خورن و به کشِ محلی برمی‌گردیم)
+    try {
+      await Promise.all([initAdminStatus(), syncThemeFromServer(), checkNotificationsBadge(), loadFeedView("media", true), initReferralStatus(), initBirthdayPopup()]);
+    } catch (e2) {}
+    if (!navigator.onLine) {
+      const cachedFeed = await DehaatOffline.getFeedFirstPage();
+      if (cachedFeed) renderMediaFeedPage(cachedFeed, true);
+    }
   }
 }
 
 (async () => {
   const splashStart = Date.now();
+  DehaatOffline.initSplashOfflineOption(); // اگه نتِ اولیه کند/قطع بود، دکمه‌ی «ورود آفلاین» رو تویِ اسپلش نشون بده
   await bootstrapApp();
   switchView("media");
   restorePlayerState();
