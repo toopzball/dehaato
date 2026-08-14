@@ -2505,6 +2505,33 @@
     box-shadow: 0 6px 18px rgba(0,0,0,0.45);
   }
   .mini-player.collapsed .mini-player-cover { width: 100%; height: 100%; }
+  /* ---------- انیمیشنِ جدیدِ تبدیلِ مینی‌پلیر <-> حالتِ جمع‌شده: یه فلیپِ سه‌بعدیِ کوتاه
+     (دورِ محورِ Y) به‌جایِ مورفِ قبلی؛ کپسول تا لبه‌ش می‌چرخه و محو می‌شه، درست همون لحظه‌ی
+     غیرقابل‌دیدنش (۹۰ درجه) شکلِ نهایی (باز/جمع) زیرش با JS سوییچ می‌شه، بعد می‌چرخه و باز ظاهر
+     می‌شه — یعنی به‌جایِ کش‌اومدنِ تدریجیِ عرض/پدینگ، یه چرخشِ کامل و مجزا حسش می‌کنیم.
+     کلاسِ flipping با JS فقط برای مدتِ زمانِ خودِ چرخش اضافه می‌شه (تابعِ setMiniPlayerCollapsed) */
+  .mini-player.flipping {
+    animation: miniPlayerFlip 0.46s cubic-bezier(0.45, 0, 0.2, 1);
+    transition: none !important;
+  }
+  .mini-player.playing.flipping {
+    animation: miniPlayerBreathe 2.6s ease-in-out infinite, miniPlayerFlip 0.46s cubic-bezier(0.45, 0, 0.2, 1);
+  }
+  .mini-player.flipping .mini-player-cover,
+  .mini-player.flipping .mini-player-info,
+  .mini-player.flipping .mini-player-controls,
+  .mini-player.flipping .mini-player-close {
+    transition: none !important;
+  }
+  @keyframes miniPlayerFlip {
+    0% { transform: perspective(700px) rotateY(0deg); opacity: 1; }
+    46% { transform: perspective(700px) rotateY(88deg); opacity: 0.35; }
+    54% { transform: perspective(700px) rotateY(-88deg); opacity: 0.35; }
+    100% { transform: perspective(700px) rotateY(0deg); opacity: 1; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .mini-player.flipping, .mini-player.playing.flipping { animation: none; }
+  }
   .mini-player-cover {
     width: 34px; height: 34px; border-radius: 50%; overflow: hidden; flex-shrink: 0;
     background: var(--card); display: flex; align-items: center; justify-content: center; color: var(--subtext);
@@ -3493,6 +3520,14 @@
   html[data-music-skin="vinyl"] .mini-player.playing {
     animation: vinylMiniPulse 2.6s ease-in-out infinite;
   }
+  /* هماهنگیِ اسکینِ وینیل با انیمیشنِ فلیپِ جدیدِ جمع/بازشدن (رجوع به miniPlayerFlip بالای فایل) */
+  html[data-music-skin="vinyl"] .mini-player.flipping {
+    animation: miniPlayerFlip 0.46s cubic-bezier(0.45, 0, 0.2, 1);
+    transition: none !important;
+  }
+  html[data-music-skin="vinyl"] .mini-player.playing.flipping {
+    animation: vinylMiniPulse 2.6s ease-in-out infinite, miniPlayerFlip 0.46s cubic-bezier(0.45, 0, 0.2, 1);
+  }
   @keyframes vinylMiniPulse {
     0%, 100% { box-shadow: 0 10px 28px rgba(30,10,30,0.16); }
     50% { box-shadow: 0 10px 30px rgba(255,45,85,0.32); }
@@ -3629,6 +3664,32 @@
   }
   .music-skin-card.active .music-skin-card-check { background: var(--accent-gradient); border-color: transparent; color: #fff; }
   .music-skin-card-check svg { width: 12px; height: 12px; }
+  /* کارتِ تمِ قفل‌شده: کمی کم‌رنگ‌تر و آیکونِ قفل به‌جایِ تیک، تا مشخصه که نیاز به رمز داره */
+  .music-skin-card.locked { opacity: 0.8; }
+  .music-skin-card.locked .music-skin-card-check { color: var(--subtext); }
+  .music-skin-card.locked .music-skin-card-check svg { width: 13px; height: 13px; }
+
+  /* ---------- مودالِ ورودِ رمزِ تم‌های تستیِ سگ‌تونز ---------- */
+  .music-skin-lock-content {
+    background: var(--card); border: 1px solid var(--border); border-radius: 16px;
+    padding: 20px; width: min(300px, calc(100% - 48px)); text-align: center;
+  }
+  .post-modal-overlay:not(.hidden) .music-skin-lock-content { animation: popIn 0.25s cubic-bezier(.22,1,.36,1); }
+  .music-skin-lock-content svg { width: 30px; height: 30px; color: var(--accent-hover); margin-bottom: 8px; }
+  .music-skin-lock-title { font-size: 15px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+  .music-skin-lock-desc { font-size: 12.5px; color: var(--subtext); margin-bottom: 14px; line-height: 1.8; }
+  .music-skin-lock-content .settings-input-wrap input {
+    text-align: center; letter-spacing: 2px;
+  }
+  @keyframes musicSkinLockShake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-6px); }
+    75% { transform: translateX(6px); }
+  }
+  .music-skin-lock-content input.shake { animation: musicSkinLockShake 0.35s ease; }
+  .music-skin-lock-error { color: var(--error); font-size: 12px; min-height: 16px; margin-top: 6px; }
+  .music-skin-lock-actions { display: flex; gap: 8px; margin-top: 10px; }
+  .music-skin-lock-actions button { flex: 1; }
 
   /* پلی‌لیست‌های سگ‌تونز */
   .playlists-panel { display: none; }
@@ -3996,6 +4057,30 @@
   .chat-tab.active { color: #fff; }
   .chat-list { display: flex; flex-direction: column; gap: 4px; padding-bottom: 70px; }
   .chat-list.hidden { display: none; }
+  #view-chat { position: relative; }
+  /* ---------- دکمه‌ی رفرشِ چت (حالتِ کلاسیک/تلگرامی): یه دکمه‌ی دایره‌ایِ شناور که زیرِ ردیفِ تب‌ها،
+     گوشه‌ی بالا-چپ، به‌صورتِ اورلی روی کادرِ لیستِ فعلی (خصوصی/گروه‌ها/کانال‌ها، هرکدوم که بازه) می‌شینه.
+     چون هر سه لیست مستقیماً زیرِ chatTabsRow شروع می‌شن، یه موقعیتِ ثابتِ نسبت‌به view-chat برایِ
+     هر سه‌شون درست میاد و نیازی به جابه‌جاییِ جداگانه‌ی دکمه به‌ازایِ هر تب نیست */
+  .chat-refresh-btn {
+    position: absolute; top: 62px; left: 4px; z-index: 5; width: 34px; height: 34px; border-radius: 50%;
+    background: var(--card); border: 1px solid var(--border); color: var(--subtext); cursor: pointer;
+    display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(0,0,0,0.18);
+    transition: transform 0.15s ease, color 0.15s ease, background 0.15s ease;
+  }
+  .chat-refresh-btn:hover { color: var(--text); background: var(--surface); }
+  .chat-refresh-btn:active svg { transform: rotate(150deg); }
+  .chat-refresh-btn svg { width: 16px; height: 16px; transition: transform 0.4s ease; }
+  .chat-refresh-btn.spinning svg { animation: chatRefreshSpin 0.7s linear infinite; }
+  @keyframes chatRefreshSpin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+  /* این دکمه فقط تویِ حالتِ کلاسیک دیده می‌شه؛ تویِ دیسکوردی دکمه‌ی دیگه‌ای (گوشه‌ی پنلِ کانال‌ها) جاش هست */
+  body:not(.chat-classic-mode) .chat-refresh-btn.classic-mode-only { display: none; }
+  body.chat-classic-mode .chat-refresh-btn.discord-mode-only { display: none; }
+  /* دکمه‌ی رفرشِ حالتِ دیسکوردی: گوشه‌ی بالا-راستِ خودِ پنلِ «کانال‌ها» (نه کلِ صفحه)، رویِ نوارِ عنوانش */
+  .rooms-panel { position: relative; }
+  .rooms-panel .chat-refresh-btn.discord-mode-only {
+    position: absolute; top: 6px; left: auto; right: 8px; width: 28px; height: 28px;
+  }
   .chat-list-empty { text-align: center; padding: 50px 20px; font-size: 14px; color: var(--subtext); }
   .chat-list-item {
     display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 14px; cursor: pointer;
@@ -4675,6 +4760,8 @@
     border-radius: 0; padding: 0;
   }
   .rooms-panel-channels-only .rooms-list-title { padding: 12px 14px 8px; border-bottom: none; }
+  /* جا برایِ دکمه‌ی رفرشِ گوشه‌ی بالا-راست (فقط تویِ حالتِ دیسکوردی نمایان می‌شه)، که رویِ همین نوارِ عنوان می‌شینه */
+  body:not(.chat-classic-mode) .rooms-panel-channels-only .rooms-list-title { padding-right: 46px; }
   .rooms-panel-channels-only .rooms-list-scroll { padding: 0 4px; }
   .rooms-panel-channels-only .rooms-pagination { border-top: 1px solid var(--border); }
   .rooms-panel-channels-only .rooms-actions-row { padding: 10px 14px calc(10px + var(--safe-bottom)); }
@@ -6866,11 +6953,20 @@
       <button class="chat-tab" id="chatTab-group" onclick="switchChatTab('group')">گروه‌ها</button>
       <button class="chat-tab hidden" id="chatTab-channel" onclick="switchChatTab('channel')">کانال‌ها</button>
     </div>
+    <!-- دکمه‌ی رفرشِ چت، فقط تویِ حالتِ کلاسیک/تلگرامی دیده می‌شه: اورلیِ گوشه‌ی بالا-چپ، رویِ هر کدوم از
+         سه‌تا لیست (خصوصی/گروه‌ها/کانال‌ها) که تویِ همون لحظه بازه؛ کارش رو تابعِ refreshActiveChatTab تعیین می‌کنه -->
+    <button class="chat-refresh-btn classic-mode-only" id="chatRefreshBtnClassic" title="رفرشِ چت" onclick="refreshActiveChatTab(this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg>
+    </button>
     <div id="chatList-direct" class="chat-list"></div>
     <div id="chatGroupWorkspace" class="chat-group-workspace hidden">
       <div class="chat-group-rail chat-group-rail-track" id="chatGroupRailList"></div>
       <div class="rooms-panel rooms-panel-channels-only" id="roomsPanel">
         <div class="rooms-list-title">کانال‌ها</div>
+        <!-- دکمه‌ی رفرشِ حالتِ دیسکوردی: گوشه‌ی بالا-راستِ همین پنلِ کانال‌ها -->
+        <button class="chat-refresh-btn discord-mode-only" id="chatRefreshBtnDiscord" title="رفرشِ گروه‌ها و کانال‌ها" onclick="refreshDiscordChatPanels(this)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg>
+        </button>
         <div class="rooms-list-scroll" id="roomsChannelsScroll"></div>
         <div class="rooms-pagination hidden" id="roomsChannelsPagination"></div>
         <div class="rooms-actions-row">
@@ -7314,6 +7410,25 @@
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
   </button>
   <div class="post-modal-content fridge-item-modal-content" id="fridgeItemModalContent"></div>
+</div>
+
+<!-- مودال: رمزِ بازکردنِ تم‌های تستیِ سگ‌تونز -->
+<div id="musicSkinLockOverlay" class="post-modal-overlay hidden" onclick="if(event.target===this) closeMusicSkinLockModal()">
+  <div class="music-skin-lock-content" onclick="event.stopPropagation()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+    <div class="music-skin-lock-title">تمِ تستی قفله</div>
+    <div class="music-skin-lock-desc">برای استفاده از تم‌های تستیِ سگ‌تونز، رمز رو وارد کن.</div>
+    <div class="settings-input-wrap">
+      <input type="password" id="musicSkinLockInput" placeholder="رمز" autocomplete="off"
+        oninput="document.getElementById('musicSkinLockError').textContent=''"
+        onkeydown="if(event.key==='Enter') submitMusicSkinLockPassword();" />
+    </div>
+    <div class="music-skin-lock-error" id="musicSkinLockError"></div>
+    <div class="music-skin-lock-actions">
+      <button class="primary" style="background:var(--surface); color:var(--text); border:1px solid var(--border);" onclick="closeMusicSkinLockModal()">انصراف</button>
+      <button class="primary" onclick="submitMusicSkinLockPassword()">تایید</button>
+    </div>
+  </div>
 </div>
 
 <!-- پاپ‌آپ کامنت‌های بخشِ Deels: بات‌شیتِ چسبیده‌به‌پایین -->
@@ -8065,6 +8180,61 @@ async function selectFont(font) {
 // ---------- تمِ ظاهریِ سگ‌تونز (مستقل از تمِ رنگیِ سایت): "default"/"apple"/"wave"/"spectrum"/"arc" ----------
 const MUSIC_SKIN_IDS = ["default", "apple", "wave", "spectrum", "arc", "vinyl"];
 let currentMusicSkin = MUSIC_SKIN_IDS.includes(localStorage.getItem("musicSkin")) ? localStorage.getItem("musicSkin") : "default";
+
+// ---------- قفلِ تم‌های تستیِ سگ‌تونز: همه‌ی تم‌ها به‌جز پیش‌فرض، قفلن و فقط با واردکردنِ
+// رمز باز می‌شن؛ یه‌بار که باز شد (توی همون مرورگر) دیگه لازم نیست دوباره رمز وارد بشه ----------
+const MUSIC_SKIN_TEST_PASSWORD = "ggst";
+let musicSkinTestUnlocked = localStorage.getItem("musicSkinTestUnlocked") === "1";
+let pendingMusicSkinUnlock = null;
+
+function isMusicSkinLocked(skin) {
+  return skin !== "default" && !musicSkinTestUnlocked;
+}
+
+// کلیکِ روی هرکارتِ تم: اگه پیش‌فرضه یا قبلاً بازشده مستقیم اعمال می‌شه، وگرنه مودالِ رمز باز می‌شه
+function onMusicSkinCardClick(skin) {
+  if (!isMusicSkinLocked(skin)) {
+    selectMusicSkin(skin);
+    return;
+  }
+  openMusicSkinLockModal(skin);
+}
+
+function openMusicSkinLockModal(skin) {
+  pendingMusicSkinUnlock = skin;
+  const overlay = document.getElementById("musicSkinLockOverlay");
+  const input = document.getElementById("musicSkinLockInput");
+  const err = document.getElementById("musicSkinLockError");
+  if (!overlay || !input) return;
+  input.value = "";
+  if (err) err.textContent = "";
+  overlay.classList.remove("hidden");
+  setTimeout(() => input.focus(), 60);
+}
+
+function closeMusicSkinLockModal() {
+  document.getElementById("musicSkinLockOverlay")?.classList.add("hidden");
+  pendingMusicSkinUnlock = null;
+}
+
+function submitMusicSkinLockPassword() {
+  const input = document.getElementById("musicSkinLockInput");
+  const err = document.getElementById("musicSkinLockError");
+  const val = (input?.value || "").trim();
+  if (val !== MUSIC_SKIN_TEST_PASSWORD) {
+    if (err) err.textContent = "رمز اشتباهه";
+    input?.classList.add("shake");
+    setTimeout(() => input?.classList.remove("shake"), 400);
+    return;
+  }
+  musicSkinTestUnlocked = true;
+  localStorage.setItem("musicSkinTestUnlocked", "1");
+  const skin = pendingMusicSkinUnlock;
+  closeMusicSkinLockModal();
+  if (skin) selectMusicSkin(skin);
+  // اگه صفحه‌ی «تم سگ‌تونز» بازه، دوباره رندر می‌شه تا آیکونِ قفلِ بقیه‌ی کارت‌ها هم به تیک تبدیل بشه
+  if (currentSettingsStage().stage === "appearance_dogtones") renderSettingsModal();
+}
 function applyMusicSkin(skin) {
   skin = MUSIC_SKIN_IDS.includes(skin) ? skin : "default";
   currentMusicSkin = skin;
@@ -10764,6 +10934,34 @@ const chatState = {
   pollTimer: null,
 };
 
+// ---------- دکمه‌های رفرشِ چت (به‌جایِ فچِ خودکارِ پیوسته، کاربر خودش با زدنِ دکمه آخرین نسخه رو می‌گیره؛
+// تا اون لحظه هرچی از کش/فچِ قبلی رویِ صفحه‌ست همون می‌مونه، حتی اگه آفلاین باشه) ----------
+// حالتِ کلاسیک/تلگرامی: یه دکمه‌ی مشترک که کارش بسته به تبِ فعلی فرق می‌کنه
+async function refreshActiveChatTab(btn) {
+  if (!btn || btn.classList.contains("spinning")) return;
+  btn.classList.add("spinning");
+  let ok;
+  if (chatState.tab === "channel") {
+    ok = await loadMyChannels(roomsState.channelsPage || 1);
+  } else {
+    ok = await loadChatConversationsList();
+  }
+  btn.classList.remove("spinning");
+  toast(ok ? "چت به‌روز شد" : "رفرش نشد؛ اتصالت رو چک کن", ok ? "success" : "error");
+}
+// حالتِ دیسکوردی: یه دکمه رویِ پنلِ کانال‌ها که هم گروه‌های نوارِ کناری هم خودِ کانال‌ها رو با هم تازه می‌کنه
+async function refreshDiscordChatPanels(btn) {
+  if (!btn || btn.classList.contains("spinning")) return;
+  btn.classList.add("spinning");
+  const [okList, okChannels] = await Promise.all([
+    loadChatConversationsList(),
+    loadMyChannels(roomsState.channelsPage || 1),
+  ]);
+  btn.classList.remove("spinning");
+  const ok = okList || okChannels;
+  toast(ok ? "چت به‌روز شد" : "رفرش نشد؛ اتصالت رو چک کن", ok ? "success" : "error");
+}
+
 function switchChatTab(tab) {
   chatState.tab = tab;
   document.getElementById("chatTab-direct").classList.toggle("active", tab === "direct");
@@ -10799,12 +10997,70 @@ function switchChatTab(tab) {
   }
 }
 
+// ---------- کشِ آفلاینِ لیستِ چت (خصوصی+گروه) و لیستِ کانال‌ها: با localStorage ذخیره می‌شه، تا اگه
+// کاربر آفلاین بود یا فچ شکست خورد، آخرین نسخه‌ی موفقِ قبلی همچنان روی صفحه بمونه به‌جایِ خالی موندن.
+// دکمه‌های رفرش (بالای لیستِ چت، هم حالتِ کلاسیک هم دیسکوردی) با فراخوانیِ دوباره‌ی همین توابع، نسخه‌ی
+// تازه رو از سرور می‌گیرن؛ اگه اونم شکست بخوره، همون کشِ قبلی دست‌نخورده می‌مونه ----------
+const CHAT_CACHE_VERSION = 1;
+function saveChatListCache() {
+  try {
+    localStorage.setItem("chatListCache", JSON.stringify({
+      v: CHAT_CACHE_VERSION,
+      direct: chatState.conversations.direct,
+      group: chatState.conversations.group,
+      savedAt: Date.now(),
+    }));
+  } catch (e) {}
+}
+function loadChatListCache() {
+  try {
+    const raw = localStorage.getItem("chatListCache");
+    if (!raw) return null;
+    const data = JSON.parse(raw);
+    if (data.v !== CHAT_CACHE_VERSION) return null;
+    return data;
+  } catch (e) { return null; }
+}
+function saveChannelsListCache() {
+  try {
+    localStorage.setItem("channelsListCache", JSON.stringify({
+      v: CHAT_CACHE_VERSION,
+      channels: roomsState.channels,
+      page: roomsState.channelsPage,
+      totalPages: roomsState.channelsTotalPages,
+      savedAt: Date.now(),
+    }));
+  } catch (e) {}
+}
+function loadChannelsListCache() {
+  try {
+    const raw = localStorage.getItem("channelsListCache");
+    if (!raw) return null;
+    const data = JSON.parse(raw);
+    if (data.v !== CHAT_CACHE_VERSION) return null;
+    return data;
+  } catch (e) { return null; }
+}
+
 async function loadChatConversationsList() {
-  if (!getToken()) return;
+  if (!getToken()) return false;
+  // اول، اگه هنوز چیزی لود نشده، فوری از کش (اگه باشه) نشون بده؛ همین باعث می‌شه آفلاین هم
+  // لیستِ خالی نبینه، بلکه آخرین نسخه‌ی ذخیره‌شده رو ببینه
+  if (!chatState.loaded) {
+    const cached = loadChatListCache();
+    if (cached) {
+      chatState.conversations.direct = cached.direct || [];
+      chatState.conversations.group = cached.group || [];
+      chatState.loaded = true;
+      renderChatList("direct");
+      renderChatGroupRail();
+      updateNavChatBadge();
+    }
+  }
   try {
     const res = await fetch(`${WORKER_URL}/api/chat/list`, { headers: { Authorization: `Bearer ${getToken()}` } });
     const data = await res.json();
-    if (!res.ok) return;
+    if (!res.ok) return false;
     // پیام‌های ذخیره‌شده (type: "saved") هم تو همین تبِ چت‌های خصوصی نشون داده می‌شه؛ سرور همیشه
     // اول از همه برمی‌گردوندش (پین‌شده)، این‌جا هم همون ترتیب حفظ می‌شه
     chatState.conversations.direct = (data.conversations || []).filter((c) => c.type === "direct" || c.type === "saved");
@@ -10813,8 +11069,11 @@ async function loadChatConversationsList() {
     renderChatList("direct");
     renderChatGroupRail();
     updateNavChatBadge();
+    saveChatListCache();
+    return true;
   } catch (e) {
-    // پولینگِ بعدی دوباره امتحان می‌کنه
+    // آفلاین/خطای شبکه: کشِ قبلی (اگه بود) رویِ صفحه می‌مونه؛ کاربر با دکمه‌ی رفرش دوباره امتحان می‌کنه
+    return false;
   }
 }
 
@@ -13221,19 +13480,33 @@ function roomRowHtml(item, onclickJs) {
 
 // ---------- لیستِ «کانال‌ها»: از سرور، صفحه‌بندی‌شده (لیستِ گروه‌ها حذف شد؛ گروه‌ها همچنان از نوارِ کناری باز می‌شن) ----------
 async function loadMyChannels(page = 1) {
+  // اول از کش (فقط برایِ صفحه‌ی اول، تا با صفحه‌بندی قاطی نشه)
+  if (page === 1 && !roomsState.channelsLoaded) {
+    const cached = loadChannelsListCache();
+    if (cached) {
+      roomsState.channels = cached.channels || [];
+      roomsState.channelsPage = cached.page || 1;
+      roomsState.channelsTotalPages = cached.totalPages || 1;
+      roomsState.channelsLoaded = true;
+      renderRoomsChannelsList();
+    }
+  }
   try {
     const res = await fetch(`${WORKER_URL}/api/channels/mine?page=${page}`, {
       headers: { Authorization: `Bearer ${getToken()}` },
     });
     const data = await res.json();
-    if (!res.ok) return;
+    if (!res.ok) return false;
     roomsState.channels = data.channels || [];
     roomsState.channelsPage = data.page || 1;
     roomsState.channelsTotalPages = data.totalPages || 1;
     roomsState.channelsLoaded = true;
     renderRoomsChannelsList();
+    if (page === 1) saveChannelsListCache();
+    return true;
   } catch (e) {
-    // بی‌سروصدا؛ لیست قبلی (اگه بود) همچنان نشون داده می‌شه
+    // بی‌سروصدا؛ لیست قبلی/کش‌شده (اگه بود) همچنان نشون داده می‌شه
+    return false;
   }
 }
 
@@ -15041,9 +15314,11 @@ function hideMiniPlayer() {
   const wrap = document.getElementById("miniPlayer");
   if (wrap) {
     wrap.classList.add("hidden");
-    wrap.classList.remove("collapsed");
+    wrap.classList.remove("collapsed", "flipping");
     wrap.dataset.safeId = "";
   }
+  clearTimeout(miniPlayerFlipTimer1);
+  clearTimeout(miniPlayerFlipTimer2);
   cancelMiniPlayerCollapse();
   clearPlayerState();
   closeFullPlayer();
@@ -15063,13 +15338,34 @@ function scheduleMiniPlayerCollapse() {
   if (!wrap || wrap.classList.contains("hidden")) return;
   miniPlayerCollapseTimer = setTimeout(() => {
     const w = document.getElementById("miniPlayer");
-    if (w && !w.classList.contains("hidden")) w.classList.add("collapsed");
+    if (w && !w.classList.contains("hidden")) setMiniPlayerCollapsed(true);
   }, MINI_PLAYER_COLLAPSE_DELAY);
 }
 
 function cancelMiniPlayerCollapse() {
   clearTimeout(miniPlayerCollapseTimer);
   miniPlayerCollapseTimer = null;
+}
+
+// ---------- تبدیلِ جمع‌شده <-> باز با انیمیشنِ فلیپ ----------
+// به‌جایِ اضافه/حذفِ مستقیمِ کلاسِ collapsed (که قبلاً با مورفِ تدریجیِ عرض/پدینگ همراه بود)،
+// اول کلاسِ flipping اضافه می‌شه (چرخشِ ۴۶۰ میلی‌ثانیه‌ای)، درست وسطِ چرخش — یعنی لحظه‌ای که
+// کپسول ۹۰ درجه چرخیده و عملاً دیده نمی‌شه — کلاسِ collapsed سوییچ می‌شه (بدونِ ترنزیشنِ جدا،
+// چون تویِ حالتِ flipping همه‌ی ترنزیشن‌های دیگه غیرفعالن)، و در پایان کلاسِ flipping برداشته می‌شه.
+let miniPlayerFlipTimer1 = null, miniPlayerFlipTimer2 = null;
+function setMiniPlayerCollapsed(collapse) {
+  const wrap = document.getElementById("miniPlayer");
+  if (!wrap || wrap.classList.contains("hidden")) return;
+  if (wrap.classList.contains("collapsed") === !!collapse) return;
+  clearTimeout(miniPlayerFlipTimer1);
+  clearTimeout(miniPlayerFlipTimer2);
+  wrap.classList.add("flipping");
+  miniPlayerFlipTimer1 = setTimeout(() => {
+    wrap.classList.toggle("collapsed", !!collapse);
+  }, 230);
+  miniPlayerFlipTimer2 = setTimeout(() => {
+    wrap.classList.remove("flipping");
+  }, 460);
 }
 
 // هر لمسی که داخلِ مینی‌پلیر بیفته (چه رویِ خودِ کپسول، چه رویِ دکمه‌های قبلی/پخش/بعدی/بستن)
@@ -15088,7 +15384,7 @@ function miniPlayerBodyClick(e) {
   const wrap = document.getElementById("miniPlayer");
   if (wrap && wrap.classList.contains("collapsed")) {
     e.stopPropagation();
-    wrap.classList.remove("collapsed");
+    setMiniPlayerCollapsed(false);
     scheduleMiniPlayerCollapse();
     return;
   }
@@ -22864,6 +23160,9 @@ function notifIcon(type) {
   if (type === "marriage_request" || type === "marriage_accept") {
     return MAHZAR_ICON_PROPOSE;
   }
+  if (type === "restaurant_sale") {
+    return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 2v7c0 1.1.9 2 2 2h1v11"/><path d="M9 2v20"/><path d="M15 2c-1.1 0-2 3-2 6s.9 6 2 6 2-3 2-6-.9-6-2-6z"/><path d="M15 14v8"/></svg>`;
+  }
   return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/></svg>`;
 }
 
@@ -22876,6 +23175,10 @@ function openPostFromNotification(idx) {
     openMahzarOverlay();
     if (n.type === "marriage_request") mahzarShowRequests();
     else mahzarShowPropose();
+    return;
+  }
+  if (n.type === "restaurant_sale") {
+    openRestaurantOverlay();
     return;
   }
   if (!n.post_id) return;
@@ -22895,6 +23198,8 @@ function renderNotifItem(n, idx) {
     text = `<b>${escapeHtml(n.from_username)}</b> تو محضر ازت خواستگاری کرد`;
   } else if (n.type === "marriage_accept") {
     text = `<b>${escapeHtml(n.from_username)}</b> خواستگاریت رو قبول کرد 💍`;
+  } else if (n.type === "restaurant_sale") {
+    text = `<b>${escapeHtml(n.from_username)}</b> یکی از غذاهاتُ خرید 🍽️`;
   }
   const snippet = n.text ? `<div class="notif-snippet">${escapeHtml(n.text)}</div>` : "";
   // اسم پستی که اعلان مربوط بهشه، اگه اون پست عنوان داشته باشه
@@ -22995,6 +23300,11 @@ function liveNotifText(n) {
   if (n.type === "vote") return `<b>${escapeHtml(n.from_username)}</b> به پستت آپ‌ووت داد`;
   if (n.type === "marriage_request") return `<b>${escapeHtml(n.from_username)}</b> تو محضر ازت خواستگاری کرد`;
   if (n.type === "marriage_accept") return `<b>${escapeHtml(n.from_username)}</b> خواستگاریت رو قبول کرد 💍`;
+  if (n.type === "restaurant_sale") {
+    return n.text
+      ? `<b>${escapeHtml(n.from_username)}</b> غذاتُ خرید — ${escapeHtml(n.text)} 🍽️`
+      : `<b>${escapeHtml(n.from_username)}</b> یکی از غذاهاتُ خرید 🍽️`;
+  }
   return "اعلان جدید";
 }
 
@@ -23066,6 +23376,12 @@ function handleLiveNotifClick() {
   if (n && n.post_id) {
     const commentIdToHighlight = (n.type === "comment" || n.type === "reply") ? n.comment_id : null;
     openPostModal(n.post_id, commentIdToHighlight);
+  } else if (n && (n.type === "marriage_request" || n.type === "marriage_accept")) {
+    openMahzarOverlay();
+    if (n.type === "marriage_request") mahzarShowRequests();
+    else mahzarShowPropose();
+  } else if (n && n.type === "restaurant_sale") {
+    openRestaurantOverlay();
   } else {
     openNotifications();
   }
@@ -23909,22 +24225,25 @@ const MUSIC_SKIN_INFO = {
 function renderSettingsDogTones() {
   const rows = MUSIC_SKIN_IDS.map((id) => {
     const info = MUSIC_SKIN_INFO[id];
+    const locked = isMusicSkinLocked(id);
     return `
-      <button type="button" class="music-skin-card${currentMusicSkin === id ? " active" : ""}" data-skin="${id}" onclick="selectMusicSkin('${id}')">
+      <button type="button" class="music-skin-card${currentMusicSkin === id ? " active" : ""}${locked ? " locked" : ""}" data-skin="${id}" onclick="onMusicSkinCardClick('${id}')">
         <span class="music-skin-card-preview preview-${id}"></span>
         <span class="music-skin-card-text">
           <span class="music-skin-card-title">${info.title}${id !== "default" ? ` <span class="settings-item-soon-badge">تستی</span>` : ""}</span>
           <span class="music-skin-card-desc">${escapeHtml(info.desc)}</span>
         </span>
         <span class="music-skin-card-check">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L19 7"/></svg>
+          ${locked
+            ? `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>`
+            : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L19 7"/></svg>`}
         </span>
       </button>`;
   }).join("");
 
   return settingsHeader("تم سگ‌تونز", true) + `
     <div style="display:flex; flex-direction:column; gap:12px;">
-      <p class="appearance-hub-note">ظاهرِ بخشِ سگ‌تونز (کاورها، دکمه‌های پخش، پلیرِ تمام‌صفحه) رو انتخاب کن.</p>
+      <p class="appearance-hub-note">ظاهرِ بخشِ سگ‌تونز (کاورها، دکمه‌های پخش، پلیرِ تمام‌صفحه) رو انتخاب کن. تم‌های تستی قفلن و با واردکردنِ رمز باز می‌شن.</p>
       <div class="music-skin-list">${rows}</div>
     </div>`;
 }
