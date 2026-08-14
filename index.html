@@ -8134,42 +8134,70 @@ const DehaatOffline = (() => {
   }
 
   // ---------- تشخیصِ وضعیتِ اتصال + توستِ شبیهِ تلگرام (درحالِ اتصال.../درحالِ اپدیت...) ----------
+  // اگه وضعیتِ «در حالِ اتصال» بیشتر از ۳ ثانیه طول بکشه (یعنی واقعاً قطعیم، نه یه تکونِ لحظه‌ای)،
+  // توستِ متنی جمع می‌شه به یه ناچِ کوچیکِ گرد (فقط اسپینر) تا حواس‌پرت‌کن نمونه رویِ صفحه؛
+  // به‌محضِ تغییرِ وضعیت (شروعِ اپدیت یا آنلاین‌شدن) دوباره باز می‌شه و متنِ تازه رو نشون می‌ده.
   let toastEl = null;
   let isOffline = false;
   let reconnecting = false;
+  let toastCollapseTimer = null;
   function ensureToastEl() {
     if (toastEl && toastEl.isConnected) return toastEl;
     toastEl = document.createElement("div");
     toastEl.id = "connectivityToast";
     toastEl.style.cssText =
       "position:fixed;left:50%;top:calc(12px + var(--safe-top));transform:translateX(-50%);z-index:10002;" +
-      "background:var(--card);color:var(--text);border:1px solid var(--border);border-radius:12px;" +
-      "padding:9px 16px;font-size:13px;box-shadow:0 6px 20px rgba(0,0,0,0.4);display:none;align-items:center;gap:8px;" +
-      "font-family:var(--app-font);";
+      "background:var(--card);color:var(--text);border:1px solid var(--border);border-radius:20px;" +
+      "padding:9px 16px;font-size:13px;box-shadow:0 6px 20px rgba(0,0,0,0.4);display:none;align-items:center;" +
+      "gap:8px;font-family:var(--app-font);overflow:hidden;white-space:nowrap;" +
+      "transition:padding 0.35s cubic-bezier(.4,0,.2,1),border-radius 0.35s cubic-bezier(.4,0,.2,1),width 0.35s cubic-bezier(.4,0,.2,1);";
     const spinner = document.createElement("span");
     spinner.style.cssText =
-      "width:13px;height:13px;border-radius:50%;border:2px solid var(--subtext);border-top-color:var(--accent);" +
+      "width:13px;height:13px;flex:none;border-radius:50%;border:2px solid var(--subtext);border-top-color:var(--accent);" +
       "display:inline-block;animation:dehaatConnSpin 0.7s linear infinite;";
     if (!document.getElementById("dehaatConnSpinKeyframes")) {
       const style = document.createElement("style");
       style.id = "dehaatConnSpinKeyframes";
-      style.textContent = "@keyframes dehaatConnSpin{to{transform:rotate(360deg)}}";
+      style.textContent =
+        "@keyframes dehaatConnSpin{to{transform:rotate(360deg)}}" +
+        "#connectivityToast.dehaat-notch-collapsed{padding:8px !important;border-radius:50% !important;width:29px;height:29px;box-sizing:border-box;}" +
+        "#connectivityToast .connectivity-toast-text{display:inline-block;overflow:hidden;max-width:220px;opacity:1;transition:max-width 0.3s ease,opacity 0.2s ease,margin 0.3s ease;}" +
+        "#connectivityToast.dehaat-notch-collapsed .connectivity-toast-text{max-width:0;opacity:0;margin:0;}";
       document.head.appendChild(style);
     }
     const text = document.createElement("span");
     text.className = "connectivity-toast-text";
     toastEl.appendChild(spinner);
     toastEl.appendChild(text);
+    // لمسِ ناچِ جمع‌شده => یه لحظه دوباره باز شه و متن رو نشون بده، بعد خودش جمع بشه
+    toastEl.addEventListener("click", () => {
+      if (toastEl.classList.contains("dehaat-notch-collapsed")) {
+        toastEl.classList.remove("dehaat-notch-collapsed");
+        if (isOffline) scheduleToastCollapse();
+      }
+    });
+    toastEl.style.cursor = "pointer";
     document.body.appendChild(toastEl);
     return toastEl;
   }
   function showToast(text) {
+    if (toastCollapseTimer) { clearTimeout(toastCollapseTimer); toastCollapseTimer = null; }
     const el = ensureToastEl();
+    el.classList.remove("dehaat-notch-collapsed"); // هر تغییرِ متنی یعنی وضعیت عوض شده، پس دوباره باز شو
     el.querySelector(".connectivity-toast-text").textContent = text;
     el.style.display = "flex";
   }
   function hideToast() {
-    if (toastEl) toastEl.style.display = "none";
+    if (toastCollapseTimer) { clearTimeout(toastCollapseTimer); toastCollapseTimer = null; }
+    if (toastEl) { toastEl.style.display = "none"; toastEl.classList.remove("dehaat-notch-collapsed"); }
+  }
+  // فقط برایِ حالتِ «در حالِ اتصال»: بعد از ۳ ثانیه که هنوز آفلاینیم، توست رو جمع کن به ناچِ اسپینردار
+  function scheduleToastCollapse() {
+    if (toastCollapseTimer) clearTimeout(toastCollapseTimer);
+    toastCollapseTimer = setTimeout(() => {
+      toastCollapseTimer = null;
+      if (isOffline && toastEl) toastEl.classList.add("dehaat-notch-collapsed");
+    }, 3000);
   }
 
   async function handleReconnect() {
@@ -8188,6 +8216,7 @@ const DehaatOffline = (() => {
     if (!isOffline) {
       isOffline = true;
       showToast("در حال اتصال...");
+      scheduleToastCollapse();
     }
   }
   function onNetworkOk() {
@@ -8215,6 +8244,7 @@ const DehaatOffline = (() => {
   async function enterOfflineMode() {
     if (typeof hideAppSplash === "function") hideAppSplash();
     showToast("در حال اتصال...");
+    scheduleToastCollapse();
     isOffline = true;
     try {
       const cachedFeed = await getFeedFirstPage();
@@ -11896,6 +11926,22 @@ async function sendPostShortcutForward() {
 
 // ---------- چت: بارگذاریِ اولیه و صفحه‌بندیِ رو-به-بالای پیام‌های قدیمی‌تر (اسکرول به بالا) ----------
 async function loadInitialChatMessages(conversationId) {
+  // اول، قبل از هر فچی، اگه نسخه‌ی کش‌شده‌ی همین گفتگو رو تویِ IndexedDB داریم، فوراً نشونش بده؛
+  // این‌طوری چه آفلاین باشیم چه نتِ کند/فیلترشده‌ای که فچ توش دیر جواب می‌ده (به‌جایِ اسپینرِ خالی)
+  // کاربر بلافاصله تاریخچه‌ی قبلی رو می‌بینه، و فچِ اصلی موازی داره اجرا می‌شه و وقتی رسید جایگزینش می‌کنه.
+  try {
+    const cachedFirst = await DehaatOffline.getChatMessages(conversationId);
+    if (cachedFirst && cachedFirst.length && chatState.active && chatState.active.id === conversationId && chatState.messages.length === 0) {
+      chatState.messages = cachedFirst;
+      chatState.hasMoreOlder = false;
+      chatState.oldestLoadedAt = cachedFirst[0].createdAt;
+      chatState.newestLoadedAt = cachedFirst[cachedFirst.length - 1].createdAt;
+      updateChatConvSubtitle();
+      renderChatMessages();
+      renderChatPinnedBar();
+    }
+  } catch (e) {}
+  if (!chatState.active || chatState.active.id !== conversationId) return; // کاربر تا اینجا از این گفتگو خارج شده
   try {
     const res = await fetch(`${WORKER_URL}/api/chat/messages?conversation=${encodeURIComponent(conversationId)}`, {
       headers: { Authorization: `Bearer ${getToken()}` },
@@ -11954,6 +12000,7 @@ async function loadOlderChatMessages() {
       chatState.oldestLoadedAt = older[0].createdAt;
       chatState.loadingOlder = false;
       renderChatMessages({ preserveScrollFrom: { oldScrollHeight, oldScrollTop } });
+      DehaatOffline.saveChatMessages(chatState.active.id, chatState.messages); // پیام‌های قدیمی‌ترِ تازه‌لودشده هم کش بشن
       return;
     }
   } catch (e) {
@@ -12578,6 +12625,7 @@ async function pollChatMessages(conversationId) {
       chatState.newestLoadedAt = data.messages[data.messages.length - 1].createdAt;
       renderChatMessages();
       markChatRead(conversationId);
+      DehaatOffline.saveChatMessages(conversationId, chatState.messages); // پیام‌های تازه‌ی رسیده از پولینگ هم کش بشن
     } else if (otherReadChanged) {
       renderChatMessages();
     }
@@ -12839,6 +12887,7 @@ async function submitChatMessage(payload, localPreviewUrl) {
     }
     chatState.newestLoadedAt = data.message.createdAt;
     renderChatMessages();
+    DehaatOffline.saveChatMessages(chatState.active.id, chatState.messages); // پیامِ فرستاده‌شده هم تو کشِ آفلاین ذخیره بشه
   } catch (e) {
     chatState.messages = chatState.messages.filter((x) => x.id !== tempId);
     renderChatMessages();
@@ -15111,6 +15160,23 @@ document.addEventListener("visibilitychange", () => {
   if (document.visibilityState === "hidden") cacheCurrentTrackBeforeLeaving();
 });
 window.addEventListener("pagehide", cacheCurrentTrackBeforeLeaving);
+
+// ---------- کشِ آفلاینِ پیام‌هایِ چتِ فعلی، درست قبل از خروج از سایت ----------
+// این یه لایه‌ی اطمینانِ اضافه‌ست: هر پیامِ تازه (فرستاده‌شده/رسیده از پولینگ/قدیمی‌ترِ لودشده) همون
+// لحظه هم کش می‌شه، ولی اینجا مطمئن می‌شیم آخرین وضعیتِ گفتگویِ بازِ فعلی، دقیقاً قبل از رفتنِ کاربر
+// (بستنِ تب/رفتن به اپِ دیگه) یه بارِ دیگه تویِ IndexedDB نوشته بشه؛ اینطوری دفعه‌ی بعد که آفلاین
+// وارد می‌شه یا قبل از رسیدنِ جوابِ فچ، همیشه آخرین نسخه رو می‌بینه.
+function cacheActiveChatBeforeLeaving() {
+  try {
+    if (chatState.active && chatState.active.id && chatState.messages && chatState.messages.length) {
+      DehaatOffline.saveChatMessages(chatState.active.id, chatState.messages);
+    }
+  } catch (e) {}
+}
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "hidden") cacheActiveChatBeforeLeaving();
+});
+window.addEventListener("pagehide", cacheActiveChatBeforeLeaving);
 
 // آهنگِ آخرین‌بار پخش‌شده رو (اگه پستش الان تو صفحه رندر نشده) به‌صورت یه ادیوی پنهان
 // داخل خودِ مینی‌پلیر می‌سازه تا کاربر بتونه با یه ضربه از همون‌جایی که ول کرده بود ادامه بده
@@ -26221,15 +26287,44 @@ async function bootstrapApp() {
 (async () => {
   const splashStart = Date.now();
   DehaatOffline.initSplashOfflineOption(); // اگه نتِ اولیه کند/قطع بود، دکمه‌ی «ورود آفلاین» رو تویِ اسپلش نشون بده
-  await bootstrapApp();
-  switchView("media");
-  restorePlayerState();
-  startGlobalChatBadgePolling();
-  startLiveNotifPolling();
-  startOnlineUsersFeature();
-  const minSplashTime = 500; // حداقل زمان نمایش اسپلش، تا حتی رو گوشی‌های سریع هم چشمک نزنه
-  const elapsed = Date.now() - splashStart;
-  setTimeout(hideAppSplash, Math.max(0, minSplashTime - elapsed));
+
+  let viewInitDone = false;
+  function finishStartup() {
+    if (!viewInitDone) {
+      viewInitDone = true;
+      switchView("media");
+      restorePlayerState();
+    }
+    startGlobalChatBadgePolling();
+    startLiveNotifPolling();
+    startOnlineUsersFeature();
+    const minSplashTime = 500; // حداقل زمان نمایش اسپلش، تا حتی رو گوشی‌های سریع هم چشمک نزنه
+    const elapsed = Date.now() - splashStart;
+    setTimeout(hideAppSplash, Math.max(0, minSplashTime - elapsed));
+  }
+
+  // بوت‌استرپِ اصلی رو همیشه شروع می‌کنیم؛ منتظرش نمی‌مونیم اگه آفلاینیم یا بیش‌ازحد طول بکشه —
+  // فیلترشکن‌های ایرانی معمولاً به‌جایِ اروردادنِ سریع، فچ رو مدت‌ها hang نگه می‌دارن، پس صرفِ آنلاین‌بودنِ
+  // navigator.onLine کافی نیست. خودِ فچ تو پس‌زمینه ادامه پیدا می‌کنه و هر وقت جواب داد (چه موفق چه ناموفق)
+  // منطقِ «در حالِ اپدیت...»یِ همون تابعِ DehaatOffline خودش UI رو به‌روز می‌کنه؛ یعنی کاربر می‌تونه اپ رو
+  // هم تو حالتِ کاملاً آفلاین و هم درحینِ تلاشِ پس‌زمینه برایِ آنلاین‌شدن، فوراً باز و استفاده کنه.
+  const bootstrapPromise = bootstrapApp().catch(() => {});
+
+  if (navigator.onLine === false) {
+    viewInitDone = true;
+    await DehaatOffline.enterOfflineMode();
+    finishStartup();
+  } else {
+    const timedOut = await Promise.race([
+      bootstrapPromise.then(() => false),
+      new Promise((resolve) => setTimeout(() => resolve(true), 3500)),
+    ]);
+    if (timedOut) {
+      viewInitDone = true;
+      await DehaatOffline.enterOfflineMode();
+    }
+    finishStartup();
+  }
 })();
 </script>
 </body>
