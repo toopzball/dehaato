@@ -1,0 +1,36 @@
+name: Extract Zip and Delete
+
+on:
+  workflow_dispatch:
+    inputs:
+      zip_filename:
+        description: 'اسم فایل زیپ (مثلا: myfile.zip)'
+        required: true
+        type: string
+
+jobs:
+  extract-and-delete:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Extract zip file
+        run: |
+          if [ ! -f "${{ inputs.zip_filename }}" ]; then
+            echo "فایل زیپ پیدا نشد: ${{ inputs.zip_filename }}"
+            exit 1
+          fi
+          unzip -o "${{ inputs.zip_filename }}" -d "./extracted"
+
+      - name: Delete zip file
+        run: rm -f "${{ inputs.zip_filename }}"
+
+      - name: Commit changes
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add -A
+          git commit -m "Extract and remove ${{ inputs.zip_filename }}" || echo "چیزی برای کامیت نبود"
+          git push
