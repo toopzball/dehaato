@@ -134,6 +134,25 @@ try {
     .brand, .app-splash-emoji, .card, .captcha-wrap, .form-anim-field, .form-anim-bottom { animation: none !important; }
   }
 
+  /* داخلِ اپِ کیوسکِ اندروید (WebView)، backdrop-filter رویِ ویدیویِ درحالِ پخش معمولاً از مسیرِ
+     GPU میفته و نرم‌افزاری اجرا می‌شه؛ همون چیزیه که باعثِ لگِ محسوس می‌شه. این کلاس از قبل
+     تویِ <head> ست می‌شد ولی هیچ قانونی روش نبود — یعنی همون کاربرایی که قرار بود تجربه‌ی
+     سبک‌تر بگیرن، سنگین‌ترین حالت رو می‌گرفتن. اینجا بلور رو کامل حذف می‌کنیم و به‌جاش یه
+     پس‌زمینه‌ی نیمه‌شفافِ ساده (بدون فیلتر) می‌ذاریم که تقریباً همون حسِ شیشه‌ای رو می‌ده ولی
+     هزینه‌ش فقط یه رنگِ ساده‌ست، نه بلور کردنِ هر فریمِ ویدیو. */
+  .in-kiosk-app .tabs,
+  .in-kiosk-app input,
+  .in-kiosk-app .captcha-trigger {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    background: rgba(45, 24, 86, 0.55);
+  }
+  .in-kiosk-app .captcha-modal-overlay {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    background: rgba(10, 6, 20, 0.82);
+  }
+
   .card {
     background: transparent;
     border: none;
@@ -141,14 +160,14 @@ try {
     padding: 22px;
     animation: fadeInUp 0.6s ease 0.1s both;
     transition: box-shadow 0.3s ease;
-    backdrop-filter: blur(5px);
-    -webkit-backdrop-filter: blur(5px);
+    /* بلورِ کلِ کارت حذف شد: با بلورِ خودِ تب‌ها/اینپوت‌ها هم‌پوشانی داشت (دوبار بلور کردنِ
+       همون ناحیه رویِ هر فریم = دو برابر هزینه، بدونِ فرقِ محسوسِ بصری) */
   }
 
   .tabs {
     display: flex; gap: 4px; position: relative; overflow: hidden;
     background: transparent; border: 1px solid var(--border); border-radius: 999px; padding: 4px; margin-bottom: 18px;
-    backdrop-filter: blur(13px); -webkit-backdrop-filter: blur(13px);
+    backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
   }
   .tabs-indicator {
     position: absolute; top: 4px; bottom: 4px; left: 0; width: 0;
@@ -170,8 +189,8 @@ try {
     background: transparent; border: 1px solid var(--border); border-radius: 999px;
     padding: 11px 18px; margin-bottom: 10px;
     transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease, background 0.2s ease;
-    backdrop-filter: blur(13px);
-    -webkit-backdrop-filter: blur(13px);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
   }
   input::placeholder { color: var(--subtext); }
   input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.25); transform: translateY(-1px); }
@@ -252,8 +271,8 @@ try {
     background: transparent; border: 1px solid var(--border); border-radius: 999px;
     padding: 12px 18px; cursor: pointer; user-select: none;
     transition: border-color 0.25s ease, box-shadow 0.25s ease, background 0.25s ease;
-    backdrop-filter: blur(13px);
-    -webkit-backdrop-filter: blur(13px);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
   }
   .captcha-trigger:hover { border-color: var(--accent); }
   .captcha-trigger.verified { border-color: var(--success); box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.16); cursor: default; animation: captchaRingPulse 0.7s ease-out; }
@@ -565,6 +584,14 @@ try {
     transition: opacity 0.6s ease;
   }
   .splash-overlay.fade-out { opacity: 0; pointer-events: none; }
+  /* تا وقتی اسپلش رو صفحه‌ست، پس‌زمینه/فرم زیرش کاملاً پنهانن؛ ولی چون visibility/display
+     نداشتن، مرورگر داشت مخفیانه پشتِ این پوششِ مشکی هم ویدیویِ bg.mp4 رو دیکد+کامپوزیت
+     می‌کرد هم بلورهایِ فرم رو محاسبه می‌کرد — کاری که کاربر اصلاً نمی‌دیدش. با visibility:hidden
+     این کار رو کامل متوقف می‌کنیم تا همه‌ی توانِ GPU/CPU صرفِ خودِ ویدیوی اسپلش بشه. */
+  body.splash-active .bg-anim,
+  body.splash-active .box {
+    visibility: hidden;
+  }
   .splash-overlay video {
     max-width: 100%; max-height: 100%;
     width: 100%; height: 100%;
@@ -753,6 +780,10 @@ const WORKER_URL = IS_GITHUB_HOST ? WORKER_DIRECT_URL : WORKER_PAGES_PROXY_URL;
     done = true;
     overlay.classList.add("fade-out");
     document.body.classList.remove("splash-active");
+    // تا همین لحظه autoplay نداشت، پس مرورگر مجبور نبود پشتِ پوششِ مشکیِ اسپلش هم‌زمان با
+    // ویدیوی اسپلش/انفجار، این یکی رو هم دیکد کنه؛ دقیقاً همین‌جا که واقعاً دیده می‌شه استارت می‌خوره.
+    var bgVideo = document.getElementById("bgVideo");
+    if (bgVideo) bgVideo.play().catch(function () {});
     setTimeout(function () {
       overlay.remove();
       // آهنگ لاگین عمداً همینجا و نه زودتر استارت می‌خوره، تا دقیقاً بعد از محو کامل شدن
@@ -867,7 +898,7 @@ const WORKER_URL = IS_GITHUB_HOST ? WORKER_DIRECT_URL : WORKER_PAGES_PROXY_URL;
        رویِ GPU اجرا می‌شن نه رویِ خودِ فایل، هیچ لگِ اضافه‌ای اضافه نمی‌کنن. poster هم یه فریمِ
        سبکِ jpg رو همون لحظه‌ی اول نشون می‌ده تا تا وقتی ویدیو بافر می‌شه صفحه سیاه نزنه (این عکس
        رو باید کنارِ bg.mp4 خودت اضافه کنی، یا اگه نمی‌خوایش همین یه خط poster رو حذف کن). -->
-  <video class="bg-video" autoplay muted loop playsinline preload="auto" poster="bg-poster.jpg"
+  <video class="bg-video" id="bgVideo" muted loop playsinline preload="auto" poster="bg-poster.jpg"
          disablePictureInPicture disableRemotePlayback>
     <source src="bg.mp4" type="video/mp4" />
   </video>
