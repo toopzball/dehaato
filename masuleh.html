@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ماسوله | روستایی که بامش کوچه‌ی همسایه است</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lalezar&family=Vazirmatn:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#EFE6D6;
+    --bg-alt:#E3D5BC;
+    --ink:#241B14;
+    --ink-soft:#5A4A38;
+    --clay:#A8562E;
+    --clay-deep:#7C3F22;
+    --slate:#43585A;
+    --slate-deep:#2B3B3C;
+    --forest:#3E5A41;
+    --gold:#C0932F;
+    --paper-line: rgba(36,27,20,.14);
+    --radius: 22px;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'Vazirmatn', sans-serif;
+    line-height:1.9;
+    overflow-x:hidden;
+  }
+  h1,h2,h3,.display{
+    font-family:'Lalezar', 'Vazirmatn', sans-serif;
+    font-weight:400;
+    letter-spacing:.5px;
+    margin:0;
+  }
+  img{max-width:100%;display:block;}
+  a{color:inherit;}
+  .wrap{max-width:1080px;margin:0 auto;padding:0 24px;}
+
+  /* ---------- HERO ---------- */
+  .hero{
+    position:relative;
+    min-height:100vh;
+    display:flex;
+    align-items:flex-end;
+    background:#1a1410;
+    overflow:hidden;
+  }
+  .hero img{
+    position:absolute; inset:0;
+    width:100%; height:100%; object-fit:cover;
+    filter:saturate(1.05) contrast(1.02);
+    animation:heroZoom 22s ease-in-out infinite alternate;
+  }
+  @keyframes heroZoom{ from{transform:scale(1)} to{transform:scale(1.08)} }
+  .hero::after{
+    content:"";
+    position:absolute; inset:0;
+    background:linear-gradient(180deg, rgba(20,15,10,.15) 0%, rgba(20,15,10,.35) 55%, rgba(18,13,9,.92) 100%);
+  }
+  .hero-content{
+    position:relative; z-index:2;
+    width:100%;
+    padding:0 24px 64px;
+    color:#F6EFE2;
+    text-align:center;
+  }
+  .hero-eyebrow{
+    font-size:.85rem;
+    letter-spacing:3px;
+    color:#E2C98A;
+    margin-bottom:14px;
+    font-weight:600;
+  }
+  .hero h1{
+    font-size:clamp(3.6rem, 14vw, 8rem);
+    line-height:1;
+    color:#F8F1E4;
+    text-shadow:0 6px 30px rgba(0,0,0,.35);
+  }
+  .hero p{
+    max-width:520px;
+    margin:22px auto 0;
+    font-size:1.05rem;
+    color:#E9E0CE;
+  }
+  .scroll-cue{
+    position:absolute; bottom:22px; right:50%; transform:translateX(50%);
+    z-index:2; color:#E9E0CE; font-size:.8rem; opacity:.8;
+    display:flex; flex-direction:column; align-items:center; gap:8px;
+  }
+  .scroll-cue span{
+    width:1px; height:34px; background:linear-gradient(180deg, transparent, #E9E0CE);
+    animation:pulse 1.8s ease-in-out infinite;
+  }
+  @keyframes pulse{ 0%,100%{opacity:.3} 50%{opacity:1} }
+
+  /* ---------- STEP DIVIDER (signature motif: terraced roofline) ---------- */
+  .steps{
+    height:52px;
+    width:100%;
+    background:linear-gradient(90deg, var(--clay-deep), var(--slate-deep));
+  }
+  .steps.up{
+    clip-path:polygon(0% 100%,0% 87.5%,12.5% 87.5%,12.5% 75%,25% 75%,25% 62.5%,37.5% 62.5%,37.5% 50%,50% 50%,50% 37.5%,62.5% 37.5%,62.5% 25%,75% 25%,75% 12.5%,87.5% 12.5%,87.5% 0%,100% 0%,100% 100%);
+  }
+  .steps.down{
+    clip-path:polygon(0% 0%,0% 12.5%,12.5% 12.5%,12.5% 25%,25% 25%,25% 37.5%,37.5% 37.5%,37.5% 50%,50% 50%,50% 62.5%,62.5% 62.5%,62.5% 75%,75% 75%,75% 87.5%,87.5% 87.5%,87.5% 100%,100% 100%,100% 0%);
+  }
+
+  /* ---------- INTRO ---------- */
+  .intro{
+    background:var(--slate-deep);
+    color:#EFE6D6;
+    padding:70px 0 60px;
+    text-align:center;
+  }
+  .intro .wrap{max-width:760px;}
+  .intro p{font-size:1.15rem; color:#DFD6C4;}
+
+  /* ---------- STORY SECTIONS ---------- */
+  .story{padding:78px 0;}
+  .story .wrap{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:56px;
+    align-items:center;
+  }
+  .story.reverse .wrap{direction:ltr;}
+  .story.reverse .wrap > *{direction:rtl;}
+  .story figure{margin:0; border-radius:var(--radius); overflow:hidden; box-shadow:0 20px 50px -20px rgba(36,27,20,.4);}
+  .story figure img{aspect-ratio:4/5; object-fit:cover; transition:transform .6s ease;}
+  .story figure:hover img{transform:scale(1.04);}
+  .story .eyebrow{
+    display:inline-block;
+    font-size:.78rem;
+    letter-spacing:2px;
+    font-weight:700;
+    color:var(--clay);
+    border:1px solid var(--clay);
+    border-radius:100px;
+    padding:5px 14px;
+    margin-bottom:18px;
+  }
+  .story h2{font-size:2.6rem; color:var(--ink); margin-bottom:18px;}
+  .story p{color:var(--ink-soft); font-size:1.02rem;}
+  .story:nth-of-type(odd){background:var(--bg);}
+  .story:nth-of-type(even){background:var(--bg-alt);}
+
+  @media (max-width:760px){
+    .story .wrap{grid-template-columns:1fr; gap:28px;}
+    .story.reverse .wrap{direction:rtl;}
+    .story h2{font-size:2.1rem;}
+  }
+
+  /* ---------- REEL ---------- */
+  .reel-section{
+    background:var(--ink);
+    padding:74px 0 84px;
+    color:#EFE6D6;
+  }
+  .reel-section .wrap{max-width:1200px;}
+  .reel-head{text-align:center; margin-bottom:40px;}
+  .reel-head .eyebrow{
+    font-size:.78rem; letter-spacing:2px; font-weight:700; color:var(--gold);
+  }
+  .reel-head h2{font-size:2.4rem; margin-top:12px; color:#F6EFE2;}
+  .reel-head p{color:#B9AF9B; margin-top:10px;}
+
+  .reel{
+    display:flex;
+    gap:18px;
+    overflow-x:auto;
+    scroll-snap-type:x mandatory;
+    padding:10px 24px 20px;
+    margin:0 -24px;
+    -webkit-overflow-scrolling:touch;
+    scrollbar-width:none;
+  }
+  .reel::-webkit-scrollbar{display:none;}
+  .reel figure{
+    flex:0 0 74%;
+    max-width:320px;
+    scroll-snap-align:center;
+    margin:0;
+    position:relative;
+    border-radius:18px;
+    overflow:hidden;
+    aspect-ratio:3/4;
+    background:#111;
+  }
+  .reel figure img{
+    width:100%; height:100%; object-fit:cover;
+    user-select:none; -webkit-user-drag:none;
+  }
+  .reel figcaption{
+    position:absolute; right:0; bottom:0; left:0;
+    padding:16px 16px 14px;
+    background:linear-gradient(0deg, rgba(0,0,0,.72), transparent);
+    font-size:.92rem;
+    color:#F3ECDD;
+  }
+  .reel figure.egg-trigger{cursor:pointer; touch-action:none;}
+
+  @media (min-width:760px){
+    .reel figure{flex-basis:280px;}
+  }
+
+  /* ---------- FOOTER ---------- */
+  footer{
+    background:var(--ink);
+    color:#8C8171;
+    text-align:center;
+    padding:34px 24px 40px;
+    font-size:.8rem;
+    border-top:1px solid rgba(255,255,255,.08);
+  }
+  footer a{color:#B9AF9B; text-decoration:underline;}
+
+  /* ---------- EASTER-EGG MODAL ---------- */
+  .egg-modal{
+    position:fixed; inset:0; z-index:99;
+    display:flex; align-items:center; justify-content:center;
+    opacity:0; pointer-events:none;
+    transition:opacity .35s ease;
+    padding:20px;
+  }
+  .egg-modal.open{opacity:1; pointer-events:auto;}
+  .egg-backdrop{
+    position:absolute; inset:0;
+    background:rgba(20,15,10,.72);
+    backdrop-filter:blur(6px);
+  }
+  .egg-card{
+    position:relative;
+    width:100%; max-width:380px;
+    background:var(--bg);
+    border-radius:26px;
+    padding:36px 30px 30px;
+    text-align:center;
+    box-shadow:0 30px 80px -20px rgba(0,0,0,.6);
+    transform:translateY(16px) scale(.96);
+    transition:transform .4s cubic-bezier(.2,.9,.3,1.2);
+  }
+  .egg-modal.open .egg-card{transform:translateY(0) scale(1);}
+  .egg-close{
+    position:absolute; top:14px; left:14px;
+    width:32px; height:32px; border-radius:50%;
+    border:none; background:var(--paper-line);
+    color:var(--ink); font-size:1.1rem; cursor:pointer;
+    line-height:1;
+  }
+  .egg-icon{font-size:2.4rem; margin-bottom:10px;}
+  .egg-card h3{font-family:'Lalezar'; font-size:1.9rem; color:var(--clay-deep); margin-bottom:10px;}
+  .egg-card p{color:var(--ink-soft); font-size:.95rem; margin-bottom:24px;}
+  .egg-actions{display:flex; flex-direction:column; gap:12px;}
+  .egg-btn{
+    display:block;
+    padding:14px 18px;
+    border-radius:100px;
+    font-weight:700;
+    font-size:.95rem;
+    text-decoration:none;
+    transition:transform .2s ease, opacity .2s ease;
+  }
+  .egg-btn:hover{transform:translateY(-2px);}
+  .egg-btn-primary{background:var(--clay); color:#FBF3E6;}
+  .egg-btn-secondary{background:transparent; color:var(--ink); border:1.5px solid var(--paper-line);}
+
+  @media (prefers-reduced-motion:reduce){
+    .hero img{animation:none;}
+    .scroll-cue span{animation:none;}
+    *{transition:none !important;}
+  }
+</style>
+</head>
+<body>
+
+  <!-- ============ HERO ============ -->
+  <section class="hero">
+    <img src="https://images.adsttc.com/media/images/59d4/c5d9/b22e/38ef/b100/02ad/large_jpg/Masooleh-panoramio.jpg?1507116501" alt="نمای کلی روستای پلکانی ماسوله">
+    <div class="hero-content">
+      <div class="hero-eyebrow">گیلان، ایران</div>
+      <h1>ماسوله</h1>
+      <p>روستایی که از دل کوه روییده؛ جایی که حیاط هر خانه، بامِ خانه‌ی پایین‌دستی‌ست و کوچه، سقفِ همسایه.</p>
+    </div>
+    <div class="scroll-cue"><span></span>پایین‌تر</div>
+  </section>
+
+  <div class="steps up"></div>
+
+  <!-- ============ INTRO ============ -->
+  <section class="intro">
+    <div class="wrap">
+      <p>در دل جنگل‌های هیرکانی و در ارتفاع هزار متری از سطح دریا، ماسوله بیش از هزار سال است که روی شیبی نزدیک به شصت درجه ایستاده. خانه‌ها را خودِ اهالی ساخته‌اند، پلکان‌وار روی هم؛ بدون نقشه‌ی مهندسی، اما با شناختی عمیق از کوه، باران و باد.</p>
+    </div>
+  </section>
+
+  <!-- ============ STORY: HISTORY ============ -->
+  <section class="story">
+    <div class="wrap">
+      <figure>
+        <img src="https://commons.wikimedia.org/wiki/Special:FilePath/Masuleh,_Fuman_County,_Gilan_Province,_Iran.jpg" alt="بافت تاریخی خانه‌های ماسوله">
+      </figure>
+      <div>
+        <span class="eyebrow">قدمت</span>
+        <h2>ریشه‌ای در قرن‌ها آهنگری</h2>
+        <p>سرگذشت ماسوله به کوره‌های سنتی ذوب آهن گره خورده؛ صنعتی که سده‌ها پیش رونق این دامنه‌ی کوهستانی را رقم زد و رفته‌رفته آبادی امروزی را پدید آورد. مردمِ بومی، گیلک و تالش، هنوز به زبان تالشی سخن می‌گویند و آیین‌های محلی را زنده نگه داشته‌اند.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ STORY: ARCHITECTURE ============ -->
+  <section class="story reverse">
+    <div class="wrap">
+      <figure>
+        <img src="https://images.adsttc.com/media/images/59d4/c676/b22e/38e5/3e00/0601/large_jpg/Masouleh.jpg?1507116659" alt="معماری پلکانی خانه‌های ماسوله">
+      </figure>
+      <div>
+        <span class="eyebrow">معماری</span>
+        <h2>خانه‌هایی که پله‌های هم‌اند</h2>
+        <p>چوب، خشت، سنگ و آجر؛ همین چهار ماده کافی بوده تا اهالی، بدون معمار، خانه‌هایی بسازند که در برابر زلزله هم مقاوم‌اند. حیاط هر خانه دقیقاً روی بامِ خانه‌ی زیرین نشسته، و کوچه برای ساکنان بالادست چیزی نیست جز سقفِ همسایه.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ STORY: BAZAAR ============ -->
+  <section class="story">
+    <div class="wrap">
+      <figure>
+        <img src="https://commons.wikimedia.org/wiki/Special:FilePath/Masuleh_Village.jpg" alt="کوچه‌های بازارچه ماسوله">
+      </figure>
+      <div>
+        <span class="eyebrow">کوچه‌ها</span>
+        <h2>جایی که فقط با پا می‌شود رفت</h2>
+        <p>ماسوله یکی از معدود آبادی‌های ایران است که ورود خودرو در بافت اصلی آن ممنوع است. کوچه‌های سنگ‌فرش، پلکان‌های باریک و بازارچه‌ی سرپوشیده، مسیر روزمره‌ی اهالی و مهمانان را شکل می‌دهند؛ مسیری آهسته، برای دیدن نه گذشتن.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ STORY: NATURE ============ -->
+  <section class="story reverse">
+    <div class="wrap">
+      <figure>
+        <img src="https://images.adsttc.com/media/images/59cc/0087/b22e/3806/4f00/01e3/large_jpg/Ancient_Facades_with_Woman_Strolling_-_Masouleh_-_Northwestern_Iran_(7420305876).jpg?1506541692" alt="مه و طبیعت اطراف ماسوله">
+      </figure>
+      <div>
+        <span class="eyebrow">طبیعت</span>
+        <h2>مه‌ای که هر روز از نو می‌بارد</h2>
+        <p>جنگل هیرکانی، آبشارهای کوشم، لارچشمه و کوربار، و مه‌ای که غالب روزهای سال روی بام‌ها می‌نشیند؛ اقلیمی که همان قدر که سخت‌گیر است، این دامنه را هم سرسبز نگه داشته. همین شیب رو به آفتاب، زمستان‌های سرد را هم قابل‌تحمل‌تر کرده.</p>
+      </div>
+    </div>
+  </section>
+
+  <div class="steps down"></div>
+
+  <!-- ============ REEL ============ -->
+  <section class="reel-section">
+    <div class="wrap">
+      <div class="reel-head">
+        <div class="eyebrow">قدم‌زنی</div>
+        <h2>یک دور کوتاه در کوچه‌ها</h2>
+        <p>بکش و رد شو؛ عکس به عکس، مثل قدم زدن در ماسوله.</p>
+      </div>
+
+      <div class="reel">
+        <figure>
+          <img src="https://images.adsttc.com/media/images/59d4/c676/b22e/38e5/3e00/0601/large_jpg/Masouleh.jpg?1507116659" alt="نمای بام‌های پلکانی ماسوله">
+          <figcaption>۱ — بام‌های پلکانی</figcaption>
+        </figure>
+        <figure>
+          <img src="https://commons.wikimedia.org/wiki/Special:FilePath/Masuleh,_Fuman_County,_Gilan_Province,_Iran.jpg" alt="بافت تاریخی خانه‌ها">
+          <figcaption>۲ — بافت تاریخی</figcaption>
+        </figure>
+        <figure>
+          <img src="https://images.adsttc.com/media/images/59cc/0087/b22e/3806/4f00/01e3/large_jpg/Ancient_Facades_with_Woman_Strolling_-_Masouleh_-_Northwestern_Iran_(7420305876).jpg?1506541692" alt="کوچه‌ای در ماسوله">
+          <figcaption>۳ — کوچه‌های سنگ‌فرش</figcaption>
+        </figure>
+
+        <!-- عکس شماره ۴ — نقطه‌ی مخفی صفحه: هولد ۸ ثانیه‌ای -->
+        <figure id="reelEggTrigger" class="egg-trigger">
+          <img src="https://images.adsttc.com/media/images/59cc/be47/b22e/3875/6100/005e/large_jpg/Gilan_-_Masouleh_-_panoramio_(2).jpg?1506590265" alt="چشم‌انداز ماسوله از بالا">
+          <figcaption>۴ — چشم‌انداز از بالا</figcaption>
+        </figure>
+
+        <figure>
+          <img src="https://images.adsttc.com/media/images/59cd/7ce0/b22e/3875/6100/00e5/large_jpg/Masouleh_(Gilan__Iran)_004.jpg?1506639061" alt="خانه‌های رنگ خاکی ماسوله">
+          <figcaption>۵ — دیوارهای خاک‌رنگ</figcaption>
+        </figure>
+        <figure>
+          <img src="https://images.adsttc.com/media/images/59d4/c5d9/b22e/38ef/b100/02ad/large_jpg/Masooleh-panoramio.jpg?1507116501" alt="نمای کلی روستا در غروب">
+          <figcaption>۶ — نمای کلی</figcaption>
+        </figure>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <p>عکس‌ها: ویکی‌مدیا کامنز و آرشیو ArchDaily (گالری «Where Roofs and Streets Become One») — تحت مجوزهای CC BY / CC BY-SA، با احترام به عکاسان اصلی.</p>
+    <p>ماسوله، شهرستان فومن، استان گیلان</p>
+  </footer>
+
+  <!-- ============ EASTER-EGG MODAL ============ -->
+  <div class="egg-modal" id="eggModal" aria-hidden="true">
+    <div class="egg-backdrop" data-close></div>
+    <div class="egg-card" role="dialog" aria-modal="true" aria-labelledby="eggTitle">
+      <button class="egg-close" data-close aria-label="بستن">×</button>
+      <div class="egg-icon">🏔️</div>
+      <h3 id="eggTitle">پیدات کردیم!</h3>
+      <p>خوش اومدی به گوشه‌ی مخفیِ ماسوله. برای ادامه‌ی مسیر یکی از این دو راه رو انتخاب کن:</p>
+      <div class="egg-actions">
+        <!-- 🔗 لینک دانلود اپلیکیشن را همین‌جا جایگزین کنید -->
+        <a id="downloadAppLink" class="egg-btn egg-btn-primary" href="#">دانلود اپلیکیشن</a>
+        <!-- 🔗 لینک ورود به سایت را همین‌جا جایگزین کنید -->
+        <a id="enterSiteLink" class="egg-btn egg-btn-secondary" href="#">ورود به سایت</a>
+      </div>
+    </div>
+  </div>
+
+<script>
+  // ==========================================================
+  // 🔗 اینجا لینک‌های خودتان را جایگزین کنید (همان‌طور که گفتید دستی)
+  //     خط زیر را ویرایش کنید، یا مستقیماً href دکمه‌ها را بالاتر عوض کنید
+  // ==========================================================
+  // document.getElementById('downloadAppLink').href = "https://example.com/app";
+  // document.getElementById('enterSiteLink').href   = "https://example.com";
+
+  (function(){
+    const trigger = document.getElementById('reelEggTrigger');
+    const modal   = document.getElementById('eggModal');
+    const HOLD_MS = 8000; // هولد ۸ ثانیه‌ای طبق درخواست
+    let timer = null;
+
+    function openEgg(){
+      modal.classList.add('open');
+      modal.setAttribute('aria-hidden', 'false');
+      document.body.style.overflow = 'hidden';
+    }
+    function closeEgg(){
+      modal.classList.remove('open');
+      modal.setAttribute('aria-hidden', 'true');
+      document.body.style.overflow = '';
+    }
+    function start(e){
+      clearTimeout(timer);
+      timer = setTimeout(openEgg, HOLD_MS);
+    }
+    function cancel(){
+      clearTimeout(timer);
+    }
+
+    trigger.addEventListener('pointerdown', start);
+    trigger.addEventListener('pointerup', cancel);
+    trigger.addEventListener('pointerleave', cancel);
+    trigger.addEventListener('pointercancel', cancel);
+    trigger.addEventListener('contextmenu', e => e.preventDefault());
+
+    document.querySelectorAll('[data-close]').forEach(el => el.addEventListener('click', closeEgg));
+    document.addEventListener('keydown', e => { if(e.key === 'Escape') closeEgg(); });
+  })();
+</script>
+</body>
+</html>
